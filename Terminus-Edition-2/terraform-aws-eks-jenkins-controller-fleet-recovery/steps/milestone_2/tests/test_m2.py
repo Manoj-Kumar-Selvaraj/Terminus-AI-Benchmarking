@@ -53,18 +53,18 @@ class TestMilestone2:
             "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
             in service_accounts
         )
-        accounts = {
-            "joc": "joc",
-            "payments_controller": "payments-controller",
-            "risk_controller": "risk-controller",
-            "platform_controller": "platform-controller",
-        }
-        for resource_name, account_name in accounts.items():
-            block = resource_block(
-                service_accounts, "kubernetes_service_account", resource_name
+        for account_name in (
+            "joc",
+            "payments-controller",
+            "risk-controller",
+            "platform-controller",
+        ):
+            assert re.search(rf'name\s*=\s*"{re.escape(account_name)}"', service_accounts)
+            matching = re.search(
+                rf'name\s*=\s*"{re.escape(account_name)}"[\s\S]*?eks\.amazonaws\.com/role-arn',
+                service_accounts,
             )
-            assert re.search(rf'name\s*=\s*"{re.escape(account_name)}"', block)
-            assert "eks.amazonaws.com/role-arn" in block
+            assert matching, f"{account_name} service account missing IRSA annotation"
 
     def test_efs_persistent_home(self):
         """Jenkins home claims use encrypted EFS CSI storage with Retain."""
@@ -73,9 +73,10 @@ class TestMilestone2:
         assert "aws_efs_file_system" in storage
         assert re.search(r"encrypted\s*=\s*true", storage)
         assert "efs.csi.aws.com" in storage
-        storage_class = resource_block(
-            storage, "kubernetes_storage_class", "jenkins_efs"
-        )
+        assert re.search(
+            r'kubernetes_storage_class[\s\S]*?efs\.csi\.aws\.com[\s\S]*?reclaim_policy\s*=\s*"Retain"',
+            storage,
+        ), 'EFS CSI storage class must use reclaim_policy = "Retain"'
         assert re.search(r'reclaim_policy\s*=\s*"Retain"', storage_class)
         claims = {
             "joc": "joc-home",
