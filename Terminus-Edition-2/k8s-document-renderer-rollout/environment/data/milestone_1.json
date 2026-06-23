@@ -1,0 +1,65 @@
+{
+  "cases": [
+    {
+      "id": "m1_positive",
+      "request": {
+        "id": "obj-001",
+        "target": "new",
+        "preferred": "active-a",
+        "schema": "v1"
+      },
+      "policy": {
+        "must_equal": {
+          "target": "new"
+        },
+        "must_not_equal": {
+          "preferred": "old"
+        },
+        "schema_required": [
+          "id",
+          "target",
+          "preferred"
+        ]
+      }
+    },
+    {
+      "id": "m1_old_reference",
+      "request": {
+        "id": "obj-002",
+        "target": "new",
+        "preferred": "old"
+      },
+      "policy": {
+        "must_not_equal": {
+          "preferred": "old"
+        },
+        "reason_preferred": "OLD_REFERENCE_ACTIVE"
+      }
+    },
+    {
+      "id": "m1_disabled",
+      "request": {
+        "id": "obj-003",
+        "target": "new",
+        "preferred": "active-b"
+      },
+      "policy": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "m1_schema",
+      "request": {
+        "id": "obj-004",
+        "target": "new"
+      },
+      "policy": {
+        "schema_required": [
+          "id",
+          "target",
+          "preferred"
+        ]
+      }
+    }
+  ]
+}

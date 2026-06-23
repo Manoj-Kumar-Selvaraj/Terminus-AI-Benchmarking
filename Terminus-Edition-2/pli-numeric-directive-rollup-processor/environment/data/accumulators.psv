@@ -1,0 +1,2 @@
+claim_id|line_id|stream_id|value_cents|base_radix|rollup_ts|opcode|segment_id
+ACC-1|DIR-10001|stream-01|50000|HEX|20260612120500|ADD|SEG-A

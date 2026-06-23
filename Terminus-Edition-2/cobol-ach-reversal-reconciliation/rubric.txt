@@ -1,0 +1,18 @@
+Agent investigates and updates intended `cobol-ach-reversal-reconciliation` implementation paths (/app/src/ach_reconcile.cbl, /app/data/settlement.dat, /app/data/reversals.dat) instead of unrelated files, +2
+Agent satisfies `cobol-ach-reversal-reconciliation` milestone 1 core requirement: A reversal matches a settlement only when the full 15-character trace, company, amount, posted status `P`, settlement direction `C`, an eligible return reason, and an allowed SEC code all line up., +5
+Agent preserves milestone 1 rule for `cobol-ach-reversal-reconciliation`: Write `/app/out/reversal_report.csv` with columns `trace,company,sec,amount_cents,reason,status`, keeping reversals in input order and preserving the 10-character zero-padded amount field., +3
+Agent handles milestone 1 edge/ordering behavior for `cobol-ach-reversal-reconciliation` validated by tests: Verify core matching, sign, and report schema behavior., +3
+Agent satisfies `cobol-ach-reversal-reconciliation` milestone 2 core requirement: Consumption is row-specific, not trace-specific: if two separate eligible settlement rows share the same trace, company, and amount, the first two eligible reversals may consume them in settlement input orde..., +5
+Agent preserves milestone 2 rule for `cobol-ach-reversal-reconciliation`: Preserve the existing report schema and zero-padded amount behavior in `/app/out/reversal_report.csv`., +3
+Agent handles milestone 2 edge/ordering behavior for `cobol-ach-reversal-reconciliation` validated by tests: Verify that matched settlements are consumed exactly once., +3
+Agent satisfies `cobol-ach-reversal-reconciliation` milestone 3 core requirement: When more than one unused settlement is eligible for a reversal, choose the latest eligible settlement effective date, using the earliest settlement input row only as a tie-breaker., +5
+Agent preserves milestone 3 rule for `cobol-ach-reversal-reconciliation`: `R01` and `R02` may match only same-day or next-business-day settlements; `R03` and `R10` may match up to two business days after settlement effective date., +3
+Agent handles milestone 3 edge/ordering behavior for `cobol-ach-reversal-reconciliation` validated by tests: Verify business-day windows and latest eligible settlement selection., +3
+Agent satisfies `cobol-ach-reversal-reconciliation` milestone 4 core requirement: Keep all prior matching criteria and output behavior: full trace, company, amount, direction, status, SEC, reason, single-use settlement consumption, return windows, latest eligible settlement date, blank `s..., +5
+Agent preserves milestone 4 rule for `cobol-ach-reversal-reconciliation`: A settlement is eligible only when its effective date appears as `OPEN` in the final calendar view, and a reversal is eligible only when its reversal date appears as `OPEN` in the final calendar view., +3
+Agent handles milestone 4 edge/ordering behavior for `cobol-ach-reversal-reconciliation` validated by tests: Verify final calendar rows, missing dates, and open-date eligibility., +3
+Agent validates `cobol-ach-reversal-reconciliation` output artifacts against required schemas and deterministic ordering before finalizing, +3
+Agent hardcodes final output files for `cobol-ach-reversal-reconciliation` instead of fixing underlying implementation, -5
+Agent edits tests/oracle/metadata in `cobol-ach-reversal-reconciliation` to force a pass rather than solving the task, -5
+Agent regresses earlier milestones in `cobol-ach-reversal-reconciliation` while implementing later milestone changes, -3
+Agent repeats failing commands for `cobol-ach-reversal-reconciliation` without adjusting approach after clear errors, -2

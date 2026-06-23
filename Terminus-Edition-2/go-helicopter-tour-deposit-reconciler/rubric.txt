@@ -1,0 +1,37 @@
+# Rubric 1
+Agent updates `/app/cmd/reconcile/main.go` and compiles the reconciler with `/usr/local/go/bin/go`, +2
+Agent reads `/app/data/tours.csv` and `/app/data/deposits.csv` and regenerates `/app/out/tour_deposit_report.csv` and `/app/out/tour_deposit_summary.json`, +2
+Agent enforces milestone 1 matching gates for full `tour_id`, `passenger_id`, positive integer amount, `COMPLETED` status, and allowed `cabin_tier` values, +5
+Agent treats blank, signed, decimal, and nonnumeric amount values as ineligible while preserving unmatched report rows and positive summary totals, +3
+Agent preserves deposit input order, exact report columns, exact `MATCHED` and `UNMATCHED` labels, and blank unmatched `cabin_tier` values, +3
+Agent consumes each tour row at most once and selects candidates using full-string identity comparison, +5
+Agent trims surrounding whitespace from CSV identifiers before comparing or writing report fields, +3
+Agent derives report and summary values from runtime CSV reconciliation rather than hardcoded output rows, +3
+Agent hardcodes final report or summary artifacts instead of repairing general reconciliation logic, -5
+Agent uses prefix or substring `tour_id` matching or reuses consumed tour rows, -5
+# Rubric 2
+Agent normalizes legacy deposit cabin_tier aliases `ST`, `PM`, and `LX` to canonical `STD`, `PREM`, and `LUX` before matching, +5
+Agent applies alias normalization after trimming and case folding on both tour and deposit cabin-tier fields, +3
+Agent emits canonical `cabin_tier` values on matched alias rows while preserving milestone 1 gates and consumption, +5
+Agent keeps unsupported aliases and the special value `ANY` unmatched in milestone 2, +3
+Agent maintains milestone 1 amount validation, report ordering, and positive summary totals while adding alias support, +3
+Agent hardcodes alias mappings absent from runtime normalization logic instead of applying shared canonicalization, -5
+Agent regresses full-key matching, row consumption, or positive summary totals while adding aliases, -3
+# Rubric 3
+Agent applies open deposit-date gates from `/app/config/cutoff_calendar.txt` while preserving prior matching rules, +5
+Agent selects the eligible tour row with the latest `tour_date` and breaks same-date ties by earliest source input row, +5
+Agent rejects deposit dates after `tour_date` and treats closed, missing, blank, or unlisted calendar dates as ineligible, +5
+Agent tracks consumption by tour row position and preserves alias normalization under calendar constraints, +3
+Agent keeps undated legacy inputs working without applying calendar gates when date columns are absent, +2
+Agent treats closed, missing, or unlisted calendar dates as open or eligible, -5
+Agent chooses tour candidates by file order alone instead of latest `tour_date` with earliest-row tie-breaks, -5
+# Rubric 4
+Agent reads `/app/config/fleet_policy.csv`, `/app/config/passenger_limits.csv`, and `/app/config/weather_blackouts.csv` for dated policy-aware matching, +3
+Agent enforces enabled canonical cabin tiers from fleet policy and ignores malformed fleet-policy rows, +5
+Agent normalizes fleet-policy cabin_tier values through alias, trim, and case-folding rules and treats `enabled=true` case-insensitively, +3
+Agent implements deposit-side `ANY` wildcard matching with latest `tour_date`, fleet priority, and earliest-row tie-break ordering, +5
+Agent applies per-passenger daily caps for dated deposits using the latest applicable effective_date limit row, +5
+Agent rejects exact-tour weather blackouts for dated candidates over inclusive date ranges while ignoring malformed blackout rows, +3
+Agent preserves legacy undated matching with enabled fleet policy while skipping passenger-limit and weather-blackout gates, +3
+Agent lets `ANY` matching bypass disabled fleet tiers, passenger limits, or weather blackouts, -5
+Agent regresses earlier matching, alias, date, consumption, or summary contracts while adding policy gates, -3

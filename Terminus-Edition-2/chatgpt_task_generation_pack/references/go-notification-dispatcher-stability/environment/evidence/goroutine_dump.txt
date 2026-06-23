@@ -1,0 +1,15 @@
+goroutine 84 [chan send]:
+notification-dispatcher/internal/dispatch.(*Dispatcher).Enqueue(...)
+    /app/internal/dispatch/dispatcher.go:56
+sync.(*Mutex).Lock(...)
+    /usr/local/go/src/sync/mutex.go:46
+
+goroutine 12 [sync.Mutex.Lock]:
+notification-dispatcher/internal/dispatch.(*Dispatcher).worker(...)
+    /app/internal/dispatch/worker.go:8
+
+goroutine 91 [chan send]:
+notification-dispatcher/internal/dispatch.(*Dispatcher).Enqueue(...)
+    /app/internal/dispatch/dispatcher.go:56
+
+... additional producers blocked while the queue lock is held ...

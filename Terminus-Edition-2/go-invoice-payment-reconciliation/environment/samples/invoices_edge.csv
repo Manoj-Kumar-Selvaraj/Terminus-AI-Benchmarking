@@ -1,0 +1,3 @@
+invoice_id,customer_id,amount_cents,status,method,due_date
+INV-A,CUST-A,1000,POSTED,CARD,2026-04-05
+INV-A,CUST-A,1000,POSTED,WIRE,2026-04-07

@@ -1,0 +1,67 @@
+# Rubric 1
+Agent investigates `/app/cmd/reconcile/main.go`, `/app/data/accruals.csv`, `/app/data/adjustments.csv`, `/app/out/adjustment_report.csv`, and `/app/out/adjustment_summary.json` before changing logic, +2
+Agent compiles the Go CLI with `/usr/local/go/bin/go` and runs it against fresh synthetic accrual and adjustment inputs before finalizing the fix, +3
+Agent repairs the reconciliation algorithm directly instead of hardcoding `/app/out/adjustment_report.csv` or `/app/out/adjustment_summary.json`, +5
+Agent enforces exact matching for trimmed full `accrual_id`, trimmed `member_id`, positive `amount_cents`, `POSTED` accrual status, and allowed reasons `PURCHASE`/`BONUS`/`PROMO`, +5
+Agent compares accrual status and reason case-insensitively while trimming incidental surrounding whitespace from relevant input fields, +3
+Agent prevents partial identifier collisions by requiring full `accrual_id` equality rather than prefix, substring, or fuzzy matching, +3
+Agent consumes each eligible accrual row at most once so duplicate adjustments cannot reuse the same source row, +5
+Agent preserves adjustment input order and writes exactly one report row per adjustment with schema `accrual_id,member_id,reason,amount_cents,status`, +3
+Agent emits exact `MATCHED` or `UNMATCHED` labels, canonical matched reasons, blank unmatched `reason` fields, and trimmed report fields without incidental padding, +3
+Agent writes `/app/out/adjustment_summary.json` with non-negative integer `matched_count`, `matched_amount_cents`, `unmatched_count`, and `unmatched_amount_cents`, counting adjustment amounts as positive cents, +3
+Agent hardcodes visible output rows instead of implementing general accrual and adjustment matching behavior, -5
+Agent tampers with verifier harness files, solution scaffolding, platform configuration, or input fixtures to force a pass, -5
+Agent uses prefix, substring, partial, fuzzy, or lossy normalized matching for `accrual_id` or `member_id`, allowing unrelated records to collide, -3
+Agent allows one accrual row to satisfy multiple adjustments or treats non-`POSTED` statuses, unknown reasons, or amount or member mismatches as match-eligible, -3
+Agent writes negative or incorrectly signed summary amount totals, -3
+# Rubric 2
+Agent preserves all milestone 1 behavior before extending the reconciler for legacy reason aliases, +3
+Agent canonicalizes adjustment aliases `BNS` to `BONUS` and `PRM` to `PROMO`, plus lowercase or mixed-case reason values, before matching and reporting, +5
+Agent requires canonical adjustment reason equality with the accrual reason rather than accepting any two allowed reasons as equivalent, +5
+Agent emits canonical uppercase reasons on matched rows and leaves unmatched `reason` blank while preserving milestone 1 full-id, status, amount, consumption, schema, and positive-summary behavior, +3
+Agent rejects mismatched reasons even when all other fields align, +3
+Agent keeps the implementation general without fixture-specific conditionals for known accrual IDs, aliases, or adjustment rows, +2
+Agent hardcodes final output rows or fixture-specific alias results instead of implementing reusable alias-aware matching, -5
+Agent regresses milestone 1 matching gates, whitespace handling, identifier equality, one-time consumption, blank unmatched reasons, or positive summary totals while adding aliases, -5
+Agent emits raw alias strings such as `BNS` or `PRM` in matched report rows when canonical values are required, -3
+Agent allows alias normalization to bypass amount, identifier, status, reason equality, or consumption checks, -3
+Agent changes required filenames, output schemas, input assets, task metadata, or runtime contracts to force a pass, -5
+# Rubric 3
+Agent preserves milestone 1 and milestone 2 behavior before adding dated adjustment-batch handling, +3
+Agent handles optional `earn_date` and `adjustment_date` columns without crashing on older CSV shapes while treating rows missing either date column as ineligible to match, +5
+Agent reads `/app/config/cutoff_calendar.txt` at runtime and treats only listed dates with open status as eligible adjustment dates after trimming and case folding, +5
+Agent requires `earn_date <= adjustment_date` while preserving all prior full identifier, member, amount, `POSTED` status, and reason alias and equality gates, +3
+Agent rejects non-`POSTED` accruals even when they carry a later `earn_date` than an eligible `POSTED` candidate, +3
+Agent chooses the eligible unused accrual with the latest `earn_date`, breaking ties by earliest accrual input row, and tracks consumption by physical accrual row position, +5
+Agent preserves report and summary schemas, canonical matched reasons, blank unmatched reasons, and positive cent totals under dated matching, +3
+Agent validates the final report and summary artifacts after calendar and latest-earn-date scenarios to confirm counts and amount totals reconcile, +2
+Agent hardcodes final output files instead of repairing the Go reconciliation logic, -5
+Agent treats closed, missing, unlisted, or blank calendar dates as eligible in milestone 3, -5
+Agent chooses candidates by file order alone instead of latest `earn_date` then earliest accrual row, or ignores the `POSTED` status gate under dated matching, -5
+Agent regresses milestone 1 or milestone 2 matching, alias handling, output schema, or summary totals while implementing date logic, -5
+# Rubric 4
+Agent preserves milestone 1 through milestone 3 behavior before replacing hardcoded reason allowlists with runtime configuration, +3
+Agent loads `/app/config/reasons.csv` with columns `reason,enabled`, canonicalizes each config reason value, and treats only `enabled=true` rows as match-eligible case-insensitively, +5
+Agent adds `PUR` to `PURCHASE` canonicalization while preserving `BNS` and `PRM` aliases on both input rows and config rows, +5
+Agent applies the allowlist to accrual reasons without bypassing reason equality after canonicalization, +3
+Agent rejects disabled reasons such as `CHECK` even when adjustment and accrual reasons otherwise match exactly, +3
+Agent handles runtime edits to `reasons.csv` such as disabling `BONUS`, rather than assuming shipped defaults, +3
+Agent preserves dated calendar eligibility, latest earn-date selection, earliest-row tie-breaking, blank unmatched reasons, schemas, and positive totals while adding the config allowlist, +3
+Agent hardcodes `PURCHASE`/`BONUS`/`PROMO` instead of reading `/app/config/reasons.csv`, -5
+Agent lets disabled or unlisted reasons match, uses case-sensitive `enabled` parsing, or fails to canonicalize aliased config reason names, -5
+Agent drops milestone 3 date gates while adding the config allowlist, -5
+Agent changes required filenames, output schemas, input assets, task metadata, or runtime contracts to force a pass, -5
+# Rubric 5
+Agent preserves milestone 1 through milestone 4 behavior before adding earn-date lookback windows, +3
+Agent reads integer `earn_lookback_open_days` from `/app/config/job.properties` and applies it only when both `earn_date` and `adjustment_date` columns are present, +5
+Agent counts dates explicitly marked `open` strictly after `earn_date` through and including `adjustment_date`; absent, closed, or malformed calendar lines do not count, +5
+Agent treats equal earn and adjustment dates as zero open days after earn and therefore eligible when all other gates pass, +3
+Agent rejects matches whose counted open days exceed the configured lookback, including tighter runtime settings such as `earn_lookback_open_days=1`, +5
+Agent preserves calendar-open gating for the adjustment date itself so a closed adjustment date fails even when the lookback count would otherwise pass, +3
+Agent preserves reason equality, reason allowlist, `POSTED` status, row consumption, latest earn-date selection, blank unmatched reasons, schemas, and positive totals under lookback rules, +3
+Agent treats rows missing either date column as ineligible exactly as in milestone 3 rather than applying lookback logic to undated CSV shapes, +3
+Agent validates the final report and summary artifacts after lookback scenarios to confirm counts and amount totals reconcile, +2
+Agent counts the earn date itself toward lookback, counts absent or closed calendar dates as open lookback days, or ignores `job.properties`, -5
+Agent lets lookback bypass reason, allowlist, calendar-open, `POSTED`, or latest-earn-date gates, -5
+Agent regresses milestone 1 through milestone 4 behavior while implementing lookback behavior, -5
+Agent changes required filenames, output schemas, input assets, task metadata, or runtime contracts to force a pass, -5

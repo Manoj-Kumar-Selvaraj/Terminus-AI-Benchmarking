@@ -1,0 +1,2 @@
+claim_id|field_id|schema_id|payload_hash|tolerance_key|check_ts|mode_code|segment_id
+CHK-1|FLD-10001|991100|50000|FED|20260612120500|MATCH|NYC

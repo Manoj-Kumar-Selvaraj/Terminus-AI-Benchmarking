@@ -1,0 +1,39 @@
+# Rubric 1
+Agent inspects and updates `/app/src/wire_returns.cbl` plus the documented input, config, and output paths instead of unrelated files, +3
+Agent clears a return only when the full wire id, account id, amount, settled wire status, and an allowed return reason from `/app/config/reason_codes.csv` all line up, +5
+Agent keeps `/app/out/wire_return_report.csv` in return-file order with schema `wire_id,account_id,reason,amount_cents,status`, +3
+Agent writes `/app/out/wire_return_summary.txt` as `key=value` lines for `cleared_count`, `cleared_amount_cents`, `exception_count`, and `exception_amount_cents`, with all amount totals as positive cents, +3
+Agent preserves the raw fixed-width cents representation from input records in the report while using positive integer cents in the summary, +3
+Agent uses only the documented `CLEARED` and `EXCEPTION` status labels and leaves the reason field blank on exception rows, +2
+Agent compiles and runs the COBOL batch through `/app/scripts/compile.sh` and `/app/build/batch` rather than bypassing reconciliation, +2
+Agent hardcodes final output files instead of repairing the COBOL reconciliation logic, -5
+Agent bypasses the COBOL compile and batch execution path by writing report or summary outputs directly, -5
+# Rubric 2
+Agent consumes each settled wire row at most once so a second return cannot clear against an already-used wire, +5
+Agent rejects non-adjacent duplicate returns for the same wire after that wire has already cleared another return, +5
+Agent preserves return input order, full-key matching, allowed-reason gates, settled-status checks, and positive summary totals while tracking wire consumption, +3
+Agent keeps `/app/out/wire_return_report.csv` schema and `/app/out/wire_return_summary.txt` key lines unchanged from the documented contract, +3
+Agent leaves exception rows with blank reason fields and emits the matched wire reason on cleared rows, +3
+Agent compiles and runs the COBOL batch after consumption changes instead of bypassing the program, +2
+Agent hardcodes final output files instead of repairing the COBOL reconciliation logic, -5
+Agent regresses full-key matching, report schema, status labels, or positive summary totals while implementing wire consumption, -3
+# Rubric 3
+Agent reads optional settlement dates on wire records and optional return dates on return records without breaking undated record layouts, +3
+Agent treats only dates explicitly marked `OPEN` in `/app/config/cycle_calendar.txt` as settlement-cycle days, case-insensitively, +3
+Agent rejects blank, missing-from-calendar, closed, malformed, or otherwise non-open settlement and return dates before clearing, +5
+Agent requires the return date to be on or after the wire settlement date and within two open cycle days after settlement, counting open days through the return date, +5
+Agent selects among multiple eligible unused wires by latest settlement date and then earliest wire input row, +5
+Agent preserves full-key matching, allowed-reason gates, settled-status checks, wire consumption, blank exception reasons, and positive summary totals under cycle-window logic, +3
+Agent treats closed or absent calendar dates as open or allows blank dates to clear when cycle rules should reject them, -5
+Agent hardcodes final output files or bypasses the COBOL batch instead of repairing cycle-window reconciliation logic, -5
+# Rubric 4
+Agent preserves all prior full-key, cycle-calendar, consumption, ordering, schema, status, and positive-total behavior while adding reason controls, +5
+Agent reads `/app/config/reason_controls.csv` at runtime and applies controls to the matched wire reason rather than the return record, +5
+Agent trims every reason-control field and treats only canonical reasons with enabled values `Y`, `YES`, or `1` and numeric `max_open_days` as eligible, rejecting missing, disabled, unknown, blank, or malformed controls, +5
+Agent uses the controlled `max_open_days` as the reason-specific settlement-cycle limit while keeping the milestone 3 open-day counting rule, +5
+Agent excludes reason-control-ineligible candidates before latest-settlement-date and earliest-wire-row ranking, +3
+Agent uses the last valid duplicate control row for a reason while ignoring invalid duplicate rows, +3
+Agent keeps `/app/out/wire_return_report.csv` and `/app/out/wire_return_summary.txt` schemas, blank exception reasons, raw amount text, and positive integer summary totals unchanged, +3
+Agent hardcodes reason controls or ignores the runtime CSV file, -5
+Agent applies reason controls to return records, uses the old fixed two-day window for every reason, or ranks candidates before filtering disabled controls, -5
+Agent regresses milestone 1 through 3 behavior while implementing reason controls, -5

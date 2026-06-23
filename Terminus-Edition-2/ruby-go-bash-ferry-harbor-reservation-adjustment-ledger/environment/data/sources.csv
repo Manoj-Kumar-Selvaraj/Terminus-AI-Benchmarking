@@ -1,0 +1,2 @@
+source_id,account_id,location_id,kind,amount_cents,source_ts,status,lane
+SRC-SAMPLE,ACC-SAMPLE,LOC-1,STANDARD,1000,20260530100000,ACTIVE,L1

@@ -1,0 +1,2 @@
+sample_id,patient_id,chain_id,kind,amount,source_ts,status,location
+SRC-SAMPLE-1,PARTY-1,SAMPLE,CHEM,100,20260528121000,RECEIVED,LOC-1

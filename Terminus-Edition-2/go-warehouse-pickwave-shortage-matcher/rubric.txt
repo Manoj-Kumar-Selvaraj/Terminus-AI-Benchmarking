@@ -1,0 +1,34 @@
+# Rubric 1
+Agent investigates and updates intended implementation paths (`/app/cmd/reconcile/main.go`, `/app/data/picks.csv`, `/app/data/shortages.csv`) instead of unrelated files, +2
+Agent satisfies milestone 1 core requirement: full `pick_id`, `sku`, `wave_id`, `location`, and `amount` must match with `FULFILLED` source status, allowed correction reasons, and numeric timestamps where `action_ts` is on or after `source_ts`, +5
+Agent preserves milestone 1 report schema with columns `action_id,pick_id,sku,wave_id,kind,amount,reason,status` in correction input order, +3
+Agent leaves `kind` blank on every `UNMATCHED` row and emits canonical source `kind` on every `MATCHED` row in milestone 1 output, +3
+Agent writes `/app/out/shortage_summary.txt` with positive `matched_count`, `matched_amount`, `unmatched_count`, and `unmatched_amount` totals, +3
+Agent restricts milestone 1 match-eligible `kind` values to canonical `EACH` and `CASE` only, leaving `PALLET` and unknown kinds unmatched, +3
+Agent enforces one-time source row consumption so duplicate corrections cannot reuse the same pick record, +3
+Agent rebuilds the Go binary with `go build` and verifies output against fresh synthetic inputs, +2
+Agent hardcodes `/app/out/shortage_report.csv` or summary output instead of fixing reconciliation logic, -5
+# Rubric 2
+Agent preserves milestone 1 matching gates while adding alias normalization for `EA`, `CS`, and `PL`, +5
+Agent expands milestone 2 canonical match-eligible kinds to `EACH`, `CASE`, and `PALLET` after trim and case folding, +5
+Agent emits canonical `kind` values in matched report rows rather than raw alias codes, +3
+Agent normalizes aliases after trimming surrounding whitespace and case folding before comparing or writing report fields, +3
+Agent keeps required output paths `/app/out/shortage_report.csv` and `/app/out/shortage_summary.txt` with unchanged column names, +3
+Agent validates that alias-aware matching still requires exact `pick_id` rather than prefix overlap, +3
+Agent runs the compiled reconcile binary against overwritten fixture data rather than assuming shipped samples, +2
+Agent applies `/app/config/windows.csv` filtering in milestone 2 before window rules belong in scope, -3
+Agent regresses milestone 1 blank-unmatched `kind` behavior or EACH/CASE-only eligibility while adding aliases, -3
+Agent edits verifier verifier behavior, oracle scripts, or platform metadata to force a pass, -5
+Agent repeats failing `go build` or verifier behavior commands without changing approach after clear compile errors, -2
+# Rubric 3
+Agent applies open window gates from `/app/config/windows.csv` while preserving all earlier matching rules, +5
+Agent requires source `source_ts` inside an `OPEN` window for the same `wave_id` and rejects closed, missing, malformed, or unlisted windows, +5
+Agent rejects corrections whose `action_ts` is before `source_ts` or after the window close, +3
+Agent chooses the eligible source with the latest `source_ts` when multiple unused rows qualify for one correction, +5
+Agent breaks tied `source_ts` values by selecting the earliest source input row and tracks consumption by row position, +3
+Agent preserves alias normalization under window gates (`EA` to `EACH`, `CS` to `CASE`, `PL` to `PALLET`), +3
+Agent leaves `kind` blank on unmatched rows after window-gated matching, +3
+Agent validates latest-timestamp selection with distinct duplicate pick rows so first-fit file order cannot pass, +3
+Agent validates final CSV and summary artifacts before finishing milestone 3, +2
+Agent treats closed or unlisted windows as eligible open windows, -5
+Agent regresses milestone 1 or 2 matching behavior while adding window or tie-break logic, -3

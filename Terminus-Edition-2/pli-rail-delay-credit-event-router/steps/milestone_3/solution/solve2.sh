@@ -1,0 +1,66 @@
+#!/bin/bash
+set -euo pipefail
+cat > /app/scripts/run_pl1.py <<'PY'
+#!/usr/bin/env python3
+import csv,re
+from pathlib import Path
+APP=Path('/app')
+
+def norm(x): return (x or '').strip().upper()
+def read_psv(path):
+    with path.open(newline='') as f: return [{k:(v or '').strip() for k,v in r.items()} for r in csv.DictReader(f, delimiter='|')]
+def read_rules():
+    vals={}; aliases={}
+    for line in (APP/'src/reconcile_rules.pli').read_text().splitlines():
+        raw=line.strip()
+        upper=raw.upper()
+        if not upper.startswith('DCL ') or ' INIT(' not in upper:
+            continue
+        name=raw.split()[1].upper()
+        marker="INIT('"
+        if marker in raw and "')" in raw:
+            val=raw.split(marker,1)[1].split("')",1)[0].strip()
+            vals[name]=val
+    for k,v in vals.items():
+        if k.startswith('ALIAS_') and '=>' in v:
+            a,b=v.split('=>',1); aliases[norm(a)]=norm(b); aliases[norm(b)]=norm(b)
+    return vals, aliases
+def canon(x,aliases): return aliases.get(norm(x), norm(x))
+def nts(x): return len(x)==14 and x.isdigit()
+def win_ok(s,a,wins,open_state):
+    st=s['tap_ts']; at=a['credit_ts']
+    if not nts(st) or not nts(at): return False
+    for w in wins:
+        if w['station_id'] == s['station_id'] and norm(w['state']) == norm(open_state):
+            o=w['open_ts']; c=w['close_ts']
+            if nts(o) and nts(c) and o <= st <= c and st <= at <= c: return True
+    return False
+def main():
+    vals,aliases=read_rules(); eligible=norm(vals['ELIGIBLE_STATUS']); open_state=vals['OPEN_WINDOW_STATUS']
+    reasons={norm(vals['REASON_A']), norm(vals['REASON_B']), norm(vals['REASON_C'])}
+    src=read_psv(APP/'data/trips.psv'); acts=read_psv(APP/'data/credits.psv'); wins=read_psv(APP/'config/windows.psv')
+    for s in src: s['_used']=False; s['_canon']=canon(s['fare_type'], aliases)
+    rows=[]; mc=uc=ma=ua=0
+    for a in acts:
+        ac=canon(a['fare_type'], aliases); best=None
+        for i,s in enumerate(src):
+            if s['_used']: continue
+            if not (s['trip_id']==a['trip_id'] and s['rider_id']==a['rider_id'] and s['station_id']==a['station_id'] and s['platform']==a['platform'] and s['credit_cents']==a['credit_cents']): continue
+            if norm(s['status']) != eligible or norm(a['reason']) not in reasons: continue
+            if s['_canon'] != ac: continue
+            if not win_ok(s,a,wins,open_state): continue
+            if best is None or s['tap_ts'] > src[best]['tap_ts']: best=i
+        amt=int(a['credit_cents'])
+        if best is None:
+            uc+=1; ua+=amt; kind=''; status='UNMATCHED'
+        else:
+            src[best]['_used']=True; mc+=1; ma+=amt; kind=src[best]['_canon']; status='MATCHED'
+        rows.append([a['action_id'],a['trip_id'],a['rider_id'],a['station_id'],kind,a['credit_cents'],a['reason'],status])
+    (APP/'out').mkdir(exist_ok=True)
+    with (APP/'out/delay_credit_report.csv').open('w',newline='') as f:
+        w=csv.writer(f); w.writerow(['action_id','trip_id','rider_id','station_id','fare_type','credit_cents','reason','status']); w.writerows(rows)
+    (APP/'out/delay_credit_summary.txt').write_text(f'matched_count={mc}\nmatched_amount_cents={ma}\nunmatched_count={uc}\nunmatched_amount_cents={ua}\n')
+if __name__=='__main__': main()
+PY
+chmod +x /app/scripts/run_pl1.py
+/app/scripts/run_batch.sh

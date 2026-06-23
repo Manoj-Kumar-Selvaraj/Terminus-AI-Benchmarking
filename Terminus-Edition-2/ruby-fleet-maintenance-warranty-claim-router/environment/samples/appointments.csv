@@ -1,0 +1,2 @@
+repair_id,member_id,site_id,repair_type,amount,repair_ts,status,bay
+SRC-SAMPLE-1,PARTY-1,SAMPLE,ENGINE,100,20260528121000,CLOSED,LOC-1

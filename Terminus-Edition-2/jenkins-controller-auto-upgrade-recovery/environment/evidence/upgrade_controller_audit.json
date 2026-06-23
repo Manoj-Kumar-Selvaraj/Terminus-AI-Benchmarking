@@ -1,0 +1,11 @@
+{
+  "cluster": "prod-ci-east",
+  "auto_upgrade": "ungarded",
+  "last_decision": "apply_without_preflight",
+  "risk_notes": [
+    "target selected before java compatibility preflight completed",
+    "backup snapshot existed but was not made mandatory",
+    "controller lock was not cleared after failed boot",
+    "route continued to advertise the crashlooping pod"
+  ]
+}

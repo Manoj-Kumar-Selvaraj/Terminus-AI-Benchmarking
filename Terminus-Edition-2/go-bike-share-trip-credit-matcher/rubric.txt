@@ -1,0 +1,40 @@
+# Rubric 1
+
+Agent investigates and updates intended `go-bike-share-trip-credit-matcher` implementation paths (`/app/cmd/reconcile/main.go`, `/app/data/trips.csv`, `/app/data/credits.csv`) instead of unrelated files, +2
+Agent satisfies milestone 1 core requirement: each trip can be matched at most once and duplicate credits targeting the same trip leave only the earliest eligible credit matched, +5
+Agent preserves milestone 1 report schema with columns `trip_id,rider_id,pass_type,amount_cents,status` in credit input order, +3
+Agent leaves `pass_type` blank on every `UNMATCHED` row and emits the credit pass type on every `MATCHED` row in milestone 1 output, +3
+Agent writes `/app/out/credit_summary.json` with `matched_count`, `matched_amount_cents`, `unmatched_count`, and `unmatched_amount_cents`, +3
+Agent enforces milestone 2 matching gates for full `trip_id`, `rider_id`, amount, `COMPLETED` trip status, and allowed canonical pass types, +5
+Agent trims surrounding whitespace from CSV identifiers before comparing or writing report fields, +3
+Agent normalizes legacy pass-type aliases `MO`, `DY`, and `AN` to `MONTH`, `DAY`, and `ANNUAL` before matching, +3
+Agent emits canonical pass types in matched report rows rather than raw alias codes, +3
+Agent rebuilds the Go binary with `go build` and verifies output against fresh synthetic inputs, +2
+Agent hardcodes `/app/out/credit_report.csv` or summary JSON instead of fixing reconciliation logic, -5
+
+# Rubric 2
+
+Agent preserves milestone 2 consumption rules when extending alias normalization so duplicate credits cannot reuse the same trip row, +5
+Agent keeps required output paths `/app/out/credit_report.csv` and `/app/out/credit_summary.json` with unchanged column names, +3
+Agent rejects credits whose pass type does not equal the matched trip pass type even when other keys align, +3
+Agent handles milestone 2 edge cases validated by verifier behavior such as mismatched amounts, rider ids, and non-completed trip status, +3
+Agent validates report row order mirrors credit input order after alias-aware matching, +3
+Agent documents or inspects `/app/docs/record_layouts.md` and config CSVs before changing matching logic, +2
+Agent runs the compiled reconcile binary against overwritten fixture data rather than assuming shipped samples, +2
+Agent regresses milestone 1 blank-unmatched pass_type behavior while implementing milestone 2 alias support, -3
+Agent edits verifier verifier behavior, oracle scripts, or platform metadata to force a pass, -5
+Agent repeats failing `go build` or verifier behavior commands without changing approach after clear compile errors, -2
+
+# Rubric 3
+
+Agent applies open credit-date gates from `/app/config/cutoff_calendar.txt` while preserving all earlier matching rules, +5
+Agent chooses the eligible trip with the latest `ride_date` when multiple unused rows qualify for one credit, +5
+Agent breaks tied `ride_date` values by selecting the earliest trip input row and tracks consumption by row position, +3
+Agent rejects credits on closed, missing, blank, or unlisted calendar dates, +3
+Agent rejects trips with blank `ride_date` even when the calendar lists the credit date as open, +3
+Agent preserves alias normalization under calendar gates (`AN` to `ANNUAL`, `DY` to `DAY`, `MO` to `MONTH`), +3
+Agent leaves `pass_type` blank on unmatched rows after date-gated matching, +3
+Agent verifies latest-date selection with distinct trip amounts so first-fit file order cannot pass, +3
+Agent validates final CSV and JSON artifacts before finishing milestone 3, +2
+Agent treats closed or unlisted calendar dates as eligible open dates, -5
+Agent regresses milestone 1 or 2 matching behavior while adding calendar or latest-date logic, -3

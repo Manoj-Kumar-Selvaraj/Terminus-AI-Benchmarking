@@ -1,0 +1,5 @@
+Add a merchant eligibility gate to `/app/src/chargeback_clear.cbl` while preserving all milestone 1–3 behavior.
+
+The program must still read `/app/data/sales.dat` and `/app/data/chargebacks.dat`, then write `/app/out/chargeback_report.csv` and `/app/out/chargeback_summary.txt` with the same schema, chargeback input order, alias normalization, cycle-date rules, tie-breaking, row consumption, the exact four-key summary schema, and positive summary cents.
+
+For this milestone, load `/app/config/merchants.csv` with columns `merchant_id,chargeback_enabled`. A settled sale row is eligible only when its merchant id appears in that file with `chargeback_enabled=true`. Treat `true` case-insensitively and ignore leading or trailing whitespace around the value (for example, ` TRUE` must enable chargebacks). Missing merchant rows, malformed rows that are not comma-separated `merchant_id,chargeback_enabled` pairs (such as a line without a comma), or rows with `chargeback_enabled=false` must be treated as ineligible. The merchant gate applies in both dated and undated modes, and all prior matching criteria must still be enforced.

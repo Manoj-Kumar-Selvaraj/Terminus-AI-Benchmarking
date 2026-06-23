@@ -1,0 +1,5 @@
+Milestone 1's reconciliation behavior should already be correct. Extend `/app/cmd/reconcile/main.go` for a legacy credit export where the `channel` field in `/app/data/credits.csv` may use aliases. Keep the deliverable as a Go CLI: the verifier compiles the Go source with the Go toolchain available at `/usr/local/go/bin/go` and then runs the produced binary.
+
+Treat credit channel alias `CC` as canonical `CARD`, and alias `WIR` as canonical `WIRE`. These aliases must participate in the same matching path as normal channels, including all milestone 1 validation and subscription-consumption behavior. Keep the deliverable as a Go CLI: the verifier compiles the Go source with the Go toolchain available at `/usr/local/go/bin/go` and then runs the produced binary.
+
+For every matched credit, write the normalized canonical channel (`ACH`, `CARD`, or `WIRE`) in `/app/out/credit_report.csv`; do not emit lowercase input values or legacy aliases. Unmatched rows should keep the milestone 1 behavior of leaving `channel` blank, and `/app/out/credit_summary.json` should keep the milestone 1 schema and positive-cent totals.

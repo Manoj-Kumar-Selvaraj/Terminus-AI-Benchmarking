@@ -1,0 +1,82 @@
+# Rubric 1
+Agent investigates the Go reconciler behavior, `/app/cmd/reconcile/main.go`, `/app/data/washes.csv`, `/app/data/rebates.csv`, `/app/out/wash_rebate_report.csv`, and `/app/out/wash_rebate_summary.json` before changing logic, +2
+Agent compiles the Go CLI with `/usr/local/go/bin/go` and runs it against fresh synthetic wash and rebate inputs before finalizing the fix, +3
+Agent repairs the reconciliation algorithm directly instead of hardcoding `/app/out/wash_rebate_report.csv` or `/app/out/wash_rebate_summary.json`, +5
+Agent writes summary JSON to `/app/out/wash_rebate_summary.json` rather than the broken `/app/out/credit_summary.json` path, +3
+Agent enforces exact matching for trimmed `wash_id`, trimmed `customer_id`, positive `amount_cents`, completed wash status, and allowed canonical `plan_tier` values, +5
+Agent compares wash status and plan tier case-insensitively while trimming incidental surrounding whitespace from relevant input fields, +3
+Agent prevents partial identifier collisions by requiring full `wash_id` and `customer_id` equality rather than prefix, substring, fuzzy, or lossy normalized matching, +3
+Agent consumes each eligible physical wash row at most once so multiple rebates cannot reuse the same source row, +5
+Agent preserves rebate input order and writes exactly one report row per rebate with schema `wash_id,customer_id,plan_tier,amount_cents,status`, +3
+Agent emits the canonical rebate-row `plan_tier` on matched rows, blank `plan_tier` on unmatched rows, exact `MATCHED` or `UNMATCHED` labels, and trimmed report fields, +3
+Agent writes summary JSON with non-negative integer `matched_count`, `matched_amount_cents`, `unmatched_count`, and `unmatched_amount_cents`, counting rebate amounts as positive cents, +3
+Agent hardcodes visible output rows instead of implementing general wash and rebate matching behavior, -5
+Agent changes input assets, output schemas, required filenames, task metadata, or runtime contracts to force a pass instead of repairing reconciliation behavior, -5
+Agent uses prefix, substring, partial, fuzzy, or lossy normalized matching for `wash_id` or `customer_id`, allowing unrelated records to collide, -3
+Agent allows one physical wash row to satisfy multiple rebates, -3
+Agent emits negative matched or unmatched amount totals, nonblank unmatched plan tiers, or noncanonical matched plan tiers, -3
+# Rubric 2
+Agent preserves all milestone 1 behavior before extending the reconciler for legacy plan-tier aliases, +3
+Agent normalizes `BS`, `PL`, and `PR` to canonical `BASIC`, `PLUS`, and `PRO` before matching, +5
+Agent applies alias normalization case-insensitively after trimming surrounding whitespace from wash and rebate fields, +3
+Agent still requires exact canonical plan-tier equality between wash and rebate after alias normalization, +5
+Agent handles canonical plan tiers and legacy aliases together in the same batch without treating aliases as wildcard allowed tiers, +3
+Agent rejects cross-tier alias mismatches such as a rebate that normalizes to one canonical tier against a wash in another canonical tier, +3
+Agent emits canonical plan-tier values on matched alias rows rather than raw legacy aliases, +3
+Agent preserves blank `plan_tier` output on unmatched rows while adding alias support, +3
+Agent preserves one-time wash-row consumption so multiple aliased rebates cannot reuse the same source wash row, +3
+Agent keeps required report columns, rebate row order, status labels, output paths, and summary JSON fields unchanged, +3
+Agent keeps the implementation general without fixture-specific conditionals for known wash IDs, customer IDs, aliases, or rebate rows, +2
+Agent hardcodes final output rows or fixture-specific alias results instead of implementing reusable alias-aware matching, -5
+Agent regresses milestone 1 matching gates, whitespace handling, identifier equality, one-time consumption, blank unmatched plan tiers, or positive summary totals while adding aliases, -5
+Agent emits raw alias values such as `BS`, `PL`, or `PR` in matched report rows when canonical values are required, -3
+Agent allows alias normalization to bypass amount, identifier, status, allowed-tier, or consumption checks, -3
+Agent changes required filenames, output schemas, input assets, task metadata, or runtime contracts to force a pass, -5
+# Rubric 3
+Agent preserves milestone 1 and milestone 2 behavior before adding dated rebate-batch handling, +3
+Agent conditionally skips date gating when neither input file contains `wash_date` or `rebate_date` columns, +5
+Agent applies date rules when either input file contains a `wash_date` or `rebate_date` column, +3
+Agent reads `/app/config/cutoff_calendar.txt` at runtime and treats only listed dates with case-insensitive `open` status as eligible rebate dates, +5
+Agent rejects rebates when `rebate_date` is missing, closed, unlisted, blank, malformed, or later than the candidate wash `wash_date`, +5
+Agent rejects candidate washes when `wash_date` is missing, blank, malformed, or otherwise fails the dated-mode eligibility requirement, +3
+Agent chooses the eligible unused wash row with the latest qualifying `wash_date` when multiple rows can match the same rebate, +5
+Agent breaks tied `wash_date` values by choosing the earliest wash input row and tracks consumption by physical row position, +3
+Agent preserves alias normalization, canonical matched plan-tier output, blank unmatched plan-tier output, exact identifier matching, positive amount totals, and report and summary schemas under date rules, +3
+Agent validates the final report and summary artifacts after date gating to confirm counts and amount totals still reconcile, +2
+Agent treats closed, missing, unlisted, blank, or malformed calendar dates as open, -5
+Agent applies date gating to undated legacy records that should preserve milestone 1 and milestone 2 behavior, -5
+Agent chooses the first matching wash row instead of the latest eligible `wash_date` when multiple source rows qualify, -5
+Agent tracks consumption only by `wash_id` and incorrectly merges duplicate wash IDs that appear on separate input rows, -3
+Agent regresses milestone 1 or milestone 2 matching, alias, output, or summary behavior while implementing date logic, -5
+# Rubric 4
+Agent preserves milestone 1 through milestone 3 behavior before adding runtime plan-tier methods eligibility, +3
+Agent reads `/app/config/methods.csv` at runtime using the required `plan_tier,rebate_enabled` schema, +5
+Agent trims surrounding whitespace and compares `plan_tier` and `rebate_enabled` values case-insensitively when parsing method configuration, +5
+Agent treats only canonical `BASIC`, `PLUS`, and `PRO` rows with `rebate_enabled=true` as eligible, while treating missing, disabled, malformed, blank, unsupported, and non-true rows as ineligible, +5
+Agent applies methods eligibility after alias normalization so `BS`, `PL`, and `PR` are evaluated as canonical `BASIC`, `PLUS`, and `PRO`, +3
+Agent applies the methods gate in both undated and dated modes while preserving all prior matching criteria, +3
+Agent handles enabled and disabled plan tiers independently so disabling one canonical tier does not incorrectly affect other tiers, +3
+Agent keeps report rows, summary totals, rebate input order, canonical plan-tier output, blank unmatched plan-tier output, and positive amount accounting unchanged except for eligibility effects, +3
+Agent keeps the implementation data-driven without hardcoding visible method rows or fixture-specific wash and rebate outcomes, +3
+Agent validates the final report and summary artifacts after methods gating to confirm counts and amount totals still reconcile, +2
+Agent ignores `/app/config/methods.csv` or applies the methods gate only in dated mode or only in undated mode, -5
+Agent treats disabled, missing, malformed, unsupported, blank, or non-true method rows as eligible, -5
+Agent fails to trim or case-normalize `plan_tier` or `rebate_enabled` values when parsing method configuration, -3
+Agent allows methods eligibility to bypass amount, identifier, status, alias, date, allowed-tier, or row-consumption checks, -3
+Agent regresses matching, alias normalization, date gating, row consumption, report schema, or summary totals while adding methods eligibility, -5
+# Rubric 5
+Agent preserves milestone 1 through milestone 4 behavior before adding customer-specific rebate limits, +3
+Agent reads `/app/config/customer_limits.csv` at runtime using the required `customer_id,plan_tier,max_rebate_cents,enabled` schema, +5
+Agent trims `customer_id`, normalizes `plan_tier` through the same canonical and alias rules as other inputs, parses `enabled=true` case-insensitively, and compares rebate amounts against non-negative integer maximum cents, +5
+Agent requires a customer-limit row matching the candidate rebate customer and canonical plan tier before a wash can be eligible, +3
+Agent treats missing customer-limit rows, blank customer ids, blank or unsupported tiers, malformed rows, missing enabled values, disabled or non-true rows, blank maximums, non-integer maximums, and negative maximums as ineligible without crashing, +5
+Agent applies the last customer-limit row in file order for each trimmed customer and canonical tier as authoritative, including later disabled or invalid-limit rows making that customer and tier ineligible, +5
+Agent applies the customer-limit gate in both dated and undated modes after methods eligibility without bypassing identifier, amount, status, alias, date, or row-consumption checks, +3
+Agent preserves latest-`wash_date` selection, earliest-row tie-breaks, physical row consumption, canonical matched plan-tier output, blank unmatched plan-tier output, report schema, rebate order, and positive summary cents under customer-limit scenarios, +3
+Agent keeps the implementation data-driven without hardcoding visible customer-limit rows, wash IDs, customer IDs, tiers, dates, or expected outputs, +3
+Agent ignores `/app/config/customer_limits.csv` or applies customer limits only in dated mode or only in undated mode, -5
+Agent treats disabled, missing, malformed, unsupported, blank, non-integer, negative, or non-true customer-limit rows as eligible, -5
+Agent fails to trim customer ids or normalize plan-tier aliases while parsing customer-limit policy rows, -3
+Agent uses an earlier customer-limit row when a later row for the same customer and tier should be authoritative, -3
+Agent allows customer-limit eligibility to bypass methods, amount, identifier, status, alias, date, allowed-tier, or row-consumption checks, -5
+Agent regresses earlier milestone behavior, report schema, canonical output, blank unmatched plan-tier output, or summary totals while adding customer-specific limits, -5

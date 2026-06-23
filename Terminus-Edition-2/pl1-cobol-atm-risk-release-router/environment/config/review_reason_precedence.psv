@@ -1,0 +1,7 @@
+rank|reason_code|description
+1|BLOCKED_TERMINAL|Terminal is blocked or untrusted for automatic release
+2|WATCHLIST_CARD|Card risk flag requires supervisor review
+3|DAILY_COUNT_LIMIT|Daily release count would exceed configured limit
+4|DAILY_AMOUNT_LIMIT|Daily release amount would exceed configured limit
+5|HIGH_VALUE_RELEASE|Release amount exceeds terminal automatic threshold
+6|INSUFFICIENT_EXPOSURE|Card exposure ledger cannot absorb the release

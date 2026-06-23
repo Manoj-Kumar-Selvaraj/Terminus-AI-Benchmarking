@@ -1,0 +1,55 @@
+# Rubric 1
+Agent inspects `/app/app/reconcile.rb`, `/app/data/seat_events.csv`, `/app/data/credits.csv`, and the documented output files before editing, +2
+Agent fixes the Ruby CLI at `/app/app/reconcile.rb` instead of moving the implementation to an uninvoked file or hardcoding outputs, +3
+Agent matches only on full `event_id`, `account_id`, `subscription_id`, `location`, and integer amount equality, +5
+Agent enforces milestone 1 gates for active source status, allowed BASIC or PRO kinds, eligible correction reasons, numeric timestamps, action timestamp ordering, and one-use source rows, +5
+Agent preserves correction input order, exact report schema, `MATCHED` and `UNMATCHED` labels, blank unmatched kind, and nonnegative summary totals, +5
+Agent uses prefix, substring, or content-key matching that collapses distinct source rows, -5
+Agent changes output filenames, report columns, status strings, or summary keys, -5
+# Rubric 2
+Agent preserves all milestone 1 behavior while adding runtime alias and reason configuration, +3
+Agent loads `/app/config/kind_aliases.csv` and normalizes aliases case-insensitively on both source and correction rows before validation, +5
+Agent loads `/app/config/reasons.csv` and accepts only trimmed case-folded reasons whose eligible flag is `Y`, +3
+Agent expands canonical match-eligible kinds to exactly BASIC, PRO, and ENT while rejecting unknown normalized values, +5
+Agent emits canonical matched kind values and keeps unmatched kind blank without changing schemas or totals, +3
+Agent hardcodes the sample aliases or reason rows instead of reading runtime configuration, -5
+Agent normalizes only one side of the match or emits raw alias values in matched output, -5
+# Rubric 3
+Agent preserves alias, reason, full-identity, ordering, consumption, and output behavior while adding realtime windows, +3
+Agent reads `/app/config/windows.csv` and treats only rows with the same subscription and trimmed case-folded OPEN state as eligible windows, +5
+Agent rejects missing, closed, malformed, nonnumeric, or unlisted windows without falling back to earlier timestamp-only matching, +5
+Agent requires one single window row to contain the source timestamp and the action timestamp through the close timestamp, +5
+Agent selects the latest eligible source timestamp and then earliest source input row when multiple unused sources qualify, +3
+Agent treats closed or malformed windows as open or mixes constraints from multiple window rows, -5
+Agent regresses milestone 1 or 2 behavior while implementing window logic, -5
+# Rubric 4
+Agent preserves all prior reconciliation behavior while adding kind policy and `ANY` corrections, +3
+Agent loads `/app/config/kind_policy.csv` and requires canonical policy kind, enabled flag, and numeric priority before a source kind is eligible, +5
+Agent accepts enabled values `Y`, `YES`, and `1` case-insensitively and rejects disabled, missing, alias-named, unknown, or malformed-priority policy rows, +5
+Agent implements concrete-kind matches through the same policy gate without allowing unsupported values to match, +3
+Agent implements `ANY` by excluding policy-disabled candidates, selecting latest source timestamp, then lowest numeric priority, then earliest source row, +5
+Agent emits the selected canonical source kind for matched `ANY` rows and never emits `ANY` in the report, +3
+Agent lets disabled or malformed-policy kinds match, or ranks `ANY` candidates in the wrong order, -5
+Agent hardcodes policy behavior or bypasses prior identity, alias, window, or row-consumption rules, -5
+# Rubric 5
+Agent preserves all prior matching, policy, `ANY`, realtime-window, consumption, ordering, and output behavior while adding release-calendar and seat-ledger controls, +5
+Agent loads `/app/config/release_calendar.txt`, trims fields, ignores malformed lines and impossible dates, and uses the last valid duplicate date state, +5
+Agent requires both source and action calendar dates to be OPEN and the action date to be same-day, one day later, or two days later while still enforcing realtime windows, +5
+Agent loads `/app/config/seat_ledger.csv` and creates capacity only from valid negative seat deltas on OPEN ledger dates for the matching subscription/date, +5
+Agent excludes source rows whose subscription/date seat capacity is exhausted before applying candidate ranking, including for `ANY`, +5
+Agent consumes one seat-ledger capacity unit only after a successful match and does not consume capacity for rejected or unmatched corrections, +3
+Agent keeps canonical matched kind output, blank unmatched kind, exact schemas, status strings, and nonnegative summary totals under calendar and ledger matching, +3
+Agent treats closed, missing, malformed, unlisted, or impossible calendar dates as open, -5
+Agent ignores seat-ledger capacity, counts positive or malformed ledger rows as credit capacity, or consumes capacity before a match succeeds, -5
+Agent regresses milestone 1 through 4 behavior while adding release-calendar or seat-ledger controls, -5
+# Rubric 6
+Agent preserves all prior exact matching, alias, reason, window, policy, ANY, calendar, ledger, output, and consumption behavior while adding contract proration, +5
+Agent loads `/app/config/proration_contracts.csv` at runtime and validates subscription, canonical kind, enabled state, dates, nonnegative rate, and supported rounding mode before using a row, +5
+Agent selects the applicable contract row by source date within period, latest cutover date, and later contract input row as a final tie-breaker, +5
+Agent computes expected credit amounts from remaining calendar days over full period days with FLOOR, CEIL, and NEAREST-half-up rounding, +5
+Agent requires source and correction amounts to equal the computed contract amount before a row is eligible, including under `ANY`, +5
+Agent applies contract eligibility after calendar and ledger gates but before candidate ranking, without consuming source rows or ledger capacity for rejected corrections, +3
+Agent rejects disabled, malformed, unsupported-kind, out-of-period, negative-rate, or unknown-rounding contract rows without crashing, +3
+Agent hardcodes contract fixtures or ignores runtime changes to `proration_contracts.csv`, -5
+Agent ranks `ANY` candidates before excluding contract-ineligible rows or consumes ledger capacity for contract-rejected actions, -5
+Agent regresses milestone 1 through 5 behavior while adding proration contracts, -5

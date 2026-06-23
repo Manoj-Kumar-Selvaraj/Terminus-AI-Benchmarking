@@ -1,0 +1,3 @@
+# Operations
+
+Realtime hospital bed hold release corrections must consume source rows once and preserve action order.

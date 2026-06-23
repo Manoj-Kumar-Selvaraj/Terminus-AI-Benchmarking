@@ -1,0 +1,2 @@
+release_id|card_id|terminal_id|reason_code|amount_cents|required_action
+REL-X|CARD-X|TERM-X|HIGH_VALUE_RELEASE|45000|SUPERVISOR_REVIEW

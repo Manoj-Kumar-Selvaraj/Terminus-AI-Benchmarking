@@ -1,0 +1,5 @@
+Extend `/app/lib/reconcile.rb` for dated credit batches. `orders.csv` may include `delivery_date` and `credits.csv` may include `credit_date`. If both files still use the earlier schemas without those columns, keep the prior matching behavior. A credit can match only when all prior criteria still pass, `credit_date` is listed as `open` in `/app/config/cutoff_calendar.txt`, and `credit_date` is not later than the order `delivery_date`. Missing, closed, or unlisted `credit_date` values are not eligible. An order with missing `delivery_date` is not eligible.
+
+If multiple unused order rows match one credit, choose the row with the latest `delivery_date`; if dates tie, choose the earliest order input row. Consumption is by row position, not `order_id`, so duplicate ids in separate rows remain separate. Keep aliases from milestone 2 and keep the existing report and summary schemas.
+
+Continue to write `/app/out/credit_report.csv` and `/app/out/credit_summary.json` with the same schemas, status labels, blank unmatched fields, and summary keys from the earlier milestone.

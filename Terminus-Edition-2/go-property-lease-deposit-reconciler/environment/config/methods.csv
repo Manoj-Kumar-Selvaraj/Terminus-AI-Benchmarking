@@ -1,0 +1,5 @@
+channel,enabled,priority
+ACH,true,2
+CARD,true,1
+WIRE,true,3
+CHECK,false,9

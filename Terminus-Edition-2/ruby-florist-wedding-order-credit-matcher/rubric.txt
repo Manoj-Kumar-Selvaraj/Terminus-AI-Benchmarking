@@ -1,0 +1,26 @@
+Agent investigates and updates intended `ruby-florist-wedding-order-credit-matcher` implementation paths (/app/lib/reconcile.rb, /app/data/orders.csv, /app/data/credits.csv) instead of unrelated files, +2
+Agent satisfies `ruby-florist-wedding-order-credit-matcher` milestone 1 core requirement: Compare ids as full identifiers, trim incidental surrounding spaces, compare status and `arrangement` case-insensitively, and consume each order row at most once., +5
+Agent preserves milestone 1 rule for `ruby-florist-wedding-order-credit-matcher`: It must read `/app/data/orders.csv` and `/app/data/credits.csv`, then write `/app/out/credit_report.csv` and `/app/out/credit_summary.json`., +3
+Agent handles milestone 1 edge/ordering behavior for `ruby-florist-wedding-order-credit-matcher` validated by tests: Replace CSV inputs and optional calendar with a focused scenario., +3
+Agent satisfies `ruby-florist-wedding-order-credit-matcher` milestone 2 core requirement: Alias matching is case-insensitive and trimmed., +5
+Agent preserves milestone 2 rule for `ruby-florist-wedding-order-credit-matcher`: Matched report rows must emit the canonical `arrangement` value, not the raw alias., +3
+Agent handles milestone 2 edge/ordering behavior for `ruby-florist-wedding-order-credit-matcher` validated by tests: Replace CSV inputs and optional calendar with a focused scenario., +3
+Agent satisfies `ruby-florist-wedding-order-credit-matcher` milestone 3 core requirement: If multiple unused order rows match one credit, choose the row with the latest `delivery_date`; if dates tie, choose the earliest order input row., +5
+Agent preserves milestone 3 rule for `ruby-florist-wedding-order-credit-matcher`: A credit can match only when all prior criteria still pass, `credit_date` is listed as `open` in `/app/config/cutoff_calendar.txt`, and `credit_date` is not later than the order `delivery_date`., +3
+Agent handles milestone 3 edge/ordering behavior for `ruby-florist-wedding-order-credit-matcher` validated by tests: Replace CSV inputs and optional calendar with a focused scenario., +3
+Agent validates `ruby-florist-wedding-order-credit-matcher` output artifacts against required schemas and deterministic ordering before finalizing, +3
+Agent hardcodes final output files for `ruby-florist-wedding-order-credit-matcher` instead of fixing underlying implementation, -5
+Agent edits tests/oracle/metadata in `ruby-florist-wedding-order-credit-matcher` to force a pass rather than solving the task, -5
+Agent regresses earlier milestones in `ruby-florist-wedding-order-credit-matcher` while implementing later milestone changes, -3
+Agent repeats failing commands for `ruby-florist-wedding-order-credit-matcher` without adjusting approach after clear errors, -2
+
+Agent satisfies `ruby-florist-wedding-order-credit-matcher` milestone 4 core requirement: `/app/config/methods.csv` is authoritative, only canonical arrangements enabled with `true` are match-eligible, and disabled, missing, malformed, unknown, blank, or non-true method rows stay ineligible, +5
+Agent preserves milestone 4 rule for `ruby-florist-wedding-order-credit-matcher`: Method arrangements are trimmed, case-folded, alias-normalized with `BQT`, `CTR`, and `ARC`, and matched rows still emit canonical `BOUQUET`, `CENTERPIECE`, or `ARCH`, +3
+Agent handles milestone 4 edge/ordering behavior for `ruby-florist-wedding-order-credit-matcher` validated by tests: method gating preserves open-calendar checks, latest `delivery_date` selection, per-row consumption, blank unmatched arrangement, and positive summary totals, +3
+Agent ignores `/app/config/methods.csv` or treats disabled, missing, malformed, unknown, blank, or non-true method rows as eligible in `ruby-florist-wedding-order-credit-matcher`, -4
+Agent regresses milestone 1, 2, or 3 behavior while implementing method eligibility in `ruby-florist-wedding-order-credit-matcher`, -3
+Agent satisfies `ruby-florist-wedding-order-credit-matcher` milestone 5 core requirement: `/app/config/couple_limits.csv` gates dated credits by active couple/arrangement limit rows with numeric caps and latest effective date not after `credit_date`, +5
+Agent preserves milestone 5 rule for `ruby-florist-wedding-order-credit-matcher`: Daily budget consumption is tracked by `couple_id`, canonical `arrangement`, and `credit_date` in credit input order, and over-limit credits remain unmatched without consuming an order row or budget, +4
+Agent handles milestone 5 edge/ordering behavior for `ruby-florist-wedding-order-credit-matcher` validated by tests: inactive, future-effective, malformed, nonnumeric, unknown-arrangement, or missing limit rows are ignored; undated inputs skip budget gates and keep milestone 4 behavior, +3
+Agent applies budget limits before methods, calendar, alias, delivery-date, or row-consumption gates in a way that produces false matches or consumes rejected rows in `ruby-florist-wedding-order-credit-matcher`, -4
+Agent regresses earlier milestone output schema, canonical arrangement output, blank unmatched arrangement, or positive summary totals while implementing couple budgets in `ruby-florist-wedding-order-credit-matcher`, -3

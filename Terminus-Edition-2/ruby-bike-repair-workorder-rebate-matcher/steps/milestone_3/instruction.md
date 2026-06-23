@@ -1,0 +1,5 @@
+Extend `/app/lib/reconcile.rb` for dated rebate batches. `workorders.csv` may include `service_date` and `rebates.csv` may include `rebate_date`. If both files still use the earlier schemas without those columns, keep the prior matching behavior. A rebate can match only when all prior criteria still pass, `rebate_date` is listed as `open` in `/app/config/cutoff_calendar.txt`, and `rebate_date` is not later than the workorder `service_date`. Missing, closed, or unlisted `rebate_date` values are not eligible. A workorder with missing `service_date` is not eligible.
+
+If multiple unused workorder rows match one rebate, choose the row with the latest `service_date`; if dates tie, choose the earliest workorder input row. Consumption is by row position, not `workorder_id`, so duplicate ids in separate rows remain separate. Keep aliases from milestone 2 and keep the existing report and summary schemas.
+
+Continue to write `/app/out/rebate_report.csv` and `/app/out/rebate_summary.json` with the same schemas, status labels, blank unmatched fields, and summary keys from the earlier milestone.

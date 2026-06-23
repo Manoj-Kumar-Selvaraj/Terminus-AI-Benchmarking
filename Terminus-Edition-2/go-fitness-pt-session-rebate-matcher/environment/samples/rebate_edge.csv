@@ -1,0 +1,3 @@
+session_id,client_id,amount_cents,training_type
+INVEDGE000001,CUST9001,100,SOLO
+INVEDGE000002,CUST9002,200,DUO

@@ -1,0 +1,2 @@
+exception_id,shipment_id,pharmacy_id,chain_id,package_type,amount,exception_ts,reason,depot
+ACT-SAMPLE-1,SRC-SAMPLE-1,PARTY-1,SAMPLE,CMP,100,20260528121100,SPLIT,LOC-1

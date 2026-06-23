@@ -1,0 +1,3 @@
+workshop_id,attendee_id,amount_cents,status,workshop_type
+INVEDGE000001,CUST9001,100,ACTIVE,BREW
+INVEDGE000002,CUST9002,200,ACTIVE,ROAST

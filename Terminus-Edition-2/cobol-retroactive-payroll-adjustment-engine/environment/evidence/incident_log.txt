@@ -1,0 +1,1 @@
+03:15 payroll retro batch posted corrections for periods before the effective date of the salary action. Finance also found duplicated adjustment IDs after a rerun following an operator cancel.

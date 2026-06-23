@@ -1,0 +1,2 @@
+claim_id|workload_id|namespace|selector_label|port_name|check_ts|check_code|probe_path
+CHK-1|MNF-10001|ns-payments|50000|HTTP|20260612120500|SYNC|/healthz

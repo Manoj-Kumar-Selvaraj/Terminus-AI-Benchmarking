@@ -1,0 +1,5 @@
+reason,eligible,priority
+BUFFER,Y,2
+DUPLICATELICATE,Y,3
+CREDIT,Y,1
+INFO,N,9

@@ -1,0 +1,31 @@
+# Rubric 1
+Agent inspects datasource configuration, health endpoints, and incident evidence before changing service behavior, +2
+Agent repairs the JDBC datasource URL so readiness can reach the billing database inside the container network, +5
+Agent preserves separate live and ready health endpoints and the invoice listing contract, +3
+Agent validates readiness and invoice reads against the running service rather than editing verifier fixtures, +2
+Agent hardcodes health responses or disables readiness checks instead of fixing datasource reachability, -5
+Agent points the datasource at a mock file or in-memory stub unrelated to the deployed H2 service, -3
+# Rubric 2
+Agent reviews pool soak evidence and charge handler paths before changing connection lifecycle behavior, +2
+Agent returns borrowed JDBC connections on validation failures, missing accounts, and SQL exceptions during charge posting, +5
+Agent preserves milestone 1 datasource and readiness behavior while repairing pool cleanup, +3
+Agent keeps bounded pool sizing and continues serving valid invoice reads after repeated invalid charge attempts, +5
+Agent validates pool recovery using repeated charge traffic and pool stats rather than raising pool max size only, +2
+Agent increases pool size or disables charge validation instead of releasing connections on error paths, -5
+Agent leaks connections during invalid charge attempts or leaves the pool exhausted after soak traffic, -3
+# Rubric 3
+Agent uses the container runtime contract and OOM evidence to adjust JVM startup options for cgroup limits, +2
+Agent configures JDK 17 container-aware heap settings that fit the published 256Mi pod memory limit, +5
+Agent preserves milestone 1 readiness and milestone 2 pool cleanup while changing JVM options, +3
+Agent avoids fixed heap values that exceed the container memory limit without container support, +3
+Agent validates JVM settings in jvm.options or the service launcher rather than disabling memory limits, +2
+Agent sets an oversized fixed -Xmx heap or disables container memory awareness to hide OOMKilled exits, -5
+Agent regresses datasource reachability or pool cleanup while tuning JVM memory, -3
+# Rubric 4
+Agent uses the health contract, kube events, and deployment manifest before changing probe or live endpoint behavior, +2
+Agent makes /health/live succeed while migrations run without waiting for datasource warmup, +5
+Agent configures liveness probing against /health/live with startup or delay settings that cover migration duration, +5
+Agent preserves readiness semantics, pool cleanup, JVM limits, and invoice behavior from prior milestones, +3
+Agent validates live versus ready behavior during startup migration timing rather than shortening migrations artificially, +2
+Agent points liveness probes at /health/ready or keeps live tied to migration completion, -5
+Agent disables migrations or removes health endpoints to satisfy probe timing, -3

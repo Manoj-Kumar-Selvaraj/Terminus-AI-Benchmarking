@@ -1,0 +1,10 @@
+{
+  "task": "k8s-document-renderer-rollout",
+  "kind": "Kubernetes document renderer rollout simulator",
+  "milestones": [
+    "Restore renderer service and worker label boundaries",
+    "Recover font/cache PVC and configuration mounts",
+    "Fix queue lease idempotency and duplicate render suppression",
+    "Enforce rollout, PDB, HPA, and network policy safety"
+  ]
+}

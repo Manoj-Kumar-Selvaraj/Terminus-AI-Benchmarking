@@ -1,0 +1,2 @@
+release_id|hold_id|card_id|terminal_id|channel|amount_cents|release_ts|reason|region
+R-100|H-100|CARD-1|TERM-A|ATM|1200|20260528120500|CLEAR|NORTH

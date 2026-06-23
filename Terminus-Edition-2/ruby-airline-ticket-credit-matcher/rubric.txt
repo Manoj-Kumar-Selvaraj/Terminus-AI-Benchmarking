@@ -1,0 +1,15 @@
+Agent inspects `/app/lib/reconcile.rb`, CSV input layouts, and output contracts before editing, +2
+Agent fixes the Ruby reconciler in `/app/lib/reconcile.rb` instead of hardcoding `/app/out/credit_report.csv` or `/app/out/credit_summary.json`, +3
+Agent enforces milestone 1 gates: full `ticket_id`, `traveler_id`, `amount_cents`, `FLOWN` status, and exact canonical `fare_class` equality, +5
+Agent preserves credit input order, report schema, blank `fare_class` on `UNMATCHED` rows, and positive summary cents, +3
+Agent consumes each ticket row at most once so duplicate credits cannot reuse the same source row, +5
+Agent normalizes legacy aliases `ECO`, `BIZ`, and `FST` to `ECONOMY`, `BUSINESS`, and `FIRST` before matching and report output, +3
+Agent rejects alias-normalized credits whose canonical class differs from the ticket `fare_class`, +3
+Agent applies dated-mode rules only when `flight_date` or `credit_date` columns exist, including single-column activation, +5
+Agent requires open `credit_date` values in `/app/config/cutoff_calendar.txt` with `credit_date <= flight_date`, +3
+Agent selects the latest `flight_date` among eligible rows and breaks ties using earliest ticket input row order, +5
+Agent loads `/app/config/methods.csv` and requires `enabled=true` for the ticket canonical class in dated and undated modes, +5
+Agent ignores missing, malformed, or non-true methods.csv rows when deciding eligibility, +3
+Agent hardcodes final output files instead of repairing the Ruby reconciliation logic, -5
+Agent tampers with verifier harness files, solution scaffolding, or fixtures to force a pass, -5
+Agent regresses earlier milestone behavior while implementing aliases, calendar gates, or methods eligibility, -3

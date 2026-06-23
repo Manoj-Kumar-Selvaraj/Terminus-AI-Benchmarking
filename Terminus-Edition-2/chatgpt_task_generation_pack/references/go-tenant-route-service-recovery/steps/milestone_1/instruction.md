@@ -1,0 +1,3 @@
+During a tenant migration, the route service terminated while the control plane was refreshing tenant routes and clients were still sending traffic. Review `/app/evidence/incident.log`, `/app/docs/route_refresh_protocol.md`, and the Go service under `/app/internal`. Restore stable route lookup during overlapping refresh and request traffic without disabling live refresh.
+
+Keep the service contract intact: `GET /route/{tenant}` must still route by tenant, route snapshots must still replace the active tenant set, and missing tenants must remain unroutable after a refresh. The verifier exercises the service under synchronized refresh/load overlap and checks for race-free behavior.

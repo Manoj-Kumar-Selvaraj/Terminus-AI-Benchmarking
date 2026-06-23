@@ -1,0 +1,1 @@
+Expected: closed-period adjustment ledger only. Observed: historical gross overwritten and tax recalculated from corrected total pay.

@@ -1,0 +1,17 @@
+{
+  "controllers": {
+    "payments-controller": {
+      "jobs": [
+        "payments-release"
+      ]
+    }
+  },
+  "jobs": {
+    "payments-release": {
+      "controller": "payments-controller",
+      "required_plugins": [
+        "workflow-aggregator"
+      ]
+    }
+  }
+}

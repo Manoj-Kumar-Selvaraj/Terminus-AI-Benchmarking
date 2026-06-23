@@ -1,0 +1,37 @@
+{
+  "resource_changes": [
+    {
+      "address": "module.eks.aws_eks_cluster.this[0]",
+      "change": {
+        "actions": [
+          "delete",
+          "create"
+        ]
+      }
+    },
+    {
+      "address": "module.eks.aws_security_group.cluster[0]",
+      "change": {
+        "actions": [
+          "delete",
+          "create"
+        ]
+      }
+    },
+    {
+      "address": "aws_iam_role_policy_attachment.node_addon_admin",
+      "change": {
+        "actions": [
+          "create"
+        ]
+      }
+    }
+  ],
+  "configuration": {
+    "root_module": {
+      "outputs": {
+        "cluster_endpoint_url": {}
+      }
+    }
+  }
+}

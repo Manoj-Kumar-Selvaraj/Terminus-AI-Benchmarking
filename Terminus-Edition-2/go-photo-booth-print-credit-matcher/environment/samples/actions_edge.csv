@@ -1,0 +1,3 @@
+print_id,guest_id,amount_cents,pack_tier
+PHTEDGE000001,CUST9001,100,MINI
+PHTEDGE000002,CUST9002,200,STANDARD

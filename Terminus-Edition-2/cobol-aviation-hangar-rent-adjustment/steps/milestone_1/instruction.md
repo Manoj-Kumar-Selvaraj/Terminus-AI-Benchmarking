@@ -1,0 +1,7 @@
+The COBOL aviation hangar rent adjustment reconciler in `/app/src/hangar_adjust_reconcile.cbl` is producing unreliable clearing reports. Fix it so it reconciles `/app/data/invoices.dat` with `/app/data/adjustments.dat` and writes the required outputs under `/app/out`.
+
+The source records and action records are fixed-width files documented in `/app/docs/record_layouts.md`. A row matches only when the full 12-character record id, 8-character account, 10-digit amount, 4-character branch, source status `H`, eligible action reason, and allowed canonical hangar_class all agree. Allowed canonical hangar_class values are `PRM`, `STD`, `ECO`. Eligible action reasons are `A04`, `A10`, `A18`. The action date must be on or after the matched source date. Each source row can be consumed once.
+
+Write `/app/out/hangar_adjustment_report.csv` with columns `record_id,account,hangar_class,amount_cents,reason,status`, preserving action input order and the zero-padded amount text. The `status` column must be exactly `MATCHED` or `UNMATCHED`. Matched rows report the canonical source `hangar_class` (`PRM`, `STD`, or `ECO`). Unmatched rows must leave `hangar_class` empty in the CSV (two consecutive commas with no characters between them), not the action category and not space padding.
+
+Write `/app/out/hangar_adjustment_summary.txt` as `key=value` lines for `matched_count`, `matched_amount_cents`, `unmatched_count`, and `unmatched_amount_cents`, with all amounts counted as positive integer cents.

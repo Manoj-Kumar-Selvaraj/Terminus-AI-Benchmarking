@@ -1,0 +1,440 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. BILLING-APPROVAL.
+       ENVIRONMENT DIVISION.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+           SELECT MANIFEST-FILE ASSIGN TO "/app/config/usage_manifest.txt"
+               ORGANIZATION IS LINE SEQUENTIAL.
+           SELECT MATRIX-FILE ASSIGN TO "/app/config/approval_matrix.txt"
+               ORGANIZATION IS LINE SEQUENTIAL.
+           SELECT MASTER-FILE ASSIGN TO "/app/config/account_master.txt"
+               ORGANIZATION IS LINE SEQUENTIAL.
+           SELECT LEDGER-FILE ASSIGN TO "/app/config/prior_ledger.dat"
+               ORGANIZATION IS LINE SEQUENTIAL.
+           SELECT USG-FILE ASSIGN TO WS-USG-PATH
+               ORGANIZATION IS LINE SEQUENTIAL.
+           SELECT INV-FILE ASSIGN TO "/app/out/invoice_register.dat"
+               ORGANIZATION IS LINE SEQUENTIAL.
+           SELECT TRACE-FILE ASSIGN TO "/app/out/approval_trace.dat"
+               ORGANIZATION IS LINE SEQUENTIAL.
+           SELECT SUMMARY-FILE ASSIGN TO "/app/out/billing_summary.txt"
+               ORGANIZATION IS LINE SEQUENTIAL.
+           SELECT CHECKPOINT-FILE ASSIGN TO "/app/out/checkpoint.dat"
+               ORGANIZATION IS LINE SEQUENTIAL.
+       DATA DIVISION.
+       FILE SECTION.
+       FD MANIFEST-FILE.
+       01 MANIFEST-LINE PIC X(120).
+       FD MATRIX-FILE.
+       01 MATRIX-LINE PIC X(80).
+       FD MASTER-FILE.
+       01 MASTER-LINE PIC X(80).
+       FD LEDGER-FILE.
+       01 LEDGER-LINE PIC X(40).
+       FD USG-FILE.
+       01 USG-LINE PIC X(52).
+       FD INV-FILE.
+       01 INV-OUT-REC PIC X(72).
+       FD TRACE-FILE.
+       01 TRACE-OUT-REC PIC X(40).
+       FD SUMMARY-FILE.
+       01 SUMMARY-LINE PIC X(80).
+       FD CHECKPOINT-FILE.
+       01 WS-CKPT-REC PIC X(200).
+       WORKING-STORAGE SECTION.
+       COPY "usage-record".
+       COPY "invoice-record".
+       COPY "trace-record".
+       COPY "ledger-record".
+       01 WS-USG-PATH PIC X(120) VALUE SPACES.
+       01 WS-EOF-MAN PIC X VALUE "N".
+       01 WS-EOF-USG PIC X VALUE "N".
+       01 WS-MANIFEST-COUNT PIC 9(2) VALUE 0.
+       01 WS-MAN-IDX PIC 9(2) VALUE 0.
+       01 WS-MAN-PATH.
+          05 WS-MAN-ENTRY OCCURS 5 TIMES PIC X(120).
+       01 WS-REGIONAL-CENTS PIC 9(10) VALUE 500000.
+       01 WS-DUAL-CENTS PIC 9(10) VALUE 2000000.
+       01 WS-CURRENT-ACCOUNT PIC X(8) VALUE SPACES.
+       01 WS-ACCOUNT-TOTAL PIC S9(10) VALUE 0.
+       01 WS-LAST-LINE-AMOUNT PIC S9(10) VALUE 0.
+       01 WS-USAGE-COUNT PIC 9(6) VALUE 0.
+       01 WS-ROW-COUNT PIC 9(6) VALUE 0.
+       01 WS-TOTAL-USAGE-ROWS PIC 9(6) VALUE 0.
+       01 WS-BATCH-COUNT PIC 9(2) VALUE 0.
+       01 WS-BATCH-IDX PIC 9(2) VALUE 0.
+       01 WS-BATCH-SEEN PIC X VALUE "N".
+       01 WS-BATCH-TABLE.
+          05 WS-BATCH-ENTRY OCCURS 8 TIMES PIC X(6).
+       01 WS-ACCOUNT-STATUS PIC X(8) VALUE "OPEN".
+       01 WS-APPROVAL-TIER PIC X(10) VALUE SPACES.
+       01 WS-FINAL-STATUS PIC X(8) VALUE SPACES.
+       01 WS-STAGE-TRACE PIC X(16) VALUE SPACES.
+       01 WS-DUP-BATCH-FOUND PIC X VALUE "N".
+       01 WS-INVOICE-COUNTER PIC 9(10) VALUE 0.
+       01 WS-INVOICES-POSTED PIC 9(6) VALUE 0.
+       01 WS-TOTAL-BILLED PIC S9(12) VALUE 0.
+       01 WS-DUP-BLOCKED PIC 9(6) VALUE 0.
+       01 WS-CHECKPOINT-COMMITS PIC 9(6) VALUE 0.
+       01 WS-ABEND-AFTER PIC 9(6) VALUE 0.
+       01 WS-ABEND-LIMIT PIC X(10) VALUE SPACES.
+       01 WS-RESTART-ENV PIC X(4) VALUE SPACES.
+       01 WS-RESTART-FLAG PIC X VALUE "N".
+       01 WS-RESTART-ACTIVE PIC X VALUE "N".
+       01 WS-PROCESS-RECORD PIC X VALUE "Y".
+       01 WS-CURRENT-FILE-NUM PIC 9(2) VALUE 0.
+       01 WS-FILE-RECORD-NUM PIC 9(6) VALUE 0.
+       01 WS-CKPT-FILE-NUM PIC 9(2) VALUE 0.
+       01 WS-CKPT-RECORD-NUM PIC 9(6) VALUE 0.
+       01 WS-DSP PIC Z(10)9.
+       PROCEDURE DIVISION.
+       MAIN-PARA.
+           CALL "SYSTEM" USING "mkdir -p /app/out"
+           PERFORM READ-RUNTIME-FLAGS
+           PERFORM LOAD-MATRIX
+           PERFORM LOAD-MANIFEST
+           IF WS-RESTART-FLAG = "Y"
+               PERFORM LOAD-CHECKPOINT
+               OPEN EXTEND INV-FILE
+               OPEN EXTEND TRACE-FILE
+           ELSE
+               OPEN OUTPUT INV-FILE
+               OPEN OUTPUT TRACE-FILE
+           END-IF
+           OPEN OUTPUT SUMMARY-FILE
+           PERFORM VARYING WS-MAN-IDX FROM 1 BY 1
+               UNTIL WS-MAN-IDX > WS-MANIFEST-COUNT
+               MOVE WS-MAN-IDX TO WS-CURRENT-FILE-NUM
+               MOVE WS-MAN-ENTRY(WS-MAN-IDX) TO WS-USG-PATH
+               OPEN INPUT USG-FILE
+               PERFORM PROCESS-USAGE-STREAM
+               CLOSE USG-FILE
+           END-PERFORM
+           PERFORM FINALIZE-ACCOUNT
+           PERFORM WRITE-SUMMARY
+           CLOSE INV-FILE
+           CLOSE TRACE-FILE
+           CLOSE SUMMARY-FILE
+           STOP RUN.
+
+       READ-RUNTIME-FLAGS.
+           MOVE ZERO TO WS-ABEND-AFTER
+           MOVE SPACES TO WS-ABEND-LIMIT
+           ACCEPT WS-ABEND-LIMIT FROM ENVIRONMENT "BILLING_ABEND_AFTER"
+           IF WS-ABEND-LIMIT(1:1) >= "1"
+               AND WS-ABEND-LIMIT(1:1) <= "9"
+               MOVE WS-ABEND-LIMIT TO WS-ABEND-AFTER
+           END-IF
+           MOVE SPACES TO WS-RESTART-ENV
+           ACCEPT WS-RESTART-ENV FROM ENVIRONMENT "BILLING_RESTART"
+           IF WS-RESTART-ENV = "1"
+               MOVE "Y" TO WS-RESTART-FLAG
+           END-IF.
+
+       LOAD-MATRIX.
+           OPEN INPUT MATRIX-FILE
+           PERFORM UNTIL WS-EOF-MAN = "Y"
+               READ MATRIX-FILE AT END MOVE "Y" TO WS-EOF-MAN
+               NOT AT END
+                   IF MATRIX-LINE(1:15) = "regional_cents="
+                       MOVE MATRIX-LINE(16:10) TO WS-REGIONAL-CENTS
+                   END-IF
+                   IF MATRIX-LINE(1:11) = "dual_cents="
+                       MOVE MATRIX-LINE(12:10) TO WS-DUAL-CENTS
+                   END-IF
+               END-READ
+           END-PERFORM
+           CLOSE MATRIX-FILE
+           MOVE "N" TO WS-EOF-MAN.
+
+       LOAD-MANIFEST.
+           OPEN INPUT MANIFEST-FILE
+           PERFORM UNTIL WS-EOF-MAN = "Y"
+               READ MANIFEST-FILE AT END MOVE "Y" TO WS-EOF-MAN
+               NOT AT END
+                   IF MANIFEST-LINE(1:1) NOT = SPACES
+                       ADD 1 TO WS-MANIFEST-COUNT
+                       MOVE MANIFEST-LINE(4:117) TO WS-MAN-ENTRY(WS-MANIFEST-COUNT)
+                   END-IF
+               END-READ
+           END-PERFORM
+           CLOSE MANIFEST-FILE
+           MOVE "N" TO WS-EOF-MAN.
+
+       PROCESS-USAGE-STREAM.
+           MOVE "N" TO WS-EOF-USG
+           PERFORM UNTIL WS-EOF-USG = "Y"
+               READ USG-FILE AT END MOVE "Y" TO WS-EOF-USG
+               NOT AT END
+                   ADD 1 TO WS-FILE-RECORD-NUM
+                   MOVE "Y" TO WS-PROCESS-RECORD
+                   IF WS-RESTART-ACTIVE = "Y"
+                       IF WS-CURRENT-FILE-NUM < WS-CKPT-FILE-NUM
+                           MOVE "N" TO WS-PROCESS-RECORD
+                       END-IF
+                       IF WS-CURRENT-FILE-NUM = WS-CKPT-FILE-NUM
+                           AND WS-FILE-RECORD-NUM <= WS-CKPT-RECORD-NUM
+                           MOVE "N" TO WS-PROCESS-RECORD
+                       END-IF
+                       IF WS-PROCESS-RECORD = "Y"
+                           MOVE "N" TO WS-RESTART-ACTIVE
+                       END-IF
+                   END-IF
+                   IF WS-PROCESS-RECORD = "Y"
+                       PERFORM HANDLE-USAGE-LINE
+                   END-IF
+               END-READ
+           END-PERFORM.
+
+       HANDLE-USAGE-LINE.
+           MOVE USG-LINE TO USG-IN-REC
+           IF USG-TYPE NOT = "U"
+               GO TO HANDLE-DONE
+           END-IF
+           IF WS-CURRENT-ACCOUNT NOT = SPACES
+               AND USG-ACCOUNT NOT = WS-CURRENT-ACCOUNT
+               PERFORM FINALIZE-ACCOUNT
+           END-IF
+           IF WS-CURRENT-ACCOUNT = SPACES
+               MOVE USG-ACCOUNT TO WS-CURRENT-ACCOUNT
+           END-IF
+           ADD USG-AMOUNT TO WS-ACCOUNT-TOTAL
+           ADD 1 TO WS-USAGE-COUNT
+           ADD 1 TO WS-ROW-COUNT
+           ADD 1 TO WS-TOTAL-USAGE-ROWS
+           MOVE USG-AMOUNT TO WS-LAST-LINE-AMOUNT
+           PERFORM TRACK-BATCH
+           IF WS-RESTART-ACTIVE = "Y"
+               PERFORM FINALIZE-ACCOUNT
+           END-IF
+           IF WS-ABEND-AFTER > 0 AND WS-ROW-COUNT >= WS-ABEND-AFTER
+               PERFORM WRITE-CHECKPOINT
+               STOP RUN 99
+           END-IF
+           .
+
+       HANDLE-DONE.
+           EXIT.
+
+       TRACK-BATCH.
+           MOVE "N" TO WS-BATCH-SEEN
+           PERFORM VARYING WS-BATCH-IDX FROM 1 BY 1 UNTIL WS-BATCH-IDX > WS-BATCH-COUNT
+               IF WS-BATCH-ENTRY(WS-BATCH-IDX) = USG-BATCH
+                   MOVE "Y" TO WS-BATCH-SEEN
+               END-IF
+           END-PERFORM
+           IF WS-BATCH-SEEN = "N" AND WS-BATCH-COUNT < 8
+               ADD 1 TO WS-BATCH-COUNT
+               MOVE USG-BATCH TO WS-BATCH-ENTRY(WS-BATCH-COUNT)
+           END-IF
+           .
+
+       TRACK-DONE.
+           EXIT.
+
+       FINALIZE-ACCOUNT.
+           IF WS-USAGE-COUNT = 0
+               GO TO FINALIZE-DONE
+           END-IF
+           PERFORM LOOKUP-ACCOUNT-STATUS
+           IF WS-ACCOUNT-STATUS = "CLOSED"
+               MOVE "HOLD" TO WS-FINAL-STATUS
+               MOVE "CLOSED" TO WS-APPROVAL-TIER
+               MOVE "CLOSED" TO WS-STAGE-TRACE
+               GO TO FINALIZE-WRITE
+           END-IF
+           PERFORM CHECK-PRIOR-LEDGER
+           IF WS-DUP-BATCH-FOUND = "Y"
+               ADD 1 TO WS-DUP-BLOCKED
+               MOVE "DUPBATCH" TO WS-FINAL-STATUS
+               GO TO FINALIZE-RESET
+           END-IF
+           PERFORM DETERMINE-APPROVAL-TIER
+           PERFORM RUN-APPROVAL-CHAIN
+           PERFORM FINALIZE-WRITE
+           .
+
+       FINALIZE-WRITE.
+           IF WS-FINAL-STATUS = "APPROVED"
+               PERFORM WRITE-INVOICE
+           ELSE
+               PERFORM FINALIZE-RESET
+           END-IF
+           .
+
+       FINALIZE-RESET.
+           MOVE SPACES TO WS-CURRENT-ACCOUNT
+           MOVE ZERO TO WS-ACCOUNT-TOTAL
+           MOVE ZERO TO WS-LAST-LINE-AMOUNT
+           MOVE ZERO TO WS-USAGE-COUNT
+           MOVE ZERO TO WS-BATCH-COUNT
+           MOVE SPACES TO WS-APPROVAL-TIER
+           MOVE SPACES TO WS-FINAL-STATUS
+           MOVE SPACES TO WS-STAGE-TRACE
+           MOVE "N" TO WS-DUP-BATCH-FOUND
+           .
+
+       FINALIZE-DONE.
+           EXIT.
+
+       LOOKUP-ACCOUNT-STATUS.
+           MOVE "OPEN" TO WS-ACCOUNT-STATUS
+           OPEN INPUT MASTER-FILE
+           PERFORM UNTIL WS-EOF-MAN = "Y"
+               READ MASTER-FILE AT END MOVE "Y" TO WS-EOF-MAN
+               NOT AT END
+                   IF MASTER-LINE(1:8) = WS-CURRENT-ACCOUNT
+                       IF MASTER-LINE(10:6) = "CLOSED"
+                           MOVE "CLOSED" TO WS-ACCOUNT-STATUS
+                       END-IF
+                   END-IF
+               END-READ
+           END-PERFORM
+           CLOSE MASTER-FILE
+           MOVE "N" TO WS-EOF-MAN.
+
+       DETERMINE-APPROVAL-TIER.
+           MOVE WS-LAST-LINE-AMOUNT TO WS-TIER-AMOUNT
+           IF WS-TIER-AMOUNT < 0
+               MOVE "CREDITREV" TO WS-APPROVAL-TIER
+               MOVE "HOLD" TO WS-FINAL-STATUS
+               MOVE "CREDIT" TO WS-STAGE-TRACE
+               GO TO TIER-DONE
+           END-IF
+           IF WS-TIER-AMOUNT < WS-REGIONAL-CENTS
+               MOVE "AUTO" TO WS-APPROVAL-TIER
+           ELSE
+               IF WS-TIER-AMOUNT < WS-DUAL-CENTS
+                   MOVE "REGIONAL" TO WS-APPROVAL-TIER
+               ELSE
+                   MOVE "DUAL" TO WS-APPROVAL-TIER
+               END-IF
+           END-IF
+           .
+
+       TIER-DONE.
+           EXIT.
+
+       CHECK-PRIOR-LEDGER.
+           MOVE "N" TO WS-DUP-BATCH-FOUND.
+
+       RUN-APPROVAL-CHAIN.
+           IF WS-FINAL-STATUS NOT = "HOLD"
+               IF WS-APPROVAL-TIER = "AUTO"
+                   MOVE "AUTO" TO WS-STAGE-TRACE
+                   MOVE "APPROVED" TO WS-FINAL-STATUS
+               ELSE
+                   IF WS-APPROVAL-TIER = "REGIONAL"
+                       PERFORM WRITE-TRACE-REGIONAL
+                       MOVE "REGIONAL" TO WS-STAGE-TRACE
+                       MOVE "APPROVED" TO WS-FINAL-STATUS
+                   ELSE
+                       IF WS-APPROVAL-TIER = "DUAL"
+                           PERFORM WRITE-TRACE-REGIONAL
+                           MOVE "REGIONAL" TO WS-STAGE-TRACE
+                           MOVE "APPROVED" TO WS-FINAL-STATUS
+                       END-IF
+                   END-IF
+               END-IF
+           END-IF
+           .
+
+       CHAIN-DONE.
+           EXIT.
+
+       WRITE-TRACE-REGIONAL.
+           MOVE "T" TO TR-TYPE
+           MOVE WS-CURRENT-ACCOUNT TO TR-ACCOUNT
+           MOVE "REGIONAL" TO TR-STAGE
+           MOVE "PASS" TO TR-RESULT
+           MOVE SPACES TO TR-FILLER
+           WRITE TRACE-OUT-REC FROM TR-OUT-REC
+           .
+
+       WRITE-TRACE-FINANCE.
+           MOVE "T" TO TR-TYPE
+           MOVE WS-CURRENT-ACCOUNT TO TR-ACCOUNT
+           MOVE "FINANCE" TO TR-STAGE
+           MOVE "PASS" TO TR-RESULT
+           MOVE SPACES TO TR-FILLER
+           WRITE TRACE-OUT-REC FROM TR-OUT-REC
+           .
+
+       WRITE-INVOICE.
+           ADD 1 TO WS-INVOICE-COUNTER
+           ADD 1 TO WS-INVOICES-POSTED
+           ADD WS-ACCOUNT-TOTAL TO WS-TOTAL-BILLED
+           MOVE "I" TO INV-TYPE
+           MOVE WS-CURRENT-ACCOUNT TO INV-ACCOUNT
+           MOVE WS-INVOICE-COUNTER TO INV-NUMBER
+           MOVE WS-ACCOUNT-TOTAL TO INV-TOTAL
+           MOVE WS-APPROVAL-TIER TO INV-TIER
+           MOVE WS-STAGE-TRACE TO INV-STAGES
+           MOVE WS-FINAL-STATUS TO INV-STATUS
+           MOVE SPACES TO INV-FILLER
+           MOVE INV-OUT-REC-DATA TO INV-OUT-BUF
+           WRITE INV-OUT-REC FROM INV-OUT-BUF
+           PERFORM FINALIZE-RESET.
+
+       WRITE-CHECKPOINT.
+           OPEN OUTPUT CHECKPOINT-FILE
+           STRING "file_num=" DELIMITED BY SIZE WS-CURRENT-FILE-NUM DELIMITED BY SIZE
+               "|record_num=" DELIMITED BY SIZE WS-FILE-RECORD-NUM DELIMITED BY SIZE
+               "|account=" DELIMITED BY SIZE WS-CURRENT-ACCOUNT DELIMITED BY SIZE
+               "|acct_total=" DELIMITED BY SIZE WS-ACCOUNT-TOTAL DELIMITED BY SIZE
+               "|usage_count=" DELIMITED BY SIZE WS-USAGE-COUNT DELIMITED BY SIZE
+               "|invoice_counter=" DELIMITED BY SIZE WS-INVOICE-COUNTER DELIMITED BY SIZE
+               "|row_count=" DELIMITED BY SIZE WS-ROW-COUNT DELIMITED BY SIZE
+               INTO WS-CKPT-REC END-STRING
+           WRITE WS-CKPT-REC
+           CLOSE CHECKPOINT-FILE
+           ADD 1 TO WS-CHECKPOINT-COMMITS.
+
+       LOAD-CHECKPOINT.
+           OPEN INPUT CHECKPOINT-FILE
+           READ CHECKPOINT-FILE
+               AT END MOVE "N" TO WS-RESTART-FLAG
+               NOT AT END
+                   PERFORM PARSE-CHECKPOINT-LINE
+                   MOVE "Y" TO WS-RESTART-ACTIVE
+           END-READ
+           CLOSE CHECKPOINT-FILE.
+
+       PARSE-CHECKPOINT-LINE.
+           *> simplified parse via fixed substrings after known keys
+           MOVE WS-CKPT-REC(9:2) TO WS-CKPT-FILE-NUM
+           MOVE WS-CKPT-REC(24:6) TO WS-CKPT-RECORD-NUM
+           MOVE WS-CKPT-REC(40:8) TO WS-CURRENT-ACCOUNT
+           MOVE WS-CKPT-REC(58:10) TO WS-ACCOUNT-TOTAL
+           MOVE WS-CKPT-REC(78:6) TO WS-USAGE-COUNT
+           MOVE WS-CKPT-REC(101:10) TO WS-INVOICE-COUNTER
+           MOVE WS-CKPT-REC(120:6) TO WS-ROW-COUNT
+           .
+
+       WRITE-SUMMARY.
+           MOVE WS-INVOICES-POSTED TO WS-DSP
+           MOVE SPACES TO SUMMARY-LINE
+           STRING "invoices_posted=" DELIMITED BY SIZE
+               FUNCTION TRIM(WS-DSP LEADING) DELIMITED BY SIZE INTO SUMMARY-LINE END-STRING
+           WRITE SUMMARY-LINE
+           MOVE WS-TOTAL-BILLED TO WS-DSP
+           MOVE SPACES TO SUMMARY-LINE
+           STRING "total_billed_cents=" DELIMITED BY SIZE
+               FUNCTION TRIM(WS-DSP LEADING) DELIMITED BY SIZE INTO SUMMARY-LINE END-STRING
+           WRITE SUMMARY-LINE
+           MOVE WS-TOTAL-USAGE-ROWS TO WS-DSP
+           MOVE SPACES TO SUMMARY-LINE
+           STRING "usage_rows=" DELIMITED BY SIZE
+               FUNCTION TRIM(WS-DSP LEADING) DELIMITED BY SIZE INTO SUMMARY-LINE END-STRING
+           WRITE SUMMARY-LINE
+           MOVE WS-DUP-BLOCKED TO WS-DSP
+           MOVE SPACES TO SUMMARY-LINE
+           STRING "duplicate_batches_blocked=" DELIMITED BY SIZE
+               FUNCTION TRIM(WS-DSP LEADING) DELIMITED BY SIZE INTO SUMMARY-LINE END-STRING
+           WRITE SUMMARY-LINE
+           MOVE WS-CHECKPOINT-COMMITS TO WS-DSP
+           MOVE SPACES TO SUMMARY-LINE
+           STRING "checkpoint_commits=" DELIMITED BY SIZE
+               FUNCTION TRIM(WS-DSP LEADING) DELIMITED BY SIZE INTO SUMMARY-LINE END-STRING
+           WRITE SUMMARY-LINE
+           .

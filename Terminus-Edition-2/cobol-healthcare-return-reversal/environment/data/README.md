@@ -1,0 +1,1 @@
+Seed files for Healthcare remittance return settlement. The verifier rewrites these files with focused scenarios.

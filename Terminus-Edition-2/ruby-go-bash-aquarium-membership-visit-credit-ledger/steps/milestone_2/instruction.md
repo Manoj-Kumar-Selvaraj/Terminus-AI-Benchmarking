@@ -1,0 +1,5 @@
+Fix the Ruby entrypoint /app/app/reconcile.rb for the aquarium membership visit credit ledger. The single-container task intentionally uses Ruby for orchestration, Go for canonical kind normalization in /app/cmd/normalize/main.go, and Bash in /app/scripts/run_batch.sh to compile the helper and run the batch. Do not move the solution to another entrypoint. Read /app/data/sources.csv and /app/data/actions.csv, then write /app/out/resolution_report.csv and /app/out/resolution_summary.json.
+
+Milestone 1: match only on full source id, account id, location id, lane, exact amount, ACTIVE source status, eligible reason CREDIT/ADJUST/RETURN, canonical kinds STANDARD or PREMIUM, numeric timestamp ordering, and single-use source rows. Preserve action order, emit MATCHED/UNMATCHED, and leave kind blank on unmatched rows.
+
+Milestone 2: keep milestone 1 and normalize aliases from /app/config/kind_aliases.csv: STD to STANDARD, PREM to PREMIUM, and ELITE to VIP. From this milestone onward VIP is also a valid canonical kind, and matched rows must emit only canonical kind values.

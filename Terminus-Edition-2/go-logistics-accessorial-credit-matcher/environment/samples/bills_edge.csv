@@ -1,0 +1,3 @@
+charge_id,shipper_id,amount_cents,status,mode
+INVEDGE000001,CUST9001,100,BILLED,LTL
+INVEDGE000002,CUST9002,200,BILLED,FTL

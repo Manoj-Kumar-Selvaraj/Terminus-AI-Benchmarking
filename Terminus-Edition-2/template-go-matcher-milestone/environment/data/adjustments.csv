@@ -1,0 +1,2 @@
+record_id,account_id,amount_cents,tier
+REC-TEMPLATE-001,ACCT-001,0000001000,TIER_A

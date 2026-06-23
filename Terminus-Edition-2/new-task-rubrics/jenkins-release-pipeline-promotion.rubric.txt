@@ -1,0 +1,28 @@
+# Rubric 1
+Agent inspects promotion manifests, branch evidence, artifact digests, and Jenkinsfile contract before changing gates, +2
+Agent promotes only the built artifact digest from the approved branch and environment, +5
+Agent rejects stale branch-tip or mismatched digest promotions, +4
+Agent preserves audit evidence for every promotion decision, +3
+Agent hardcodes fixture digests or skips promotion gates, -5
+Agent edits evidence files or verifier fixtures instead of pipeline logic, -5
+# Rubric 2
+Agent repairs credential and environment isolation so production promotion cannot use non-production credentials, +5
+Agent preserves milestone 1 artifact and branch-gate behavior, +3
+Agent validates wrong credential IDs and missing production approvals, +4
+Agent keeps promotion output deterministic and auditable, +3
+Agent accepts any credential with a production-looking name, -5
+Agent removes credential checks to force a pass, -5
+# Rubric 3
+Agent uses scan results from the built artifact rather than mutable source or branch state, +5
+Agent blocks promotion on failed or missing required scan evidence, +4
+Agent preserves branch, digest, and credential gates, +3
+Agent validates both pass and fail scan paths, +3
+Agent treats stale or source-only scan results as sufficient, -5
+Agent rewrites scan evidence instead of enforcing the contract, -5
+# Rubric 4
+Agent implements rollback by redeploying the prior approved digest without rebuilding or retagging, +5
+Agent keeps parallel promotion state isolated by environment and artifact, +4
+Agent preserves all earlier promotion gates during rollback, +3
+Agent validates wrong-digest rollback and concurrent environment cases, +3
+Agent rebuilds during rollback or deploys branch tip instead of the previous digest, -5
+Agent shares mutable promotion state across environments, -5

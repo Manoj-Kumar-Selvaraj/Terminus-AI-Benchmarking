@@ -1,0 +1,12 @@
+{
+  "status": 429,
+  "headers": {
+    "Content-Type": "application/json",
+    "Retry-After-Ms": "1000",
+    "X-RateLimit-Remaining": "0"
+  },
+  "body": {
+    "code": "rate_limited",
+    "retry_after_ms": 1000
+  }
+}

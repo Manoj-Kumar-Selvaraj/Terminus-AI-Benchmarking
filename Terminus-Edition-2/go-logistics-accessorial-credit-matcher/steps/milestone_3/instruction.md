@@ -1,0 +1,5 @@
+Extend the charge reconciliation CLI to handle dated credit batches. `charges.csv` may include an `invoice_date` column and `credits.csv` may include a `credit_date` column.
+
+When date columns are in use, a credit can match only when all prior criteria still pass, the `credit_date` is listed as `open` in `/app/config/cutoff_calendar.txt`, and the `credit_date` is not later than the charge `invoice_date`. A missing or closed `credit_date` is not eligible. A charge with a missing `invoice_date` is also not eligible because the date comparison cannot be satisfied.
+
+If more than one unused charge matches the same credit, choose the eligible charge with the latest `invoice_date`; if `invoice_date` values tie, choose the earliest charge input row. Consumption is tracked by charge input row position, not by `charge_id`, so duplicate ids in separate rows remain independently consumable until their specific rows are used. Legacy mode aliases from milestone 2 still apply, and matched report rows must emit canonical modes with blank unmatched `mode` fields and positive-cent summary totals.

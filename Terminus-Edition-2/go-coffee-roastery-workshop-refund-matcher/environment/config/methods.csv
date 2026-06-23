@@ -1,0 +1,4 @@
+workshop_type,enabled,priority
+BREW,true,2
+ROAST,true,1
+CUP,true,3

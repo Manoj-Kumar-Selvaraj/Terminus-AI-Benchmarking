@@ -1,0 +1,24 @@
+# Rubric 1
+Agent inspects the stale-price trace, cache consistency contract, and pricing/cache integration before changing invalidation behavior, +2
+Agent prevents late in-flight source fills from repopulating cache entries below the acknowledged catalog version floor, +5
+Agent honors out-of-order invalidation events by tracking a per-SKU minimum version rather than only deleting cache keys, +5
+Agent preserves read-through caching, TTL expiry, and currency-specific cache entries, +3
+Agent preserves the exported pricing service and cache store interfaces, +3
+Agent disables caching entirely or serves only uncached source fetches to hide stale-price overlap, -5
+Agent ignores invalidation version floors and allows acknowledged older catalog versions to be cached again, -5
+# Rubric 2
+Agent uses the upstream call spike evidence and fill-collapse contract before changing concurrent miss handling, +2
+Agent collapses concurrent cache misses for the same normalized price key into a single source fetch, +5
+Agent keeps unrelated SKU or currency keys independent so one slow fill does not serialize other lookups, +5
+Agent preserves milestone 1 invalidation and version-floor guarantees while adding fill collapse, +3
+Agent validates concurrent miss behavior with synchronized source fetches rather than timing sleeps alone, +2
+Agent applies a process-wide fetch lock that serializes all cache misses across every key, -5
+Agent pre-seeds product prices or disables caching to avoid measuring source-call collapse, -5
+# Rubric 3
+Agent inspects the mobile contract failure evidence and API compatibility contract before changing HTTP responses, +2
+Agent restores the version 1 response shape with promotion present as null when absent, +5
+Agent restores the version 2 response shape omitting absent promotion and exposing catalog_version without internal cache metadata, +5
+Agent returns the shared not-found JSON contract for unknown SKUs on both API versions, +3
+Agent preserves milestone 1 invalidation behavior and milestone 2 fill-collapse behavior, +3
+Agent leaks internal cache_status or other implementation metadata in public JSON responses, -5
+Agent returns incompatible promotion null/omission behavior between v1 and v2 clients, -3

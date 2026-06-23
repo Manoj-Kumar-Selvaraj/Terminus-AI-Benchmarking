@@ -1,0 +1,9 @@
+The realtime clinic referral claim reconciler is matching correction rows to the wrong source records. Fix it so `/app/data/claims.csv` reconciles against `/app/data/appointments.csv`, using `/app/config/windows.csv` for the active realtime window rules.
+
+A correction can match only when the full `referral_id`, `member_id`, `site_id`, `location`, `amount` all match, the source status is the literal `COMPLETE`, the correction reason is `AUTH`, `REBILL`, `TRANSFER`, the `kind` field is one of the canonical values `PCP`, `SPEC`, or `LAB` after alias normalization, both timestamps are numeric, the correction timestamp `action_ts` is on or after the source timestamp `source_ts`, and the source row has not already been consumed.
+
+Write `/app/out/claim_route_report.csv` with columns `action_id,referral_id,member_id,site_id,kind,amount,reason,status`, preserving correction input order. Matched rows report the canonical source `kind`; unmatched rows leave `kind` blank. Write `/app/out/claim_route_summary.txt` as `key=value` lines for `matched_count`, `matched_amount`, `unmatched_count`, and `unmatched_amount`, with amounts counted as positive integers.
+
+Milestone 2 keeps every milestone 1 rule and adds the documented legacy kind aliases: `PRIMARY` means `PCP`, `SPECIAL` means `SPEC`, `LABORATORY` means `LAB`. From milestone 2 onward, the canonical match-eligible kind values are exactly `PCP`, `SPEC`, or `LAB`; alias targets such as `LAB` are valid canonical values from this milestone onward. Normalize aliases after trimming and case folding before matching, validate the normalized value through the same matching gates, and emit only the canonical kind values in matched report rows. Unknown kinds stay unmatched even if both source and correction use the same unknown value, without changing the output schema or status labels.
+
+The report `status` column must use only the exact strings `MATCHED` and `UNMATCHED`.

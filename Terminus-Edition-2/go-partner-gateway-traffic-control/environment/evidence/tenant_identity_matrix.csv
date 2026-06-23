@@ -1,0 +1,6 @@
+request_id,raw_header,expected_identity_relation,observed_status
+req-201," Partner-A ",same-as-partner-a,200
+req-202,partner-a,same-as-Partner-A,429
+req-203,PARTNER-B,independent-from-partner-a,429
+req-204,"",shared-implicit-legacy,400
+req-205,legacy-default,explicit-and-distinct-from-implicit,200

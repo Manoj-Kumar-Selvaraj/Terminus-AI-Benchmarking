@@ -1,0 +1,5 @@
+package,enabled,priority
+MINI,true,2
+STANDARD,true,1
+PREMIUM,true,3
+CHECK,false,9

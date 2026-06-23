@@ -1,0 +1,8 @@
+termination-started t=0ms
+request accepted before termination t=4ms
+listener closed t=6ms
+client observed EOF t=7ms
+upstream finished t=78ms
+
+The rollout contract expects accepted requests to finish inside the grace
+window when their own context has not expired.

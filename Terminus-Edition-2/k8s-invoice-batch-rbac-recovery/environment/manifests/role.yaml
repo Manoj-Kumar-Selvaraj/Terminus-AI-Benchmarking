@@ -1,0 +1,11 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: invoice-batch-role
+  namespace: billing-batch
+  labels:
+    app: invoice-nightly-batch
+rules:
+  - apiGroups: ["*"]
+    resources: ["*"]
+    verbs: ["*"]

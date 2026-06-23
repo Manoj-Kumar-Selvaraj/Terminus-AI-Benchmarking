@@ -1,0 +1,26 @@
+# Rubric 1
+Agent investigates and updates `/app/app/reconcile.rb` using the CSV inputs under `/app/data` and `/app/config`, +2
+Agent keeps the executable solution in `/app/app/reconcile.rb`, which Ruby runs directly, instead of moving the implementation to an uninvoked script, +3
+Agent implements milestone 1 full-key matching using `parcel_id`, `courier_id`, `station_id`, `location`, and integer `amount` equality, +5
+Agent enforces milestone 1 eligibility gates for `DELIVERED` source status, allowed correction reasons, canonical `kind` values, numeric timestamps, open station windows, action time bounds, and single-use source consumption, +5
+Agent selects the unused delivery row with the latest `source_ts` and breaks tied timestamps by earliest delivery input row when multiple candidates qualify, +3
+Agent writes the milestone 1 report and summary with the documented schemas, action input order, exact `MATCHED` and `UNMATCHED` statuses, blank `kind` for unmatched rows, and non-negative totals, +3
+Agent hardcodes final output files instead of deriving matches from the runtime CSV inputs, -5
+Agent tampers with platform files or runtime input fixtures to force a pass, -5
+# Rubric 2
+Agent normalizes milestone 2 legacy `kind` aliases after trimming and case folding, including `CSH` to `CASH`, `QR` to `UPI`, and `CC` to `CARD`, +5
+Agent treats only canonical post-normalization `kind` values `CASH`, `UPI`, and `CARD` as match-eligible and leaves unknown values unmatched, +3
+Agent preserves milestone 1 full-key, window, timestamp, status, reason, consumption, output schema, and non-negative-total behavior while adding aliases, +5
+Agent emits canonical source `kind` values in matched rows rather than raw alias codes, +3
+Agent hardcodes alias output rows instead of implementing reusable alias-aware matching, -5
+Agent removes the canonical `kind` gate or allows unknown `kind` values to match after adding aliases, -3
+Agent regresses milestone 1 identity matching or source consumption while implementing alias normalization, -3
+# Rubric 3
+Agent applies `/app/config/windows.csv` as the authoritative realtime window source, requiring numeric timestamps and explicitly `OPEN` station windows, +5
+Agent rejects closed, malformed, missing, unlisted, before-open, and after-close window scenarios without crashing, +5
+Agent resolves multiple qualifying unused delivery rows by latest `source_ts` and then earliest source input row, +5
+Agent preserves alias normalization, canonical `kind` output, full identity matching including `location`, and row-position source consumption under window-gated matching, +5
+Agent keeps required output paths, CSV columns, row order, status labels, and summary schema unchanged, +3
+Agent treats closed, malformed, or unlisted windows as eligible open windows, -5
+Agent writes the solution only to an uninvoked helper script while leaving `/app/app/reconcile.rb` broken, -5
+Agent regresses milestone 1 or milestone 2 matching while implementing window edge-case handling, -3

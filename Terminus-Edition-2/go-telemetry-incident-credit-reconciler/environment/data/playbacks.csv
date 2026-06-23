@@ -1,0 +1,2 @@
+incident_id,severity_id,severity,minutes,start_utc,end_utc,status,region
+STR-SAMPLE-001,ACCT-1,CMEDIUM,45,20260528120000,20260528124500,POSTED,NA

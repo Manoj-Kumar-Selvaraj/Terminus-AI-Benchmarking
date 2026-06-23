@@ -1,0 +1,26 @@
+# Rubric 1
+Agent inspects the PL/I control decks, premium rules, batch runner, and PSV contracts before editing, +2
+Agent enables full five-field comparison and one-time policy-row consumption, +5
+Agent enforces configured policy state and case-insensitive adjustment opcode eligibility, +3
+Agent preserves adjustment order and selects the latest numeric ingest timestamp before policy input order, +5
+Agent writes the exact pipe-separated report and key-value summary with canonical valid risk codes and blank invalid risk codes, +5
+Agent hardcodes report or summary artifacts instead of repairing runtime adjudication, -5
+Agent matches policy identifiers by prefix or reuses a consumed policy row, -5
+Agent changes runtime fixtures, platform metadata, or execution scaffolding to force expected results, -5
+# Rubric 2
+Agent preserves strict keys, eligibility gates, ordering, consumption, schemas, and totals while adding aliases, +5
+Agent parses `ALIAS_*` declarations as trimmed case-insensitive raw-to-canonical mappings, +5
+Agent canonicalizes risk codes on both policy and adjustment rows before comparison, +5
+Agent emits the selected policy's canonical risk code only for valid rows, +3
+Agent hardcodes known aliases instead of reading the PL/I rule declarations, -5
+Agent lets unknown or differently canonicalized risk codes match, -3
+Agent regresses full-key matching, opcode gates, or one-time consumption while adding aliases, -5
+# Rubric 3
+Agent preserves strict matching, aliases, candidate selection, consumption, and outputs while enabling fiscal windows, +5
+Agent requires numeric 14-digit policy, adjustment, open, and close timestamps, +3
+Agent applies only the configured open fiscal state for the same account number, +5
+Agent requires policy ingest and adjustment timestamps inside the same inclusive window with ingest no later than adjustment, +5
+Agent consumes the latest eligible ingest candidate so earlier candidates remain available for earlier adjustments, +5
+Agent treats wrong-account, closed, malformed, missing, or non-covering windows as eligible, -5
+Agent validates only the adjustment timestamp and ignores policy ingest eligibility, -5
+Agent regresses aliases, full-key matching, row consumption, report schema, or summary totals, -3

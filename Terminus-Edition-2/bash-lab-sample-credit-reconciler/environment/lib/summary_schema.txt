@@ -1,0 +1,4 @@
+credit_summary.json keys:
+matched_count, matched_amount_cents, unmatched_count, unmatched_amount_cents
+
+All cent totals are positive integers. Counts are non-negative integers derived from the report rows.

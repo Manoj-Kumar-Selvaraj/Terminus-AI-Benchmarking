@@ -1,0 +1,5 @@
+employee_id|effective_from|base_cents|allowance_cents|overtime_rate_bp
+EMP-A|202601|40000|5000|1500
+EMP-A|202604|45000|7000|1500
+EMP-B|202601|60000|6000|1250
+EMP-C|202602|55000|5000|1000

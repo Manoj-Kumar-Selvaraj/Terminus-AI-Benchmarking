@@ -1,0 +1,2 @@
+action_id,source_id,account_id,location_id,kind,amount_cents,action_ts,reason,lane
+ACT-SAMPLE,SRC-SAMPLE,ACC-SAMPLE,LOC-1,STANDARD,1000,20260530101000,CREDIT,L1

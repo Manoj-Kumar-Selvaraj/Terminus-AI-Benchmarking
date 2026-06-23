@@ -1,0 +1,16 @@
+[
+  {
+    "operation_key": "stmt-88421-credit",
+    "client_id": "legacy-v1",
+    "event_type": "billing.credit",
+    "account_id": "88421",
+    "amount": "125.40"
+  },
+  {
+    "operation_key": "stmt-88455-credit",
+    "client_id": "modern-default",
+    "event_type": "billing.credit",
+    "account_id": "88455",
+    "amount": "88.00"
+  }
+]

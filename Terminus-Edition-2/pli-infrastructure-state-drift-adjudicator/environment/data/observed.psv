@@ -1,0 +1,2 @@
+claim_id|resource_id|resource_group|attr_hash|module_name|scan_ts|scan_code|region_code
+SCN-1|RES-10001|rg-prod|50000|ROOT|20260612120500|MATCH|east

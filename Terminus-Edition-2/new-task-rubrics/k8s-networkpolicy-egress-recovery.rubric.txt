@@ -1,0 +1,28 @@
+# Rubric 1
+Agent inspects pod labels, namespace labels, DNS requirements, and denied egress evidence before changing policy, +2
+Agent restores DNS egress with least-privilege selectors and ports rather than broad allow-all rules, +5
+Agent preserves unrelated denied destinations while fixing name resolution, +4
+Agent validates selector changes against semantic policy simulation, +3
+Agent allows unrestricted egress or all namespaces to satisfy DNS, -5
+Agent edits simulator fixtures or removes denied cases, -5
+# Rubric 2
+Agent authorizes ledger/database egress only for documented service identities and ports, +5
+Agent preserves milestone 1 DNS behavior while narrowing ledger access, +3
+Agent handles namespace and pod label drift without allowing unrelated workloads, +4
+Agent validates both allowed and denied ledger flows, +3
+Agent grants database egress to every pod or namespace, -5
+Agent bypasses network policy evaluation in the simulator, -5
+# Rubric 3
+Agent repairs identity-sensitive egress using service-account, pod, and namespace selectors together, +5
+Agent prevents bypasses through broad IPBlock or wildcard selector additions, +4
+Agent preserves prior DNS and ledger rules, +3
+Agent validates unauthorized pod and namespace combinations, +3
+Agent adds catch-all egress rules or empty selectors that over-authorize traffic, -5
+Agent relies on comments or documentation without changing effective policy behavior, -5
+# Rubric 4
+Agent adds audit endpoint egress with exact CIDR and documented exceptions, +5
+Agent preserves DNS, ledger, and identity behavior while adding audit reachability, +3
+Agent rejects adjacent or excluded audit IPs and incorrect ports, +4
+Agent validates final policy with multiple allowed and denied destinations, +3
+Agent opens the whole audit network without exceptions, -5
+Agent weakens previous least-privilege policy to pass the final case, -5

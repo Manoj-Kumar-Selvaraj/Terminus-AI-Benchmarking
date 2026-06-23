@@ -1,0 +1,34 @@
+# Rubric 1
+Agent inspects `/app/src/atm_release_router.cbl`, `/app/src/release_rules.pli`, and the hold and release PSV inputs before editing, +2
+Agent reads `ELIGIBLE_HOLD_STATUS` and the `REASON_*` declarations from the PL/I rule deck instead of hardcoding eligibility constants, +3
+Agent enforces full-key matching on `hold_id`, `card_id`, `terminal_id`, `region`, and `amount_cents` before marking a release matched, +5
+Agent requires hold and release `channel` strings to match after trimming whitespace with case-sensitive comparison, +3
+Agent rejects holds whose status is not the configured eligible hold status from the rule deck, +3
+Agent accepts only release reasons declared in the PL/I rule deck and rejects unknown reason codes, +3
+Agent consumes each hold row at most once so a second release cannot reuse an already matched hold, +5
+Agent preserves release input order with one report row per release in `/app/out/release_report.csv`, +3
+Agent writes the exact report header documented in `/app/docs/release_report_schema.md`, +3
+Agent emits only `MATCHED` or `UNMATCHED` status labels, leaves `channel` blank on unmatched rows, and emits the hold channel on matched rows, +3
+Agent writes `/app/out/release_summary.txt` with positive integer cent totals for matched and unmatched counts and amounts, +3
+Agent hardcodes final report or summary output instead of repairing the reconciler implementation, -5
+Agent edits shipped verifier input fixtures to force a pass instead of fixing reconciliation logic, -5
+# Rubric 2
+Agent normalizes PL/I channel aliases from `ALIAS_ATM`, `ALIAS_POS`, and `ALIAS_WEB` on both hold and release channel values after trimming and case folding, +5
+Agent validates alias-normalized channel pairs through the same full-key, status, and reason gates used in milestone 1, +3
+Agent emits only canonical channel values on matched rows rather than raw alias codes, +3
+Agent leaves unknown channels unmatched without changing report schemas or status labels, +3
+Agent preserves milestone 1 blank-unmatched `channel` behavior, summary keys, and release-order reporting while adding aliases, +3
+Agent verifies hold-side and release-side alias normalization against fresh synthetic fixtures before finishing, +2
+Agent regresses milestone 1 matching gates while implementing channel alias normalization, -3
+Agent normalizes only release channels while leaving hold-side alias codes uncanonicalized, -5
+# Rubric 3
+Agent applies `/app/config/terminal_windows.psv` eligibility while preserving milestone 1 and milestone 2 matching rules, +5
+Agent treats window state matching `OPEN_WINDOW_STATUS` case-insensitively and rejects closed, missing, malformed, or unlisted terminal windows, +3
+Agent requires hold and release timestamps to be numeric and rejects non-numeric timestamp values, +3
+Agent requires release timestamps to be on or after the hold timestamp and not after the configured window close, +5
+Agent selects the qualifying unused hold with the latest hold timestamp when multiple candidates remain, +5
+Agent breaks tied hold timestamps by choosing the earliest hold row by zero-indexed position in `/app/data/holds.psv`, +3
+Agent preserves alias normalization on both hold and release sides under terminal window gates, +3
+Agent validates latest-timestamp and tie-break behavior with distinct hold amounts so first-fit file order cannot pass, +3
+Agent treats closed, missing, or unlisted terminal windows as eligible, -5
+Agent regresses milestone 1 or 2 behavior while implementing terminal window or latest-timestamp logic, -3

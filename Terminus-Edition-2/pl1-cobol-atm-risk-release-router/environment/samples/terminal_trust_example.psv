@@ -1,0 +1,2 @@
+terminal_id|trust_tier|region|max_release_cents|supervisor_above_cents
+TERM-EXAMPLE|STANDARD|N|35000|30000

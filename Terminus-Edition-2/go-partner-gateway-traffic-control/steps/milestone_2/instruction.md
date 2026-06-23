@@ -1,0 +1,3 @@
+After tenant isolation was restored, an NTP correction exposed a second admission anomaly: the process admitted a fresh burst immediately after its clock moved backwards. Review `/app/evidence/clock_correction.log` and `/app/docs/time_safety_contract.md`. Make refill accounting safe for a deterministic clock that can move in either direction.
+
+A backward observation must neither create allowance nor make a later recovery interval appear longer than it was. Preserve milestone 1 isolation, normal forward refill, positive retry calculations, and the existing injected-time interface without adding sleeps or reading the system clock directly.

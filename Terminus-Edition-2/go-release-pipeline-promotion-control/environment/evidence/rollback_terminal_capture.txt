@@ -1,0 +1,3 @@
+$ pipelinesim rollback --history release_history.json --env prod --out rollback
+rollback completed
+operator note: rollback manifest points at HEAD instead of prior promoted artifact hash

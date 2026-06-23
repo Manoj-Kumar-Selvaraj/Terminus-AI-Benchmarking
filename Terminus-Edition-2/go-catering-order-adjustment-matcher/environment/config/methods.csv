@@ -1,0 +1,5 @@
+service,enabled
+PICKUP,true
+DELIVERY,true
+ONSITE,true
+CHECK,false

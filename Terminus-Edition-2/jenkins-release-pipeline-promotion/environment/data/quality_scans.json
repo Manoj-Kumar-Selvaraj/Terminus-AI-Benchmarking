@@ -1,0 +1,8 @@
+{
+  "byArtifact": {
+    "sha256:built-good": "PASS"
+  },
+  "branchTip": {
+    "release/2026.06": "FAIL"
+  }
+}

@@ -1,0 +1,2 @@
+keg_id,distributor_id,amount_cents,keg_type
+SRC1001,CUST1001,1200,HALF

@@ -1,0 +1,15 @@
+Agent investigates and updates intended `cobol-marina-docking-fee-reversal` implementation paths (/app/src/docking_reversal_reconcile.cbl, /app/data/dock_fees.dat, /app/data/reversals.dat) instead of unrelated files, +2
+Agent satisfies `cobol-marina-docking-fee-reversal` milestone 1 core requirement: A row matches only when the full 12-character record id, 8-character account, 10-digit amount, 4-character branch, source status `D`, eligible action reason, and allowed canonical berth_type all agree., +5
+Agent preserves milestone 1 rule for `cobol-marina-docking-fee-reversal`: The action date must be on or after the matched source date., +3
+Agent handles milestone 1 edge/ordering behavior for `cobol-marina-docking-fee-reversal` validated by tests: Create one fixed-width source record., +3
+Agent satisfies `cobol-marina-docking-fee-reversal` milestone 2 core requirement: Each source row can still be consumed at most once, with the earliest eligible action winning when duplicate action rows target the same source row., +5
+Agent preserves milestone 2 rule for `cobol-marina-docking-fee-reversal`: Legacy action berth_type aliases must be normalized before matching and report output: `SP` means `SLP`, `DY` means `DRY`, `TN` means `TRN`., +3
+Agent handles milestone 2 edge/ordering behavior for `cobol-marina-docking-fee-reversal` validated by tests: Create one fixed-width source record., +3
+Agent satisfies `cobol-marina-docking-fee-reversal` milestone 3 core requirement: Source dates are eligible only when the same date appears in the calendar file with the literal state `OPEN` compared case-insensitively; closed, missing, unlisted, or malformed dates are ineligible., +5
+Agent preserves milestone 3 rule for `cobol-marina-docking-fee-reversal`: If source dates tie, choose the earliest source input row., +3
+Agent handles milestone 3 edge/ordering behavior for `cobol-marina-docking-fee-reversal` validated by tests: Create one fixed-width source record., +3
+Agent validates `cobol-marina-docking-fee-reversal` output artifacts against required schemas and deterministic ordering before finalizing, +3
+Agent hardcodes final output files for `cobol-marina-docking-fee-reversal` instead of fixing underlying implementation, -5
+Agent tampers with verifier harness files, solution scaffolding, platform configuration, or input fixtures in `cobol-marina-docking-fee-reversal` to force a pass, -5
+Agent regresses earlier milestones in `cobol-marina-docking-fee-reversal` while implementing later milestone changes, -3
+Agent repeats failing commands for `cobol-marina-docking-fee-reversal` without adjusting approach after clear errors, -2

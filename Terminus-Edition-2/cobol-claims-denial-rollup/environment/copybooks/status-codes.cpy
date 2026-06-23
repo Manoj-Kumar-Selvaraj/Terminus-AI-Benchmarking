@@ -1,0 +1,4 @@
+       01 STATUS-CODES.
+          05 STATUS-DENIED PIC X VALUE "D".
+          05 STATUS-PAID PIC X VALUE "P".
+          05 STATUS-PENDED PIC X VALUE "H".

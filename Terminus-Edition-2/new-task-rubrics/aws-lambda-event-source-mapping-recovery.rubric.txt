@@ -1,0 +1,28 @@
+# Rubric 1
+Agent inspects `/app/evidence/mapping_status.json`, `/app/evidence/deploy_diff.txt`, `/app/config/event_source_mapping.json`, and `/app/config/queues.json` before editing recovery state, +2
+Agent enables the event-source mapping and points `event_source_arn` at `expected_active_queue_arn` from `/app/config/queues.json`, +5
+Agent keeps `function_name` as `payments-ledger-ingestor:live`, preserves `ReportBatchItemFailures`, and keeps batch size compatible with the simulator contract, +3
+Agent validates mapping discovery and migrated-queue batch delivery through `/app/scripts/run_simulation.py` instead of hardcoding queue ARNs, +2
+Agent leaves the mapping disabled, targets the old queue ARN for active processing, or drops the partial-batch response contract, -5
+Agent edits verifier fixtures or bypasses mapping discovery to force a pass, -5
+# Rubric 2
+Agent repairs `/app/config/lambda_role_policy.json` using exact `sqs:ReceiveMessage`, `sqs:DeleteMessage`, `sqs:ChangeMessageVisibility`, and `sqs:GetQueueAttributes` grants on the migrated queue ARN, +5
+Agent rejects wildcard action or wildcard resource SQS grants while preserving existing CloudWatch Logs permissions, +4
+Agent preserves milestone 1 mapping selection while fixing IAM access for the migrated queue, +3
+Agent validates both allowed migrated-queue actions and denied old-queue-only authorization paths, +2
+Agent leaves permissions scoped only to the old queue ARN or broadens queue access with `*` actions or resources, -5
+Agent disables IAM validation or simulator queue access checks to make replay succeed, -5
+# Rubric 3
+Agent fixes `/app/handler/index.mjs` to return the partial batch response shape documented in `/app/docs/partial_batch_contract.md`, +5
+Agent reports only failed `messageId` values in `batchItemFailures` so poison or malformed peers do not force successful records to retry, +5
+Agent commits successful ledger side effects once per replay and preserves migrated mapping and IAM behavior from earlier milestones, +3
+Agent validates poison, malformed JSON, and dynamic batch fixtures without deleting or neutering supplied poison inputs, +3
+Agent treats the whole batch as failed after one bad record or relocates the handler away from `/app/handler/index.mjs`, -5
+Agent drops failed records without retry or DLQ eligibility evidence, -5
+# Rubric 4
+Agent makes `/app/handler/index.mjs` idempotent by stable `business_event_id` while preserving alternate `message_id` values on ledger rows (for example `duplicate_message_ids`), +5
+Agent prevents duplicate deliveries, including different SQS message IDs for the same business event, from appending duplicate ledger rows, +5
+Agent routes poison or malformed messages to DLQ only after `max_receive_count` from `/app/config/redrive_policy.json` with stable failure reasons and required DLQ metadata, +3
+Agent preserves successful committed side effects across restart or multi-cycle replay under dynamic batch inputs, +3
+Agent reprocesses committed business events, duplicates ledger rows on restart, or hardcodes fixture event IDs instead of processing input, -5
+Agent regresses milestone 1-3 mapping, IAM, or partial-batch behavior while adding idempotency, -3

@@ -1,0 +1,3 @@
+advance_id,employee_id,amount_cents,method
+INVEDGE000001,CUST9001,100,ACH
+INVEDGE000002,CUST9002,200,CARD

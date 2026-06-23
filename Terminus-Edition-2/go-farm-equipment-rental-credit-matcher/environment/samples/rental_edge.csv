@@ -1,0 +1,3 @@
+rental_id,account_id,amount_cents,status,equipment_type
+INVEDGE000001,CUST9001,100,ACTIVE,TRACTOR
+INVEDGE000002,CUST9002,200,ACTIVE,SPRAY

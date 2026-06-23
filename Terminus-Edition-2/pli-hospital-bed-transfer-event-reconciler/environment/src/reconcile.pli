@@ -1,0 +1,2 @@
+/* PL/I-style source: reconcile records using reconcile_rules.pli. */
+DCL MATCH_MODE CHAR(8) INIT('STRICT');

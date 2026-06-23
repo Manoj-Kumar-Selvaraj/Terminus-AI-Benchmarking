@@ -1,0 +1,39 @@
+# Rubric 1
+Agent inspects `/app/src/stmt_merge.cbl`, `/app/docs/record_layouts.md`, and fixed-width statement layouts before editing, +2
+Agent keeps rewritten COBOL valid for free-format compilation with `cobc -x -free -I /app/copybooks -O2`, +3
+Agent fixes control breaks to use `(account_id, stmt_date)` group keys instead of account-only comparisons, +5
+Agent commits separate control rows when the same account revisits an earlier statement date, +5
+Agent preserves 48-byte statement parsing, 56-byte control total output, and documented summary keys, +3
+Agent accumulates debits and credits independently within each committed group, +3
+Agent hardcodes final output files instead of repairing the COBOL merge logic, -5
+Agent tampers with platform files or runtime input fixtures to force a pass, -5
+Agent collapses distinct account/date groups into one control total row, -5
+# Rubric 2
+Agent preserves milestone 1 account/date control breaks while fixing cross-run merge behavior, +3
+Agent continues accumulator state when the composite business key repeats at a sort-run boundary, +5
+Agent avoids resetting pending totals on stream open when duplicate keys span consecutive manifest entries, +5
+Agent still commits distinct groups when the next run begins with a new composite key, +3
+Agent compiles and runs the COBOL batch after merge-state fixes, +2
+Agent hardcodes outputs instead of implementing cross-run merge carry-forward in COBOL, -5
+Agent splits duplicate-key statement rows into separate committed groups, -5
+Agent regresses milestone 1 group break behavior while fixing run-boundary merge state, -3
+# Rubric 3
+Agent preserves milestones 1 and 2 while fixing file-transition commits, +3
+Agent commits pending totals under the closing `(account_id, stmt_date)` group at EOF, +5
+Agent removes read-ahead assignment that posts closing totals to the next stream account, +5
+Agent keeps manifest order, duplicate-key carry-forward, and summary reconciliation intact, +3
+Agent validates multi-run scenarios with three or more committed groups, +2
+Agent hardcodes outputs instead of repairing file-transition commit logic, -5
+Agent assigns committed totals to the first account in the next sort run, -5
+Agent regresses milestone 1 or 2 behavior while fixing stream transitions, -3
+# Rubric 4
+Agent preserves milestones 1 through 3 before adding checkpoint restart handling, +3
+Agent loads `/app/out/checkpoint.dat` when `STMT_MERGE_RESTART=1` and fails restart when the checkpoint is missing or unreadable, +3
+Agent loads `/app/out/checkpoint.dat` when `STMT_MERGE_RESTART=1` and skips already processed rows, +5
+Agent restores pending accumulator state from the checkpoint without double-counting committed groups, +5
+Agent appends new committed rows on restart instead of rewriting prior control totals, +3
+Agent honors `STMT_MERGE_ABEND_AFTER` simulation and writes checkpoint state before ABEND, +3
+Agent keeps final summary totals identical to an uninterrupted run after restart, +5
+Agent hardcodes restart outputs instead of implementing checkpoint resume in COBOL, -5
+Agent replays committed statement rows on restart or drops pending totals, -5
+Agent regresses merge, transition, or group-break behavior while implementing restart, -3

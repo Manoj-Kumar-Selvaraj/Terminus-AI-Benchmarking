@@ -1,0 +1,7 @@
+column,required
+invoice_id,true
+customer_id,true
+channel,false
+amount_cents,true
+payment_date,true
+status,true

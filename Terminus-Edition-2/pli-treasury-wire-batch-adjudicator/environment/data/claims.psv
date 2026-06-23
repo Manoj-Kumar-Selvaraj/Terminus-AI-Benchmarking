@@ -1,0 +1,2 @@
+claim_id|wire_id|account|amount_cents|rail_code|claim_ts|reason_code|branch_id
+CLM-1|W-10001|991100|50000|FED|20260612120500|SETTLE|NYC

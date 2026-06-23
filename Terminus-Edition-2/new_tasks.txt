@@ -1,0 +1,66 @@
+# All new / unrevised TerminalBench tasks (56). One task name per line; scripts skip # comments.
+# Scaffold batch (18) + fresh 2026-06-02 batch (5) + more Go batch (10) + mixed Ruby/Go/Bash batch (10).
+# Repo root task folders.
+
+go-community-pool-lap-credit-matcher
+go-datacenter-rack-hold-release
+go-escape-room-booking-refund-matcher
+go-food-truck-rally-voucher-matcher
+go-helicopter-tour-deposit-reconciler
+go-ice-rink-session-credit-matcher
+go-laundromat-cycle-rebate-matcher
+go-mini-golf-scorecard-credit-matcher
+go-museum-visit-audio-credit-matcher
+go-photo-booth-print-credit-matcher
+go-rail-yard-freight-hold-release
+go-recycling-weighin-rebate-matcher
+go-solar-install-rebate-matcher
+go-winery-tasting-refund-matcher
+pli-hospital-bed-transfer-event-reconciler
+pli-insurance-fnol-reserve-event-processor
+pli-rail-delay-credit-event-router
+pli-orbit-downlink-frame-auditor
+pli-treasury-wire-batch-adjudicator
+pli-distributed-fragment-ledger-reconciler
+pli-general-ledger-posting-normalizer
+pli-retail-batch-trailer-reconciler
+pli-insurance-premium-surcharge-adjudicator
+pli-mainframe-tape-record-integrity-auditor
+pli-canonical-payload-semantic-matcher
+pli-multicurrency-ledger-clearing-processor
+pli-workload-manifest-consistency-auditor
+pli-infrastructure-state-drift-adjudicator
+pli-privilege-mandate-sandbox-classifier
+pli-numeric-directive-rollup-processor
+ruby-ev-charging-session-release
+ruby-hospital-bed-hold-release
+ruby-laundry-locker-hold-release
+ruby-marina-berth-hold-release
+ruby-ski-resort-lift-gate-release
+ruby-warehouse-dock-hold-release
+
+# Fresh 2026-06-02 Go batch.
+go-yoga-studio-class-credit-reconciler
+go-dentist-appointment-copay-credit-matcher
+go-ferry-ticket-rebooking-credit-matcher
+go-childcare-attendance-credit-matcher
+go-fitness-pt-session-rebate-matcher
+
+# More Go batch.
+go-coffee-roastery-workshop-refund-matcher
+go-farm-equipment-rental-credit-matcher
+go-aquarium-tour-refund-matcher
+go-dance-studio-recital-credit-matcher
+go-cinema-private-screening-credit-matcher
+
+# Mixed Ruby/Go/Bash batch.
+ruby-go-bash-aquarium-membership-visit-credit-ledger
+ruby-go-bash-artisan-market-booth-refund-settler
+ruby-go-bash-botanical-garden-tour-credit-matcher
+ruby-go-bash-concert-venue-merch-consignment-reconciler
+ruby-go-bash-ferry-harbor-reservation-adjustment-ledger
+ruby-go-bash-film-festival-pass-transfer-clearing
+ruby-go-bash-makerspace-tool-rental-deposit-clearing
+ruby-go-bash-robotics-league-parts-return-settler
+ruby-go-bash-satellite-launch-manifest-credit-reconciler
+ruby-go-bash-vineyard-club-shipment-credit-router

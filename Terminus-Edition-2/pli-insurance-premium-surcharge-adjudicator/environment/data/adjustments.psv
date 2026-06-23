@@ -1,0 +1,2 @@
+claim_id|policy_id|account_no|premium_cents|risk_code|adj_ts|opcode|branch_id
+ADJ-1|POL-10001|991100|50000|HIGH|20260612120500|RATE|NYC

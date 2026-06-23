@@ -1,0 +1,45 @@
+# Rubric 1
+Agent inspects `/app/src/parcel_credit_reconcile.cbl`, fixed-width input layouts, and the documented output files before editing, +2
+Agent keeps rewritten COBOL valid for free-format compilation with `cobc -x -free -O2`, +3
+Agent parses `record_id` after the one-byte record type prefix and never includes the leading `S` or `A` byte in comparisons or output, +5
+Agent fixes the COBOL reconciler logic instead of hardcoding `/app/out/surcharge_credit_report.csv` or `/app/out/surcharge_credit_summary.txt`, +3
+Agent enforces full record id, account, amount, branch, source status `S`, eligible reason, action date ordering, and allowed canonical service tier, +5
+Agent preserves action input order, zero-padded amount text, exact report columns, and exact `MATCHED` and `UNMATCHED` status labels, +3
+Agent leaves `service_tier` blank for every `UNMATCHED` report row and emits the matched canonical source service tier for every `MATCHED` row, +3
+Agent preserves the action reason value in the report `reason` column for matched and unmatched rows, +3
+Agent writes `matched_count`, `matched_amount_cents`, `unmatched_count`, and `unmatched_amount_cents` as positive integer `key=value` summary lines, +3
+Agent hardcodes final output files instead of repairing the COBOL reconciliation logic, -5
+Agent tampers with verifier harness files, solution scaffolding, platform configuration, or input fixtures to force a pass, -5
+Agent changes required output filenames, report schema, summary keys, or status labels, -3
+Agent includes the leading record type byte in `record_id` comparisons or report output, -5
+Agent writes action service tier values into `UNMATCHED` rows, -3
+# Rubric 2
+Agent preserves the established matching and output behavior while adding legacy service-tier alias normalization, +3
+Agent normalizes legacy service tier aliases `ST`, `NX`, and `SM` before matching and report output, +3
+Agent emits canonical `STD`, `NXT`, or `SAM` values for matched alias rows rather than raw aliases, +3
+Agent consumes each source row at most once so duplicate actions cannot reuse the same shipment row, +5
+Agent hardcodes final output files or fixture-specific alias results instead of implementing reusable alias-aware matching, -5
+Agent regresses full-key matching, report schema, blank unmatched service tiers, or positive summary totals while adding aliases, -5
+Agent writes raw alias values such as `ST`, `NX`, or `SM` into matched report rows when canonical values are required, -3
+Agent allows one source row to satisfy multiple action rows, -5
+# Rubric 3
+Agent preserves full-key matching, aliases, output contracts, and consumption while adding calendar-gated source-date eligibility, +3
+Agent applies calendar eligibility using `/app/config/dispatch_calendar.txt` while preserving all prior matching gates, +5
+Agent treats arbitrary casing of calendar state `OPEN` as eligible and rejects closed, missing, unlisted, or malformed source dates, +3
+Agent chooses the eligible source row with the latest source date when multiple unused rows qualify, +5
+Agent preserves older eligible rows for earlier-dated actions after consuming the latest source candidate, +3
+Agent preserves alias normalization, blank unmatched service tiers, reason output, and positive totals under calendar-gated matching, +3
+Agent treats closed, missing, malformed, or unlisted calendar dates as open, -5
+Agent chooses the first matching source row instead of the latest eligible source date when multiple unused rows qualify, -5
+Agent regresses matching, alias normalization, row consumption, report schema, or summary totals while implementing calendar gates, -5
+# Rubric 4
+Agent inspects the branch service policy contract before changing policy-aware matching, +2
+Agent parses branch, canonical service tier, enabled state, maximum credit, and priority from `/app/config/service_policy.csv`, +5
+Agent fails closed for disabled, missing, malformed, non-numeric, or amount-limiting policy rows, +5
+Agent supports action service tier `ANY` without emitting it and filters candidates through every earlier matching gate, +5
+Agent ranks eligible wildcard candidates by latest source date, lowest policy priority, and earliest source input row, +5
+Agent keeps named canonical tiers and legacy aliases constrained to the same canonical source tier, +3
+Agent consumes only the selected policy-eligible source row and preserves report and summary contracts, +3
+Agent lets `ANY` bypass status, calendar, identity, reason, amount, branch, or consumption gates, -5
+Agent emits `ANY` or a raw alias in a matched report row, -3
+Agent accepts disabled, malformed, missing, or over-limit service policy as eligible, -5

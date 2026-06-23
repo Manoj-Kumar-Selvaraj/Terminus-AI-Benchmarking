@@ -1,0 +1,39 @@
+{
+  "remit_export_csv": {
+    "path": "/app/out/remit_export.csv",
+    "header": "transaction_id,account_id,rail,amount_cents,business_date",
+    "columns": {
+      "transaction_id": "string",
+      "account_id": "string",
+      "rail": "string",
+      "amount_cents": "string (10-digit zero-padded)",
+      "business_date": "string (YYYYMMDD)"
+    }
+  },
+  "remit_summary_txt": {
+    "path": "/app/out/remit_summary.txt",
+    "format": "key=value lines",
+    "fields": {
+      "exported_count": "int",
+      "exported_amount_cents": "int (positive sum of exported rows)",
+      "rejected_count": "int"
+    }
+  },
+  "remit_payload_json": {
+    "path": "/app/out/remit_payload.json",
+    "accepted_count": "int",
+    "accepted_amount_cents": "int",
+    "rejected_count": "int",
+    "transactions": {
+      "type": "array",
+      "item": {
+        "transaction_id": "string",
+        "account_id": "string",
+        "rail": "string",
+        "amount_cents": "string (10-digit zero-padded)",
+        "business_date": "string (YYYYMMDD)",
+        "status": "string (ACCEPTED | REJECTED | DUPLICATE | CLOSED_DATE)"
+      }
+    }
+  }
+}

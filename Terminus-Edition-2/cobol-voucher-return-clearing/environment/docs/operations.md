@@ -1,0 +1,1 @@
+Voucher return clearing runs as a single COBOL batch job and writes CSV plus key-value summary outputs.

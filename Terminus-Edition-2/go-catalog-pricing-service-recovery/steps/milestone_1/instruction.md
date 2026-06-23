@@ -1,0 +1,3 @@
+Catalog version 42 was published and the service acknowledged its invalidation event, but one instance continued serving version 41 until TTL expiry. Review `/app/evidence/stale_price_trace.log`, `/app/docs/cache_consistency_contract.md`, and the pricing/cache code under `/app/internal`. Restore the invalidation guarantee during an overlap between an in-flight source fetch and a catalog update.
+
+Keep read-through caching, TTL expiry, currency-specific entries, and the existing exported interfaces. Invalidation events can be duplicated or arrive out of order, and the verifier synchronizes the overlap rather than relying on timing sleeps.

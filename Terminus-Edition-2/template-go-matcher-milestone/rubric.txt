@@ -1,0 +1,24 @@
+# Rubric 1
+Agent inspects `/app/cmd/reconcile/main.go` and input/output paths before editing, +2
+Agent compiles the Go CLI with `/usr/local/go/bin/go` and runs it against fresh synthetic inputs, +3
+Agent repairs reconciliation logic instead of hardcoding `/app/out/REPLACE_ME_report.csv`, +5
+Agent enforces full `record_id` and `account_id` equality with `ACTIVE` status and allowed tier gates, +5
+Agent consumes each source row at most once and preserves adjustment input order in the report, +3
+Agent writes exact `MATCHED` and `UNMATCHED` labels with blank unmatched tiers and positive summary totals, +3
+Agent hardcodes output files instead of fixing the Go reconciler, -5
+Agent tampers with platform files or runtime input fixtures to force a pass, -5
+Agent uses partial identifier matching or reuses consumed source rows, -5
+# Rubric 2
+Agent normalizes legacy tier aliases after trimming and case folding before matching, +5
+Agent emits canonical tier values on matched rows and preserves milestone 1 matching behavior, +3
+Agent rejects unknown normalized tiers even when both rows share the same unknown value, +3
+Agent regresses milestone 1 identity, status, consumption, or summary behavior while adding aliases, -5
+Agent emits raw alias codes on matched rows when canonical values are required, -3
+Agent tampers with platform files or runtime input fixtures to force a pass, -5
+# Rubric 3
+Agent preserves milestone 1 and milestone 2 behavior while adding milestone 3 rules, +3
+Agent applies milestone 3 selection and consumption rules without regressing prior gates, +5
+Agent keeps report and summary schemas unchanged under milestone 3 extensions, +3
+Agent regresses milestone 1 or milestone 2 behavior while implementing milestone 3, -5
+Agent hardcodes milestone 3 outputs instead of fixing the shared reconciler, -5
+Agent tampers with platform files or runtime input fixtures to force a pass, -5

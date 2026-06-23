@@ -1,0 +1,28 @@
+# Rubric 1
+Agent updates `/app/app/reconcile.rb` and reads `/app/data/sessions.csv`, `/app/data/adjustments.csv`, and `/app/config/windows.csv`, +2
+Agent enforces milestone 1 identity gates for full `parcel_id`, `plate_id`, `station_id`, `level`, exact `amount`, `CLOSED` status, and eligible reasons `REFUND`, `SHORT`, or `WAIVE`, +5
+Agent accepts only canonical `rate_type` values `HOURLY` or `DAILY` in milestone 1 and rejects unknown kinds, +3
+Agent requires numeric 14-digit timestamps with `entry_ts` inside an `OPEN` window and `adjust_ts` on or after `entry_ts` and on or before window `close_ts`, +5
+Agent rejects closed, missing, malformed, or unlisted windows and malformed source timestamps, +3
+Agent selects the unused eligible source with the latest `entry_ts`, breaking ties by earliest source input row, +5
+Agent consumes each source row at most once and preserves correction input order with blank `rate_type` on unmatched rows, +3
+Agent writes `/app/out/cod_parking_adjustment_report.csv` and `/app/out/cod_parking_adjustment_summary.txt` with required schemas and positive summary totals, +3
+Agent hardcodes output files instead of fixing reconcile logic, -5
+Agent tampers with verifier harness or fixtures to force a pass, -5
+Agent uses partial identifier matching or allows consumed session rows to be reused, -5
+# Rubric 2
+Agent normalizes `HR` to `HOURLY`, `QR` to `DAILY`, and `CC` to `EVENT` before matching, +5
+Agent treats `HOURLY`, `DAILY`, and `EVENT` as the only match-eligible canonical values from milestone 2 onward, +3
+Agent emits canonical `rate_type` values on matched rows and leaves unmatched `rate_type` blank, +3
+Agent preserves milestone 1 window, timestamp, consumption, and tie-break rules while adding aliases, +3
+Agent regresses milestone 1 behavior while implementing alias normalization, -3
+Agent treats unknown aliases as valid canonical kinds or emits raw alias codes on matched rows, -5
+Agent bypasses window, timestamp, or consumption gates for alias-normalized corrections, -5
+# Rubric 3
+Agent keeps every milestone 1 and milestone 2 rule active together in cumulative batches, +3
+Agent applies `/app/config/windows.csv` as authoritative for `OPEN` window eligibility with inclusive window-close boundaries, +5
+Agent verifies latest-`entry_ts` selection and earliest-row tie-breaking under alias-normalized corrections, +3
+Agent preserves blank unmatched `rate_type`, correction input order, and positive summary totals under cumulative rules, +3
+Agent ignores closed, missing, or malformed windows or treats out-of-window timestamps as eligible, -5
+Agent chooses first-fit session rows instead of latest `entry_ts` with earliest-row tie-breaks, -5
+Agent regresses milestone 1 or 2 matching, alias, output, or summary behavior while finishing milestone 3, -3

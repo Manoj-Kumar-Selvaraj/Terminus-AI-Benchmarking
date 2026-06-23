@@ -1,0 +1,6 @@
+{
+  "workspace": "/app/out/pipeline/workspace/shared",
+  "last_writer": "Integration Test",
+  "next_stage": "Package",
+  "symptom": "package hash changed while artifact hash stayed constant"
+}

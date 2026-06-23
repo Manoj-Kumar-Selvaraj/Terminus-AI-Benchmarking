@@ -1,0 +1,11 @@
+{
+  "buildNumber": "142",
+  "branch": "release/2026.06",
+  "commit": "abc1234",
+  "artifactDigest": "sha256:built-good",
+  "branchHeadDigest": "sha256:head-new",
+  "testAxes": [
+    "linux-jdk21",
+    "windows-jdk21"
+  ]
+}

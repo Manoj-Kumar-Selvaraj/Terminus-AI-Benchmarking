@@ -1,0 +1,4 @@
+access_type,enabled,priority
+DAY,true,2
+SEASON,true,1
+VIP,true,3

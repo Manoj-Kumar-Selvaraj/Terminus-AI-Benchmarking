@@ -1,0 +1,72 @@
+{
+  "resource_changes": [
+    {
+      "address": "module.eks.aws_eks_cluster.this[0]",
+      "change": {
+        "actions": [
+          "delete",
+          "create"
+        ]
+      }
+    },
+    {
+      "address": "helm_release.joc",
+      "change": {
+        "actions": [
+          "update"
+        ]
+      }
+    },
+    {
+      "address": "helm_release.payments_controller",
+      "change": {
+        "actions": [
+          "update"
+        ]
+      }
+    },
+    {
+      "address": "helm_release.risk_controller",
+      "change": {
+        "actions": [
+          "update"
+        ]
+      }
+    },
+    {
+      "address": "helm_release.platform_controller",
+      "change": {
+        "actions": [
+          "update"
+        ]
+      }
+    }
+  ],
+  "output_changes": {
+    "joc_hostname": {
+      "actions": [
+        "delete"
+      ]
+    },
+    "joc_url": {
+      "actions": [
+        "delete"
+      ]
+    },
+    "controller_names": {
+      "actions": [
+        "delete"
+      ]
+    },
+    "jenkins_namespace": {
+      "actions": [
+        "delete"
+      ]
+    },
+    "irsa_role_arns": {
+      "actions": [
+        "delete"
+      ]
+    }
+  }
+}

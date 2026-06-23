@@ -1,0 +1,22 @@
+{
+  "items": [
+    {
+      "cause": "SCM",
+      "id": "q-1001",
+      "job": "payments-ledger/main",
+      "state": "waiting"
+    },
+    {
+      "cause": "SCM",
+      "id": "q-1001",
+      "job": "payments-ledger/main",
+      "state": "waiting"
+    },
+    {
+      "cause": "timer",
+      "id": "q-1002",
+      "job": "shared-library/test",
+      "state": "blocked"
+    }
+  ]
+}

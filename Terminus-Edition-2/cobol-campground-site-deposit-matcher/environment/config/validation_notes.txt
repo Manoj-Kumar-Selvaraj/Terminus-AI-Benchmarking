@@ -1,0 +1,1 @@
+Verifier scenarios rewrite site_fees.dat, deposit_returns.dat, season_calendar.txt, reasons.csv, categories.csv, and branch_policies.csv. The reconciler must read runtime files, not rely on the shipped sample data.

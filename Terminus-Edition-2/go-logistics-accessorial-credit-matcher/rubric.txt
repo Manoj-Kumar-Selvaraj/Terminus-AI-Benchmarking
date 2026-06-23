@@ -1,0 +1,27 @@
+# Rubric 1
+Agent investigates `/app/cmd/reconcile/main.go`, `/app/data/charges.csv`, and `/app/data/credits.csv` instead of unrelated files, +2
+Agent compiles the Go CLI with `/usr/local/go/bin/go` and runs it against fresh synthetic inputs, +3
+Agent enforces milestone 1 matching gates: full `charge_id` equality (not prefix), `shipper_id`, `amount_cents`, posted charge status `BILLED`, allowed modes `LTL`/`FTL`/`RAIL`, and mode equality, +5
+Agent consumes each charge row at most once while preserving credit input order, +3
+Agent writes `/app/out/credit_report.csv` and `/app/out/credit_summary.json` with required schema, `MATCHED`/`UNMATCHED` only, blank unmatched `mode`, and positive summary cents, +3
+Agent hardcodes final output files instead of fixing reconciliation logic, -5
+Agent tampers with verifier harness files, oracle scripts, or input fixtures to force a pass, -5
+# Rubric 2
+Agent normalizes all legacy mode aliases `LESS`->`LTL`, `FULL`->`FTL`, and `RR`->`RAIL` after trim and case folding, +5
+Agent emits canonical mode values in matched report rows rather than raw alias codes, +3
+Agent preserves milestone 1 full-id, identity, consumption, schema, and positive-total behavior while adding aliases, +3
+Agent trims surrounding whitespace and compares status and mode case-insensitively, +3
+Agent leaves `mode` blank on unmatched rows after alias-aware matching, +3
+Agent validates that each documented alias family is exercised, including `LESS` credits matching `LTL` charges and emitting canonical `LTL`, +2
+Agent regresses milestone 1 behavior while implementing alias normalization, -3
+Agent omits any documented legacy alias or emits raw alias modes such as `LESS`, `FULL`, or `RR` in matched rows, -3
+# Rubric 3
+Agent applies open-date gates from `/app/config/cutoff_calendar.txt` while preserving all earlier matching rules, +5
+Agent requires credit dates listed as `open` and rejects credits after the charge `invoice_date`, +3
+Agent chooses the eligible charge with the latest `invoice_date` when multiple unused rows qualify, +5
+Agent breaks tied `invoice_date` values by selecting the earliest charge input row and tracks consumption by row position, +3
+Agent preserves alias normalization and canonical mode output under date-gated matching, +3
+Agent preserves every milestone 2 alias under date-gated matching, including `LESS`->`LTL`, `FULL`->`FTL`, and `RR`->`RAIL`, +3
+Agent validates final CSV and JSON artifacts before finishing milestone 3, +2
+Agent regresses milestone 1 or 2 matching behavior while adding calendar or tie-break logic, -3
+Agent drops `LESS` alias handling or any other milestone 2 alias when adding calendar and latest-date rules, -3

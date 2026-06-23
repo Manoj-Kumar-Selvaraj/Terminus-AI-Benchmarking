@@ -1,0 +1,7 @@
+Extend the dated brewery deposit reconciler with keg-type policy from `/app/config/methods.csv`. Keep every prior requirement: full identifiers only, one keg row can be consumed once, legacy aliases `HLF`, `SIX`, and `COR` normalize to canonical values, dated batches require an open `deposit_date`, and old CSV shapes without dates still work.
+
+When `/app/config/methods.csv` is present, enabled keg types come from rows whose `enabled` value is `true` after trimming and case normalization. A disabled keg type must not match even if it was allowed by earlier milestones. The file may include a numeric `priority` column; lower numbers rank earlier, and missing or malformed priorities rank after configured numeric priorities.
+
+Deposit rows may use `ANY` as the `keg_type`. `ANY` is not emitted in the report. It can match any enabled keg type that satisfies the identifier, distributor, amount, status, date, and consumption rules. For `ANY`, select the unused eligible keg row with the latest `return_date`; if dates tie, select the lower configured keg-type priority; if priority also ties, select the earliest keg input row. Non-`ANY` deposits still require the canonical keg type to match exactly. Keep the report schema `keg_id,distributor_id,keg_type,amount_cents,status`, use only `MATCHED` and `UNMATCHED`, and leave `keg_type` blank for unmatched rows.
+
+Continue to write `/app/out/deposit_report.csv` and `/app/out/deposit_summary.json` with the same schemas, status labels, blank unmatched fields, and summary keys from the earlier milestone.

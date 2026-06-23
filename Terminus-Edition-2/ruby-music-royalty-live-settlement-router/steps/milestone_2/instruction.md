@@ -1,0 +1,9 @@
+The realtime music royalty live settlement reconciler is matching settlement rows to the wrong source records. Fix the existing Ruby entrypoint at `/app/app/reconcile.rb` so `/app/data/settlements.csv` reconciles against `/app/data/holds.csv`, using `/app/config/windows.csv` for the active realtime window rules.
+
+A settlement can match only when the full `play_id`, `payee_id`, `trust_id`, `market`, and integer `amount` all match, the source status is the literal `HELD`, the settlement reason is `CLOSE`, `CORRECT`, or `PAY`, the `right_type` field is one of the canonical values `SELLER`, `BROKER`, or `TAX` after alias normalization, both timestamps are numeric, the settlement timestamp `settle_ts` is on or after the source timestamp `play_ts`, and the source row has not already been consumed.
+
+Write `/app/out/royalty_settlement_report.csv` with columns `settlement_id,play_id,payee_id,trust_id,right_type,amount,reason,status`, preserving settlement input order. Matched rows report the canonical source `right_type`; unmatched rows leave `right_type` blank. Write `/app/out/royalty_settlement_summary.txt` as `key=value` lines for `matched_count`, `matched_amount`, `unmatched_count`, and `unmatched_amount`, with amounts counted as positive integers.
+
+Milestone 2 keeps every milestone 1 rule and adds the documented legacy right_type aliases: `SLR` means `SELLER`, `BRK` means `BROKER`, and `TAXAUTH` means `TAX`. Normalize aliases on both source and settlement rows after trimming and case folding before matching, validate the normalized value through the same matching gates, and emit only the canonical right_type values in matched report rows. Unknown right_types stay unmatched without changing the output schema or status labels.
+
+The report `status` column must use only the exact strings `MATCHED` and `UNMATCHED`.

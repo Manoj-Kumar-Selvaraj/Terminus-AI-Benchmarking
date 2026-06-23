@@ -1,0 +1,3 @@
+# Issuing-CA rotation timeline
+At 01:40 UTC the ledger team began rotating from `Edge Issuing CA 2025` to `Edge Issuing CA 2026`. Some upstream instances continued serving certificates from the retiring issuer while replacement instances served certificates from the new issuer. The overlap window is intentional and both populations must remain reachable until the old instances drain.
+At 02:05 UTC the gateway trust artifact was updated. Requests still failed first with an unknown-authority error and then, after an emergency trust adjustment, with a hostname verification error. Operators did not authorize bypassing verification.

@@ -1,0 +1,7 @@
+The row-level report is now stable enough for the clearing desk, but the incident notes show that matched rows are being treated as independent credits. The batch must also evaluate reservation-cycle groups from `/app/config/reservation_cycles.csv` and write `/app/out/reservation_credit_groups.csv`. Preserve all milestone 1 row-report behavior while adding group settlement.
+
+Enable legacy SKU normalization using `/app/config/kind_aliases.csv`: after trimming and case folding, aliases such as `C`, `GPUF`, and `MEMORY` map to their canonical values. Canonical `CPU`, `GPU`, and `MEM` are eligible. `sku_type` is still not a pairwise row matching key; source and credit rows may have different eligible canonical values. Unknown tokens remain unmatched.
+
+A group is identified by the configured `group_id`, `reservation_id`, `account_id`, `region`, and `billing_cycle`. It is `CLEARABLE` only when every member credit for that reservation/account/region matched, the configured required SKU set is present among matched rows, and the matched amount equals `expected_amount`. Otherwise the group is `HELD` with exactly one reason token: `NO_MATCHED_CREDITS`, `MEMBER_UNMATCHED`, `MISSING_REQUIRED_SKU`, or `GROUP_TOTAL_MISMATCH`. Do not partially clear a group.
+
+Write `/app/out/reservation_credit_groups.csv` with header `group_id,reservation_id,account_id,region,billing_cycle,required_sku_types,expected_amount,matched_amount,status,reason`. Keep the original row report and summary schemas unchanged.

@@ -1,0 +1,8 @@
+{
+  "observed_uuid": "esm-payments-ledger-live-20260613",
+  "console_status": "Disabled",
+  "observed_event_source_arn": "arn:aws:sqs:us-east-1:111122223333:payments-ledger-old",
+  "intended_event_source_arn": "arn:aws:sqs:us-east-1:111122223333:payments-ledger-v2",
+  "last_successful_poll_utc": "2026-06-13T18:04:11Z",
+  "operator_note": "Migration review said the queue swap was complete, but no new-queue message reached the live alias during replay. A legacy queue drain job also produced noisy warnings that did not correlate with the missing new-queue records."
+}

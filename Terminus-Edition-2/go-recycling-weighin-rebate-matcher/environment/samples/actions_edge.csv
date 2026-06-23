@@ -1,0 +1,3 @@
+weighin_id,account_id,station_id,amount_cents,material_tier
+RCYEDGE000001,CUST9001,ST-01,100,METAL
+RCYEDGE000002,CUST9002,ST-02,200,PAPER

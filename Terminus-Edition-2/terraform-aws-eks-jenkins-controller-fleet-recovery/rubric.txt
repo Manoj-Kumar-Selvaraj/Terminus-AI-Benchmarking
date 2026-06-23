@@ -1,0 +1,36 @@
+# Rubric 1
+Agent preserves the pinned EKS module interface while restoring private endpoint and private-subnet topology, +2
+Agent restores private EKS topology with the `jenkins_controllers` group at minimum and desired size 3, private subnets, and no public endpoint, +5
+Agent keeps the dedicated Jenkins workload and dedicated labels plus the Jenkins NoSchedule taint inside that managed node group, +3
+Agent explicitly enables Operations Center and sets its replicaCount to at least 1, +5
+Agent restores payments-controller, risk-controller, and platform-controller with literal controllerName values and controller-specific Jenkins scheduling, +5
+Agent applies topology spread or pod anti-affinity for controller scheduling, +3
+Agent replaces Terraform with generated verifier outputs or fake YAML instead of real module config, -5
+# Rubric 2
+Agent preserves milestone 1 private topology and controller scheduling while fixing storage and IRSA, +3
+Agent provisions encrypted retained EFS CSI PVCs for JOC and all controllers, +5
+Agent wires Helm values to mount joc-home and controller-home PVCs, +5
+Agent defines scoped IRSA annotations for JOC and each controller and binds every Helm release to its matching service account, +5
+Agent keeps the EFS CSI storage class encrypted and scoped with `reclaim_policy = "Retain"`, +3
+Agent removes static AWS key secrets, hostPath, or emptyDir Jenkins home storage, -5
+Agent leaves Helm values disconnected from PVCs or service accounts while adding storage resources, -5
+# Rubric 3
+Agent preserves milestone 1-2 topology, storage, and IRSA while fixing plugin bootstrap, +3
+Agent pins all eight approved plugins from the internal mirror catalog without latest or public URLs, +5
+Agent configures restricted JCasC authorization and disables signup, +3
+Agent defines seed jobs for each controller and keeps production jobs off JOC, +5
+Agent produces jenkins_jobs.json with controller, nonblank folder, and nonempty approved required_plugins fields for every job, +3
+Agent re-enables public update center or leaves plugins unpinned, -5
+# Rubric 4
+Agent preserves prior milestone Terraform, plugin, and JCasC fixes while adding job isolation proof, +3
+Agent defines at least six jobs with at least two assigned to each payments, risk, and platform controller, +5
+Agent builds job_run_trace.json with exactly one positive-numbered SUCCESS run for every declared job on its matching controller, +5
+Agent satisfies the offline jenkins_fleet_simulator.py assignment-based isolation contract without relying on job-name prefixes, +5
+Agent creates cross-controller runs or incomplete traces that hide isolation failures, -5
+# Rubric 5
+Agent preserves recovered fleet configuration while applying final upgrade guardrails, +3
+Agent sets restrictions.json to internal-mirror, disabled script console, and blocked cross-controller triggers, +5
+Agent keeps all legacy Terraform outputs and non-destructive protected plan entries, +5
+Agent derives approved_plugin_ids from the pinned internal plugin catalog, +3
+Agent replaces protected EKS or Helm resources in the upgrade plan fixture, -5
+Agent deletes legacy outputs or leaves approved_plugin_ids inconsistent with the catalog, -5

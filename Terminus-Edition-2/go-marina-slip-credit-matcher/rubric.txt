@@ -1,0 +1,24 @@
+# Rubric 1
+Agent updates the Go reconciliation CLI under `/app/cmd/reconcile/main.go` and uses `/app/data/slips.csv` and `/app/data/credits.csv` as runtime inputs, +2
+Agent enforces full `slip_id`, `member_id`, positive integer amount, slip status `DOCKED`, and allowed `dock_zone` gates for matching, +5
+Agent compares `dock_zone` and status case-insensitively while trimming incidental surrounding spaces from compared fields and report fields, +3
+Agent emits the trimmed credit `dock_zone` value for matched milestone 1 rows and leaves `dock_zone` blank for unmatched rows, +3
+Agent consumes each slip row at most once so duplicate credits leave only the earliest eligible credit matched, +5
+Agent preserves credit input order, report columns, exact `MATCHED`/`UNMATCHED` status labels, and positive JSON summary totals, +5
+Agent hardcodes output files, bundled rows, or expected totals instead of implementing reconciliation logic, -5
+# Rubric 2
+Agent preserves milestone 1 full-key matching, trimming, status, allowed-zone, row-consumption, ordering, schema, blank-unmatched, and positive-summary behavior while adding aliases, +5
+Agent normalizes all legacy credit dock-zone aliases `NZ`, `SZ`, and `EZ` to canonical `NORTH`, `SOUTH`, and `EAST` before matching, +5
+Agent emits canonical `NORTH`, `SOUTH`, or `EAST` values for matched alias rows rather than raw alias values, +3
+Agent leaves unknown aliases such as `CHK` unmatched without changing report schema or status vocabulary, +3
+Agent keeps milestone 2 verifier behavior focused on alias behavior plus minimal schema/order regression rather than duplicating the entire milestone 1 suite, +2
+Agent omits any documented alias, accepts unknown aliases, emits raw aliases, or regresses milestone 1 behavior while implementing aliases, -5
+# Rubric 3
+Agent applies open credit-date gates from `/app/config/cutoff_calendar.txt` while preserving all earlier matching and alias rules, +5
+Agent treats open calendar status case-insensitively and rejects closed, blank, missing, or unlisted credit dates, +5
+Agent rejects slips with missing `departure_date` and requires `credit_date` to be not later than `departure_date`, +3
+Agent chooses the eligible unused slip with the latest `departure_date` when multiple rows qualify, +5
+Agent breaks tied `departure_date` values by earliest slip input row and tracks consumption by source row position, +3
+Agent preserves `NZ`, `SZ`, and `EZ` alias behavior in dated matching paths and emits canonical matched dock zones, +5
+Agent preserves legacy undated behavior when both input files omit date columns entirely, with the same report schema and positive JSON summary totals, +3
+Agent treats closed, blank, missing, or unlisted calendar dates as eligible, drops alias support in dated paths, or changes required output schemas, -5

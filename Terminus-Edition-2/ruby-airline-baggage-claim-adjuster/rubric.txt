@@ -1,0 +1,17 @@
+Agent investigates and updates intended `ruby-airline-baggage-claim-adjuster` implementation paths (/app/data/adjustments.csv, /app/data/appointments.csv, /app/config/windows.csv) instead of unrelated files, +2
+Agent satisfies `ruby-airline-baggage-claim-adjuster` milestone 1 core requirement: Preserve action input order, write the documented report schema, use `MATCHED` or `UNMATCHED` only, leave the canonical bag_type field blank for unmatched rows, and write positive matched and unmatched summa..., +5
+Agent preserves milestone 1 rule for `ruby-airline-baggage-claim-adjuster`: A correction can match only when the full source identifier and all identity fields match, the amount matches as an integer value, the source status uses the documented eligible literal, the correction reaso..., +3
+Agent handles milestone 1 edge/ordering behavior for `ruby-airline-baggage-claim-adjuster` validated by tests: Prepare the reconciler for one verifier scenario., +3
+Agent satisfies `ruby-airline-baggage-claim-adjuster` milestone 2 core requirement: Normalize aliases after trimming and case folding before matching, validate the normalized value through the same matching gates, and emit only the canonical bag_type values in matched report rows., +5
+Agent preserves milestone 2 rule for `ruby-airline-baggage-claim-adjuster`: Milestone 2 keeps every milestone 1 rule and adds the documented legacy bag_type aliases., +3
+Agent handles milestone 2 edge/ordering behavior for `ruby-airline-baggage-claim-adjuster` validated by tests: Prepare the reconciler for one verifier scenario., +3
+Agent satisfies `ruby-airline-baggage-claim-adjuster` milestone 3 core requirement: The realtime window file is authoritative: only numeric timestamps in explicitly `OPEN` windows are eligible, closed, missing, malformed, or unlisted windows are not eligible, actions must occur after the so..., +5
+Agent preserves milestone 3 rule for `ruby-airline-baggage-claim-adjuster`: Bag_Type aliases must be normalized before matching: `PRIMARY` means `CHECKED`, `OVERSIZEIAL` means `OVERSIZE`, `SPORTORATORY` means `SPORT`., +3
+Agent handles milestone 3 edge/ordering behavior for `ruby-airline-baggage-claim-adjuster` validated by tests: Prepare the reconciler for one verifier scenario., +3
+Agent validates `ruby-airline-baggage-claim-adjuster` output artifacts against required schemas and deterministic ordering before finalizing, +3
+Agent treats only canonical `bag_type` values CHECKED or OVERSIZE as match-eligible in milestone 1 and leaves rows with unknown `bag_type` values unmatched, +3
+Agent hardcodes final output files for `ruby-airline-baggage-claim-adjuster` instead of fixing underlying implementation, -5
+Agent tampers with verifier harness files, solution scaffolding, platform configuration, or input fixtures in `ruby-airline-baggage-claim-adjuster` to force a pass, -5
+Agent regresses earlier milestones in `ruby-airline-baggage-claim-adjuster` while implementing later milestone changes, -3
+Agent repeats failing commands for `ruby-airline-baggage-claim-adjuster` without adjusting approach after clear errors, -2
+Agent treats only canonical `bag_type` values CHECKED, OVERSIZE, or SPORT as match-eligible from milestone 2 onward and does not remove the canonical bag_type gate when adding aliases, +3

@@ -1,0 +1,5 @@
+The wire-return batch under `/app` is clearing too few valid returns and reporting the successful return total with the wrong sign. Please fix the COBOL job so `/app/out/wire_return_report.csv` keeps the schema `wire_id,account_id,reason,amount_cents,status` in return-file order. Cleared rows report the return reason; `EXCEPTION` rows leave `reason` blank. The `/app/out/wire_return_summary.txt` file must use `key=value` lines for `cleared_count`, `cleared_amount_cents`, `exception_count`, and `exception_amount_cents`, with both cleared and exception amounts reported as positive cents.
+
+A return should clear only when its full wire id, account, amount, settled status, and allowed return reason line up. The allowed reasons are documented in `/app/config/reason_codes.csv`. Keep `amount_cents` in the raw fixed-width cents representation from the input records.
+
+Read inputs from `/app/data/wires.dat` and `/app/data/returns.dat`, edit `/app/src/wire_returns.cbl`, rebuild with `/app/scripts/compile.sh` to produce `/app/build/batch`, and run the compiled batch to refresh the output files.

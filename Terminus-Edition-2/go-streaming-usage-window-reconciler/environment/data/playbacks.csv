@@ -1,0 +1,2 @@
+stream_id,account_id,device,minutes,start_utc,end_utc,status,region
+STR-SAMPLE-001,ACCT-1,CTV,45,20260528120000,20260528124500,POSTED,NA

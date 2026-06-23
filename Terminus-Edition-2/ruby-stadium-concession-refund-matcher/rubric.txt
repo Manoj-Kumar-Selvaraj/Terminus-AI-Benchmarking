@@ -1,0 +1,28 @@
+# Rubric 1
+Agent updates `/app/app/reconcile.rb` with `/app/data/refunds.csv`, `/app/data/folios.csv`, and `/app/config/windows.csv`, +2
+Agent enforces full `folio_id`, `fan_id`, `property_id`, `stand`, and amount identity matching with `SOLD` source status and eligible reasons, +5
+Agent requires matching canonical `item_type` values (`FOOD`, `DRINK`, `MERCH`) on both source and correction rows, +3
+Agent rejects nonnumeric `sale_ts` or `refund_ts` values, requires an OPEN property window containing `sale_ts` and `refund_ts`, and enforces single-use source consumption, +3
+Agent writes exact report schema with blank unmatched `item_type`, `MATCHED`/`UNMATCHED` labels, and positive summary totals, +3
+Agent hardcodes output files instead of fixing reconcile logic, -5
+Agent tampers with verifier harness or fixtures to force a pass, -5
+Agent treats stand mismatches, item_type mismatches, nonnumeric timestamps, closed or after-close windows, or consumed source rows as match-eligible, -5
+# Rubric 2
+Agent normalizes legacy item_type aliases (`FD`, `DR`, `MR`) after trimming and case folding before matching, +5
+Agent emits canonical `FOOD`, `DRINK`, or `MERCH` on matched rows while preserving milestone 1 gates, +3
+Agent leaves unknown normalized item_types unmatched even when source and correction share the same token, +3
+Agent regresses milestone 1 stand, item_type, timestamp, or consumption rules while adding aliases, -3
+Agent bypasses identity or window gates for aliased item_type values, -5
+# Rubric 3
+Agent applies `/app/config/windows.csv` open-window gates with numeric timestamp ordering (`refund_ts >= sale_ts`), +5
+Agent rejects corrections after window `close_ts` and closed, missing, malformed, or unlisted property windows, +5
+Agent selects the eligible source row with the latest `sale_ts` and earliest source input row when `sale_ts` ties, +5
+Agent verifies latest-timestamp selection with distinct source amounts so first-fit order cannot pass, +3
+Agent regresses alias normalization or milestone 1 gates while implementing window logic, -3
+Agent treats after-close refunds, closed windows, or equal-`sale_ts` first-fit selection as eligible, -5
+# Rubric 4
+Agent applies `/app/config/reasons.csv` so only reasons with `eligible=Y` (case-insensitive, trimmed) can match, +5
+Agent treats missing reason rows, blank codes, blank eligible values, and non-Y flags as ineligible, +3
+Agent keeps all milestone 1–3 gates active together with the reason policy, +3
+Agent confirms reason policy does not bypass closed-window or consumption rules, +2
+Agent repeats failing commands without adjusting approach after clear errors, -2

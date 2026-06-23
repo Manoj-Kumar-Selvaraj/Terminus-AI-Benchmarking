@@ -1,0 +1,6 @@
+       01 REPORT-LAYOUT.
+          05 REPORT-CLAIM PIC X(12).
+          05 REPORT-MEMBER PIC X(8).
+          05 REPORT-REASON PIC X(3).
+          05 REPORT-AMOUNT PIC 9(10).
+          05 REPORT-STATUS PIC X(9).

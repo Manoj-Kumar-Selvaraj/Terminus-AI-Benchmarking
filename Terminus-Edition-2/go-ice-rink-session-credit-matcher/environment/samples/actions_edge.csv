@@ -1,0 +1,3 @@
+session_id,skater_id,amount_cents,rink_pass
+ICEEDGE000001,CUST9001,100,PRAC
+ICEEDGE000002,CUST9002,200,GAME

@@ -1,0 +1,6 @@
+{
+  "plugin_source": "public-update-center",
+  "script_console_enabled": true,
+  "controller_to_controller_job_trigger": true,
+  "approved_plugin_ids": []
+}

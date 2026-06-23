@@ -1,0 +1,3 @@
+appointment_id,patient_id,amount_cents,status,service_type
+INVEDGE000001,CUST9001,100,ACTIVE,CLEAN
+INVEDGE000002,CUST9002,200,ACTIVE,XRAY

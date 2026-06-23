@@ -1,0 +1,35 @@
+# Rubric 1
+Agent inspects lock files, workspace metadata, and run holder identity before changing state behavior, +2
+Agent respects active non-expired locks for the same workspace and rejects conflicting holders, +5
+Agent preserves lock ownership and expiration evidence after successful runs, +4
+Agent validates workspace and holder variations instead of hardcoded lock paths, +3
+Agent enables behavior through a CAPABILITY constant rather than repairing lock logic, -5
+Agent ignores locks or deletes them before validation, -5
+# Rubric 2
+Agent advances state serials and resource outputs only after valid apply operations, +5
+Agent preserves milestone 1 lock semantics across stale and active lock scenarios, +3
+Agent handles stale plans and serial mismatches fail-closed, +4
+Agent validates serial changes and rejected stale plans, +3
+Agent increments serials for rejected or unrelated plans, -5
+Agent rewrites state output without processing plan actions, -5
+# Rubric 3
+Agent implements checkpoint resume using run ID and applied resource keys, +5
+Agent skips already applied actions while replaying remaining actions exactly once, +4
+Agent preserves lock and serial behavior from previous milestones, +3
+Agent validates partial checkpoints and mismatched run IDs, +3
+Agent advances checkpoint past unapplied resources, -5
+Agent clears checkpoints to hide duplicate apply behavior, -5
+# Rubric 4
+Agent isolates workspaces and provider metadata so one workspace cannot corrupt another, +5
+Agent preserves lock, serial, and checkpoint semantics, +3
+Agent validates workspace-specific state and provider hash behavior, +4
+Agent handles missing or mismatched provider metadata fail-closed, +3
+Agent writes resources into the wrong workspace, -5
+Agent ignores provider compatibility to force apply success, -5
+# Rubric 5
+Agent detects drift and stale provider plans before committing state updates, +5
+Agent preserves prior lock, serial, checkpoint, and workspace behavior, +3
+Agent reports blocked drift cases without mutating state, +4
+Agent validates changed provider hashes and drifted resources, +3
+Agent unlocks all milestone behavior through one constant or static fixture map, -5
+Agent applies drifted plans as if they were current, -5

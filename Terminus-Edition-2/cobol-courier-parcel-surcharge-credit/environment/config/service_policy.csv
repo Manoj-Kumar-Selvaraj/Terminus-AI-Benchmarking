@@ -1,0 +1,4 @@
+branch,service_tier,enabled,max_credit_cents,priority
+B001,STD,Y,9999999999,30
+B001,NXT,Y,9999999999,20
+B001,SAM,Y,9999999999,10

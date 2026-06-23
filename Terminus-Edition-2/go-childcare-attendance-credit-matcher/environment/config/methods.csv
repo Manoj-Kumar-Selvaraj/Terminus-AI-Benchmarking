@@ -1,0 +1,4 @@
+care_type,enabled,priority
+HALF,true,2
+FULL,true,1
+EXT,true,3

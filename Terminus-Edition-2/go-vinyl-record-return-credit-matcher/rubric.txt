@@ -1,0 +1,28 @@
+Agent inspects `/app/cmd/reconcile/main.go`, `/app/data/sales.csv`, and `/app/data/credits.csv` before editing, +2
+Agent identifies milestone 1 starter defects such as partial `sale_id` matching, missing row consumption, signed summary totals, and ignored buyer or status gates, +3
+Agent enforces full `sale_id`, `buyer_id`, exact positive `amount_cents`, `SHIPPED` sale status, and allowed formats `LP`/`EP`/`BOX` after trim and case folding, +5
+Agent consumes each sale row at most once while preserving credit input order and earliest eligible credit wins on duplicates, +3
+Agent writes `/app/out/credit_report.csv` with header `sale_id,buyer_id,format,amount_cents,status`, canonical matched formats, blank unmatched formats, and exact `MATCHED`/`UNMATCHED` labels, +5
+Agent writes `/app/out/credit_summary.json` with positive integer cent totals for matched and unmatched amounts, +3
+Agent hardcodes final output files instead of repairing reconciliation logic, -5
+Agent edits verifier tests, oracle scripts, or input fixtures to force a milestone 1 pass, -5
+Agent treats partial `sale_id` overlap, non-`SHIPPED` statuses, or unknown formats as match-eligible in milestone 1, -5
+Agent inspects milestone 2 alias rules before changing format normalization, +2
+Agent normalizes legacy credit aliases `LONG`/`SING`/`SET` to canonical `LP`/`EP`/`BOX` on both sale and credit rows after trim and case folding, +5
+Agent emits canonical formats on matched rows and leaves unmatched `format` blank while preserving milestone 1 full-id, consumption, and schema behavior, +5
+Agent rejects unknown alias-like formats even when sale and credit share the same unknown value, +3
+Agent verifies alias behavior with representative overwritten inputs rather than only shipped samples, +3
+Agent keeps milestone 1 regression gates for full `sale_id`, duplicate credit consumption, report header, and credit input order, +3
+Agent emits raw alias strings, skips sale-side normalization, or regresses milestone 1 matching while adding aliases, -5
+Agent special-cases known output rows for milestone 2 without fixing the shared matching path, -3
+Agent changes required output paths or schemas for `credit_report.csv` or `credit_summary.json`, -5
+Agent inspects `/app/config/cutoff_calendar.txt` and dated CSV schemas before changing ship-date logic, +2
+Agent handles optional `ship_date` and `credit_date` columns without breaking milestone 1 and 2 behavior when absent, +3
+Agent reads the cutoff calendar and treats only listed `open` credit dates as eligible after trim and case folding, +5
+Agent rejects missing, closed, unlisted, or malformed credit dates and sales with missing `ship_date`, +5
+Agent requires `credit_date <= ship_date` while preserving all prior identity, alias, consumption, and schema gates, +3
+Agent chooses the eligible unused sale with latest `ship_date`, breaking ties by earliest sale input row, and tracks consumption by row position, +5
+Agent preserves report and summary schemas, canonical matched formats, blank unmatched formats, and positive cent totals under dated matching, +3
+Agent treats closed, missing, malformed, or unlisted calendar dates as eligible in milestone 3, -5
+Agent regresses milestone 1 or 2 behavior while implementing dated matching, -5
+Agent chooses candidates by file order alone instead of latest `ship_date` then earliest sale row, -5

@@ -1,0 +1,39 @@
+# Rubric 1
+Agent inspects `/app/app/reconcile.rb` and the seat-event, credit, and reservation-window inputs before editing, +2
+Agent keeps the executable solution in `/app/app/reconcile.rb` rather than moving behavior to an uninvoked helper or another language, +3
+Agent matches full `event_id`, `account_id`, `reservation_id`, region, and integer amount while enforcing source status, reason, timestamp, window, and one-time consumption gates, +5
+Agent treats canonical `CPU` and `GPU` values as independently eligible without using `sku_type` as a pairwise matching key, +5
+Agent selects the latest qualifying `reserve_ts` and then the earliest source input row, emitting the selected source SKU type, +5
+Agent writes the documented report and summary schemas in correction order with exact statuses, blank unmatched SKU type, and positive integer totals, +3
+Agent hardcodes final output files instead of deriving results from runtime CSV inputs, -5
+Agent changes runtime input fixtures or task scaffolding to force expected outputs instead of fixing reconciliation logic, -5
+Agent matches identifiers by prefix, reuses source rows, or treats SKU type as a pairwise key, -5
+# Rubric 2
+Agent preserves all existing identity, status, reason, timestamp, window, consumption, ordering, and output behavior while adding aliases, +5
+Agent trims and case-folds source and correction SKU values before mapping `C` to `CPU`, `GPUF` to `GPU`, and `MEMORY` to `MEM`, +5
+Agent treats exactly `CPU`, `GPU`, and `MEM` as eligible canonical values while leaving unknown tokens unmatched, +3
+Agent emits the selected source's canonical SKU type rather than raw aliases or correction values, +3
+Agent keeps normalized SKU type independently eligible rather than introducing pairwise SKU equality, +5
+Agent removes canonical eligibility checks or allows shared unknown SKU tokens to match, -5
+Agent regresses exact identifiers, region matching, windows, source consumption, or candidate ordering while adding aliases, -5
+Agent recognizes only uppercase or untrimmed aliases, -3
+# Rubric 3
+Agent preserves alias normalization and every reconciliation gate across combined window and consumption scenarios, +5
+Agent rejects closed, malformed, missing, unlisted, before-open, non-numeric, reversed, and after-close timestamp scenarios without crashing, +5
+Agent keeps SKU type out of the pairwise identity key while requiring each row to normalize to an eligible canonical value, +5
+Agent resolves multiple unused candidates by latest `reserve_ts` and earliest source row and carries consumption across correction order, +5
+Agent preserves report schema, source SKU output, blank unmatched SKU type, and positive summary totals, +3
+Agent adds pairwise SKU equality and blocks valid cross-SKU matches, -5
+Agent treats invalid windows or timestamps as eligible, -5
+Agent regresses aliases, full identity matching, deterministic ordering, or source consumption, -3
+# Rubric 4
+Agent reads `/app/config/sku_policy.csv` and evaluates region, SKU type, enabled state, inclusive amount range, and numeric priority, +5
+Agent trims and case-folds policy regions and applies existing SKU aliases to policy SKU values, +3
+Agent accepts enabled states `true`, `yes`, `y`, `1`, and `enabled` case-insensitively and ignores policies with non-numeric range or priority fields, +3
+Agent gives exact-region policies precedence over wildcard `*` rows, including rejecting when exact rows exist but none qualify, +5
+Agent supports `ANY` only for policy-eligible canonical source SKU types while preserving all identity, window, status, reason, region, and consumption gates, +5
+Agent requires named correction SKU types to equal the canonical source type and emits the selected source type for matches, +3
+Agent orders candidates by latest `reserve_ts`, highest applicable policy priority, and earliest source input row, +5
+Agent lets wildcard rows override disqualifying exact-region rows or accepts malformed policies, -5
+Agent lets `ANY` match unknown SKU types or bypass existing reconciliation gates, -5
+Agent ignores policy priority or earliest-row ordering when timestamps tie, -3

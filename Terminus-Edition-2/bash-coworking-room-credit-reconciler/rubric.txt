@@ -1,0 +1,40 @@
+# Rubric 1
+Agent investigates `/app/scripts/reconcile.sh`, `/app/data/bookings.csv`, and `/app/data/credits.csv` before changing logic, +2
+Agent parses both CSV inputs by trimmed, case-insensitive header names while allowing reordered and extra columns, +3
+Agent enforces milestone 1 matching gates including full normalized `booking_id`, full normalized `member_id`, positive base-10 `amount_cents`, booking `FINAL` status, and canonical plan equality for `HOTDESK`/`PRIVATE`/`TEAM`, +5
+Agent consumes each booking row at most once while preserving credit input order, +5
+Agent writes `/app/out/credit_report.csv` and `/app/out/credit_summary.json` with exact schemas, uppercased normalized credit identifiers, normalized valid amount strings, blank unmatched `plan`, and summary totals derived from report rows, +5
+Agent validates the final report and summary artifacts after core matching scenarios to confirm counts and amount totals reconcile, +2
+Agent hardcodes final output files instead of fixing reconciliation logic, -5
+Agent tampers with verifier harness files, oracle scripts, metadata, or input fixtures to force a pass, -5
+Agent regresses identifier normalization, invalid amount handling, or booking row consumption, -3
+Agent changes required output filenames, report schema, summary keys, or status labels, -3
+# Rubric 2
+Agent preserves all milestone 1 behavior before adding runtime plan-alias support, +3
+Agent loads `/app/config/plan_aliases.csv` at runtime using trimmed, case-insensitive header matching for `alias`, `canonical`, and `enabled`, +5
+Agent applies enabled aliases to both booking and credit plan values after trim and case folding, +5
+Agent ignores disabled rows, blank aliases, missing required alias headers, and invalid canonical plans while preserving canonical self-mapping, +3
+Agent honors first enabled valid duplicate alias row wins, +3
+Agent emits canonical plan values on matched rows and blank `plan` on unmatched rows, +3
+Agent preserves milestone 1 full-id, amount, status, schema, summary, and consumption behavior while adding aliases, +3
+Agent keeps required output paths and schemas unchanged when extending alias handling, +3
+Agent hardcodes alias values or fixture-specific alias results instead of reading runtime config, -5
+Agent regresses milestone 1 matching gates, consumption, blank unmatched plans, or positive summary totals while adding aliases, -5
+Agent fails to trim or case-normalize alias-file header names when locating required columns, -3
+Agent treats unknown aliases as wildcard allowed plans or allows alias normalization to bypass amount, identifier, status, or consumption checks, -3
+Agent changes required filenames, output schemas, input assets, task metadata, or runtime contracts to force a pass, -5
+# Rubric 3
+Agent preserves milestone 1 and milestone 2 behavior before adding dated credit-batch handling, +3
+Agent activates dated matching only when both `booking_date` and `credit_date` headers are present, otherwise preserving milestone 2 undated behavior, +5
+Agent requires strict non-empty `YYYY-MM-DD` booking and credit dates and rejects malformed or missing row dates in dated batches, +3
+Agent parses `/app/config/cutoff_calendar.txt` correctly, ignoring comments, blank lines, and malformed rows while requiring case-insensitive `open` status for both dates, +5
+Agent rejects matches when either `credit_date` or `booking_date` is closed, missing, unlisted, or malformed in the calendar, +5
+Agent parses `/app/config/run_profile.ini` so the first positive `max_open_days_back` wins and defaults to `2` when none exists, +3
+Agent enforces `credit_date <= booking_date`, counts open days strictly after credit date through booking date, and accepts same-day and exact-limit matches, +5
+Agent chooses the latest eligible `booking_date` among unused candidates, breaks ties by earliest booking row, and preserves row-position consumption, +5
+Agent preserves aliases, canonical plan output, blank unmatched plans, exact report and summary schemas, normalized amount handling, and credit input ordering under dated matching, +3
+Agent regresses milestone 1 or milestone 2 behavior while adding calendar or profile logic, -5
+Agent hardcodes final output files instead of fixing reconciliation logic, -5
+Agent treats closed, missing, unlisted, or malformed calendar dates as open, -5
+Agent validates only `credit_date` calendar eligibility and ignores `booking_date` open status, -5
+Agent chooses the first matching booking row instead of the latest eligible `booking_date` when multiple unused candidates qualify, -3

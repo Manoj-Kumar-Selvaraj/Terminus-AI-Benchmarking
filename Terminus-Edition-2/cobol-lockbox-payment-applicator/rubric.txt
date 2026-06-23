@@ -1,0 +1,23 @@
+# Rubric 1
+Agent inspects `/app/src/lockbox_apply.cbl`, `/app/data/invoices.dat`, and `/app/data/payments.dat` before changing the lockbox application logic, +2
+Agent enforces full 12-character invoice ID matching with matching customer, amount, open invoice status, payment disposition, hold flag, and allowed channel gates, +5
+Agent consumes each invoice row at most once so duplicate payments leave only the earliest eligible payment applied, +5
+Agent preserves payment input order, report columns, `APPLIED` and `UNAPPLIED` status labels, blank channel on unapplied rows, and zero-padded amount output, +5
+Agent writes positive integer `applied_count`, `applied_amount_cents`, `unapplied_count`, and `unapplied_amount_cents` summary values, +3
+Agent hardcodes `/app/out/lockbox_report.csv` or `/app/out/lockbox_summary.txt` instead of fixing the COBOL applicator, -5
+
+# Rubric 2
+Agent adds legacy payment channel aliases `LKB`, `BNK`, and `CCP` while emitting canonical `LBX`, `ACH`, and `CRD` channels in matched report rows, +5
+Agent keeps milestone 1 full ID, customer, amount, status, date, hold, disposition, and consumption gates while adding alias normalization, +5
+Agent leaves unknown channel aliases unapplied without changing the report schema or status vocabulary, +3
+Agent preserves duplicate-payment consumption behavior when aliases are used on repeated payments, +5
+Agent validates the updated COBOL batch against fresh fixed-width invoice and payment scenarios before finishing, +2
+Agent accepts unknown aliases or raw alias codes as canonical report channels, -3
+
+# Rubric 3
+Agent reads `/app/config/payment_calendar.txt` and treats only dates marked `OPEN` as valid processing dates, +3
+Agent requires both the payment date and matched invoice cutoff date to be open while preserving all milestone 1 and 2 matching gates, +5
+Agent chooses the eligible invoice with the latest open cutoff date when multiple unused invoices qualify, +5
+Agent preserves alias normalization, row-position consumption, blank unapplied channels, report schema, and positive summary totals under calendar rules, +5
+Agent rejects closed, absent, or unlisted calendar dates instead of treating them as open, +3
+Agent regresses earlier milestone behavior while implementing payment-calendar matching, -5

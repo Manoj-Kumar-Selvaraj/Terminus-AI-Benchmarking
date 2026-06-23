@@ -1,0 +1,5 @@
+{
+  "worker_count": 4,
+  "queue_buffer_multiplier": 4,
+  "max_inflight_per_worker": 1
+}

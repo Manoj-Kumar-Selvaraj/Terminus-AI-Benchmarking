@@ -1,0 +1,2 @@
+hold_id,shipment_id,dock_id,load_type,amount,hold_ts,status,door
+SRC-SAMPLE-1,PARTY-1,SAMPLE,LTL,100,20260528121000,STAGED,LOC-1

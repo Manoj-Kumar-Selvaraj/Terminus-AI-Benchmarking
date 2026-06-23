@@ -1,0 +1,13 @@
+{
+  "clients": [
+    {
+      "id": "modern-default",
+      "schema": "v2-envelope"
+    },
+    {
+      "id": "legacy-v1",
+      "schema": "legacy-flat-v1",
+      "allowed_fields": ["account_id", "amount", "event_type"]
+    }
+  ]
+}

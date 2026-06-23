@@ -1,0 +1,287 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd /app
+
+if grep -q 'SELECT AUDIT-FILE ASSIGN' /app/src/wire_returns.cbl; then
+  /app/scripts/run_batch.sh
+  test -s /app/out/wire_return_report.csv
+  test -s /app/out/wire_return_summary.txt
+  test -s /app/out/wire_return_audit.csv
+  exit 0
+fi
+
+python3 <<'PY'
+from pathlib import Path
+
+path = Path("/app/src/wire_returns.cbl")
+text = path.read_text()
+
+
+def apply_m1(src: str) -> str:
+    if "WR-ID(WS-IDX)(1:10)" not in src:
+        return src
+    src = src.replace(
+        "IF WR-ID(WS-IDX)(1:10) = WS-RETURN-WIRE(1:10)",
+        "IF WR-ID(WS-IDX) = WS-RETURN-WIRE",
+    )
+    src = src.replace(
+        'OR WR-REASON(WS-IDX) = "ADJ")',
+        'OR WR-REASON(WS-IDX) = "ADJ"\n                       OR WR-REASON(WS-IDX) = "COP")',
+    )
+    return src.replace(
+        "SUBTRACT WS-RETURN-AMOUNT FROM WS-CLEARED-AMOUNT",
+        "ADD WS-RETURN-AMOUNT TO WS-CLEARED-AMOUNT",
+    )
+
+
+def apply_m2(src: str) -> str:
+    if "10 WR-USED PIC X." in src:
+        return src
+    src = src.replace(
+        "             10 WR-STATUS PIC X.",
+        "             10 WR-STATUS PIC X.\n             10 WR-USED PIC X.",
+        1,
+    )
+    src = src.replace(
+        "           MOVE WIRE-REC(35:1) TO WR-STATUS(WS-WIRE-COUNT).",
+        '           MOVE WIRE-REC(35:1) TO WR-STATUS(WS-WIRE-COUNT)\n           MOVE "N" TO WR-USED(WS-WIRE-COUNT).',
+    )
+    src = src.replace(
+        "IF WR-ID(WS-IDX) = WS-RETURN-WIRE\n                  AND WR-ACCOUNT",
+        'IF WR-USED(WS-IDX) NOT = "Y"\n                  AND WR-ID(WS-IDX) = WS-RETURN-WIRE\n                  AND WR-ACCOUNT',
+    )
+    return src.replace(
+        "ADD WS-RETURN-AMOUNT TO WS-CLEARED-AMOUNT",
+        'ADD WS-RETURN-AMOUNT TO WS-CLEARED-AMOUNT\n               MOVE "Y" TO WR-USED(WS-MATCH-IDX)',
+        1,
+    )
+
+
+def apply_m3(src: str) -> str:
+    if "CALENDAR-FILE" in src:
+        return src
+
+    src = src.replace(
+        '           SELECT RETURN-FILE ASSIGN TO "/app/data/returns.dat"\n               ORGANIZATION IS LINE SEQUENTIAL.',
+        '           SELECT RETURN-FILE ASSIGN TO "/app/data/returns.dat"\n               ORGANIZATION IS LINE SEQUENTIAL.\n           SELECT CALENDAR-FILE ASSIGN TO "/app/config/cycle_calendar.txt"\n               ORGANIZATION IS LINE SEQUENTIAL.',
+    )
+    src = src.replace(
+        "       FD RETURN-FILE.\n       01 RETURN-REC PIC X(64).",
+        "       FD RETURN-FILE.\n       01 RETURN-REC PIC X(64).\n       FD CALENDAR-FILE.\n       01 CALENDAR-REC PIC X(16).",
+    )
+    src = src.replace(
+        '       01 WS-EOF-RETURN PIC X VALUE "N".',
+        '       01 WS-EOF-RETURN PIC X VALUE "N".\n       01 WS-EOF-CALENDAR PIC X VALUE "N".',
+    )
+    src = src.replace(
+        "       01 WS-IDX PIC 9(4) COMP VALUE 0.",
+        '       01 WS-IDX PIC 9(4) COMP VALUE 0.\n       01 WS-CAL-IDX PIC 9(4) COMP VALUE 0.\n       01 WS-CAL-COUNT PIC 9(4) COMP VALUE 0.\n       01 WS-CYCLE-DAYS PIC 9(4) VALUE 0.\n       01 WS-TARGET-DATE PIC X(8).\n       01 WS-DATE-OPEN PIC X VALUE "N".\n       01 WS-WIRE-DATE-OPEN PIC X VALUE "N".\n       01 WS-RETURN-DATE-OPEN PIC X VALUE "N".',
+    )
+    src = src.replace(
+        "       01 WS-RETURN-ACCOUNT PIC X(8).",
+        "       01 WS-RETURN-ACCOUNT PIC X(8).\n       01 WS-RETURN-DATE PIC X(8).",
+    )
+    if "10 WR-DATE PIC X(8)." not in src:
+        if "10 WR-USED PIC X." in src:
+            src = src.replace(
+                "             10 WR-STATUS PIC X.\n             10 WR-USED PIC X.",
+                "             10 WR-STATUS PIC X.\n             10 WR-USED PIC X.\n             10 WR-DATE PIC X(8).",
+                1,
+            )
+        else:
+            src = src.replace(
+                "             10 WR-STATUS PIC X.",
+                "             10 WR-STATUS PIC X.\n             10 WR-USED PIC X.\n             10 WR-DATE PIC X(8).",
+                1,
+            )
+    src = src.replace(
+        "       PROCEDURE DIVISION.",
+        "       01 CALENDAR-TABLE.\n          05 CAL-ENTRY OCCURS 100 TIMES.\n             10 CAL-DATE PIC X(8).\n             10 CAL-OPEN PIC X.\n\n       PROCEDURE DIVISION.",
+    )
+    src = src.replace(
+        "       MAIN-PARA.\n           OPEN INPUT WIRE-FILE",
+        "       MAIN-PARA.\n           PERFORM LOAD-CALENDAR\n           OPEN INPUT WIRE-FILE",
+    )
+    if "LOAD-CALENDAR." not in src:
+        src = src.replace(
+            "       STORE-WIRE.",
+            """       LOAD-CALENDAR.
+           OPEN INPUT CALENDAR-FILE
+           PERFORM UNTIL WS-EOF-CALENDAR = "Y"
+               READ CALENDAR-FILE
+                   AT END
+                       MOVE "Y" TO WS-EOF-CALENDAR
+                   NOT AT END
+                       IF CALENDAR-REC(1:8) NOT = SPACES
+                           ADD 1 TO WS-CAL-COUNT
+                           MOVE CALENDAR-REC(1:8) TO CAL-DATE(WS-CAL-COUNT)
+                           IF FUNCTION UPPER-CASE(CALENDAR-REC(10:4))
+                              = "OPEN"
+                               MOVE "Y" TO CAL-OPEN(WS-CAL-COUNT)
+                           ELSE
+                               MOVE "N" TO CAL-OPEN(WS-CAL-COUNT)
+                           END-IF
+                       END-IF
+               END-READ
+           END-PERFORM
+           CLOSE CALENDAR-FILE.
+
+       STORE-WIRE.""",
+        )
+    if "WR-DATE(WS-WIRE-COUNT)" not in src:
+        src = src.replace(
+            '           MOVE WIRE-REC(35:1) TO WR-STATUS(WS-WIRE-COUNT)\n           MOVE "N" TO WR-USED(WS-WIRE-COUNT).',
+            '           MOVE WIRE-REC(35:1) TO WR-STATUS(WS-WIRE-COUNT)\n           MOVE "N" TO WR-USED(WS-WIRE-COUNT)\n           MOVE WIRE-REC(36:8) TO WR-DATE(WS-WIRE-COUNT).',
+        )
+        src = src.replace(
+            "           MOVE WIRE-REC(35:1) TO WR-STATUS(WS-WIRE-COUNT).",
+            '           MOVE WIRE-REC(35:1) TO WR-STATUS(WS-WIRE-COUNT)\n           MOVE "N" TO WR-USED(WS-WIRE-COUNT)\n           MOVE WIRE-REC(36:8) TO WR-DATE(WS-WIRE-COUNT).',
+        )
+    src = src.replace(
+        "           MOVE RETURN-REC(24:8) TO WS-RETURN-ACCOUNT",
+        "           MOVE RETURN-REC(24:8) TO WS-RETURN-ACCOUNT\n           MOVE RETURN-REC(32:8) TO WS-RETURN-DATE",
+    )
+
+    start = src.index("           PERFORM VARYING WS-IDX FROM 1 BY 1")
+    end = src.index("\n\n           IF WS-MATCH-IDX > 0", start)
+    src = src[:start] + """           PERFORM VARYING WS-IDX FROM 1 BY 1
+               UNTIL WS-IDX > WS-WIRE-COUNT
+               MOVE WR-DATE(WS-IDX) TO WS-TARGET-DATE
+               PERFORM CHECK-DATE-OPEN
+               MOVE WS-DATE-OPEN TO WS-WIRE-DATE-OPEN
+               MOVE WS-RETURN-DATE TO WS-TARGET-DATE
+               PERFORM CHECK-DATE-OPEN
+               MOVE WS-DATE-OPEN TO WS-RETURN-DATE-OPEN
+               PERFORM COUNT-CYCLE-DAYS
+               IF WR-USED(WS-IDX) NOT = "Y"
+                  AND WR-DATE(WS-IDX) NOT = SPACES
+                  AND WS-RETURN-DATE NOT = SPACES
+                  AND WS-WIRE-DATE-OPEN = "Y"
+                  AND WS-RETURN-DATE-OPEN = "Y"
+                  AND WS-RETURN-DATE >= WR-DATE(WS-IDX)
+                  AND WS-CYCLE-DAYS <= 2
+                  AND WR-ID(WS-IDX) = WS-RETURN-WIRE
+                  AND WR-ACCOUNT(WS-IDX) = WS-RETURN-ACCOUNT
+                  AND WR-AMOUNT(WS-IDX) = WS-RETURN-AMOUNT
+                  AND WR-STATUS(WS-IDX) = "S"
+                  AND (WR-REASON(WS-IDX) = "MED"
+                       OR WR-REASON(WS-IDX) = "PHR"
+                       OR WR-REASON(WS-IDX) = "ADJ"
+                       OR WR-REASON(WS-IDX) = "COP")
+                   IF WS-MATCH-IDX = 0
+                       MOVE WS-IDX TO WS-MATCH-IDX
+                   ELSE
+                       IF WR-DATE(WS-IDX) > WR-DATE(WS-MATCH-IDX)
+                           MOVE WS-IDX TO WS-MATCH-IDX
+                       END-IF
+                   END-IF
+               END-IF
+           END-PERFORM""" + src[end:]
+
+    insert_at = src.index("       WRITE-REPORT-ROW.")
+    if "CHECK-DATE-OPEN." not in src:
+        src = (
+            src[:insert_at]
+            + """       CHECK-DATE-OPEN.
+           MOVE "N" TO WS-DATE-OPEN
+           PERFORM VARYING WS-CAL-IDX FROM 1 BY 1
+               UNTIL WS-CAL-IDX > WS-CAL-COUNT
+               IF CAL-DATE(WS-CAL-IDX) = WS-TARGET-DATE
+                  AND CAL-OPEN(WS-CAL-IDX) = "Y"
+                   MOVE "Y" TO WS-DATE-OPEN
+               END-IF
+           END-PERFORM.
+
+       COUNT-CYCLE-DAYS.
+           MOVE 0 TO WS-CYCLE-DAYS
+           PERFORM VARYING WS-CAL-IDX FROM 1 BY 1
+               UNTIL WS-CAL-IDX > WS-CAL-COUNT
+               IF CAL-DATE(WS-CAL-IDX) > WR-DATE(WS-IDX)
+                  AND CAL-DATE(WS-CAL-IDX) <= WS-RETURN-DATE
+                  AND CAL-OPEN(WS-CAL-IDX) = "Y"
+                   ADD 1 TO WS-CYCLE-DAYS
+               END-IF
+           END-PERFORM.
+
+"""
+            + src[insert_at:]
+        )
+    return src
+
+
+def apply_m4(src: str) -> str:
+    if "SELECT AUDIT-FILE ASSIGN" in src:
+        return src
+    src = src.replace(
+        '           SELECT SUMMARY-FILE ASSIGN TO "/app/out/wire_return_summary.txt"\n               ORGANIZATION IS LINE SEQUENTIAL.',
+        '           SELECT SUMMARY-FILE ASSIGN TO "/app/out/wire_return_summary.txt"\n               ORGANIZATION IS LINE SEQUENTIAL.\n           SELECT AUDIT-FILE ASSIGN TO "/app/out/wire_return_audit.csv"\n               ORGANIZATION IS LINE SEQUENTIAL.',
+    )
+    src = src.replace(
+        "       FD SUMMARY-FILE.\n       01 SUMMARY-REC PIC X(80).",
+        "       FD SUMMARY-FILE.\n       01 SUMMARY-REC PIC X(80).\n       FD AUDIT-FILE.\n       01 AUDIT-REC PIC X(80).",
+    )
+    if "WS-AUDIT-STATUS" not in src:
+        if "WS-RETURN-DATE PIC X(8)." in src:
+            src = src.replace(
+                "       01 WS-RETURN-DATE PIC X(8).",
+                "       01 WS-RETURN-DATE PIC X(8).\n       01 WS-AUDIT-STATUS PIC X(10).",
+                1,
+            )
+        else:
+            src = src.replace(
+                "       01 WS-RETURN-ACCOUNT PIC X(8).",
+                "       01 WS-RETURN-ACCOUNT PIC X(8).\n       01 WS-AUDIT-STATUS PIC X(10).",
+                1,
+            )
+    src = src.replace(
+        "           OPEN OUTPUT REPORT-FILE\n           OPEN OUTPUT SUMMARY-FILE",
+        "           OPEN OUTPUT REPORT-FILE\n           OPEN OUTPUT SUMMARY-FILE\n           OPEN OUTPUT AUDIT-FILE",
+    )
+    src = src.replace(
+        '           MOVE "wire_id,account_id,reason,amount_cents,status" TO REPORT-REC\n           WRITE REPORT-REC',
+        '           MOVE "wire_id,account_id,reason,amount_cents,status" TO REPORT-REC\n           WRITE REPORT-REC\n           MOVE SPACES TO AUDIT-REC\n           MOVE "id,amount_cents,status" TO AUDIT-REC\n           WRITE AUDIT-REC',
+    )
+    src = src.replace(
+        "           PERFORM WRITE-REPORT-ROW.",
+        "           PERFORM WRITE-REPORT-ROW\n           PERFORM WRITE-AUDIT-ROW.",
+    )
+    if "\n       WRITE-AUDIT-ROW." not in src:
+        audit_para = """       WRITE-AUDIT-ROW.
+           MOVE SPACES TO AUDIT-REC
+           IF WS-MATCH-IDX > 0
+               MOVE "CLEARED" TO WS-AUDIT-STATUS
+           ELSE
+               MOVE "EXCEPTION" TO WS-AUDIT-STATUS
+           END-IF
+           STRING WS-RETURN-WIRE DELIMITED BY SIZE
+               "," DELIMITED BY SIZE
+               WS-RETURN-AMOUNT DELIMITED BY SIZE
+               "," DELIMITED BY SIZE
+               WS-AUDIT-STATUS DELIMITED BY SIZE
+               INTO AUDIT-REC
+           END-STRING
+           WRITE AUDIT-REC.
+
+"""
+        marker = "       WRITE-SUMMARY."
+        if marker in src:
+            src = src.replace(marker, audit_para + marker, 1)
+        else:
+            src = src.rstrip() + "\n\n" + audit_para
+    return src.replace(
+        "           CLOSE REPORT-FILE\n           CLOSE SUMMARY-FILE",
+        "           CLOSE REPORT-FILE\n           CLOSE SUMMARY-FILE\n           CLOSE AUDIT-FILE",
+    )
+
+
+text = apply_m1(text)
+text = apply_m2(text)
+text = apply_m3(text)
+text = apply_m4(text)
+path.write_text(text)
+PY
+
+/app/scripts/run_batch.sh
+test -s /app/out/wire_return_report.csv
+test -s /app/out/wire_return_summary.txt
+test -s /app/out/wire_return_audit.csv

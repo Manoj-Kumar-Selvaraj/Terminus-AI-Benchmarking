@@ -1,0 +1,4 @@
+client_id,service_area,max_refund_cents,enabled,allow_any
+CUST1001,MASSAGE,5000,true,true
+CUST1002,FACIAL,7000,true,true
+CUST1003,SAUNA,8000,true,true

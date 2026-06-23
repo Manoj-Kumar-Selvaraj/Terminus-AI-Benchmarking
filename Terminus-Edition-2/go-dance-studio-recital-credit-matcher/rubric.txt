@@ -1,0 +1,15 @@
+# Rubric
+
+Agent investigates and updates the intended Go implementation path `/app/cmd/reconcile/main.go` plus the documented input, config, and output files for the dance studio recital credit matcher task, +2
+Agent keeps the executable solution in the Go CLI compiled by `/app/scripts/run_batch.sh` instead of moving the implementation to an uninvoked script or alternate language, +3
+Agent satisfies milestone 1 matching: full identifier equality, identity fields, amount, source status, allowed canonical type, and single-use source row consumption all gate matching, +5
+Agent preserves milestone 1 outputs: input action order, exact report schema, exact `MATCHED` and `UNMATCHED` labels, blank type on unmatched rows, and positive JSON summary totals, +3
+Agent satisfies milestone 2 alias handling by trimming and case-folding legacy aliases before matching, validating the normalized canonical value, and emitting canonical type values only, +5
+Agent preserves all milestone 1 gates, row-consumption behavior, schemas, ordering, status labels, and summary totals while adding milestone 2 aliases, +3
+Agent satisfies milestone 3 calendar behavior: only open listed dates qualify, missing or malformed dates stay unmatched, and latest source date with earliest row tie-break wins, +5
+Agent satisfies milestone 4 policy behavior: enabled methods, `ANY` wildcard ranking, member limits, blackout exclusions, dated/undated compatibility, and all prior gates interact correctly, +5
+Agent hardcodes final output files instead of fixing the Go reconciliation logic, -5
+Agent tampers with verifier harness files, solution scaffolding, platform configuration, or input fixtures to force a pass, -5
+Agent writes the solution only to an uninvoked helper script or alternate language while leaving `/app/cmd/reconcile/main.go` broken, -5
+Agent regresses earlier milestone behavior while implementing later alias, calendar, or policy changes, -3
+Agent repeats failing commands without adjusting approach after clear errors, -2

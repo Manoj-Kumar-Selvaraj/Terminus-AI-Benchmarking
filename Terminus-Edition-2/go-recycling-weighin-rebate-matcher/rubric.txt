@@ -1,0 +1,35 @@
+# Rubric 1
+
+Agent investigates `/app/cmd/reconcile/main.go`, input CSV layouts, and output contracts for `go-recycling-weighin-rebate-matcher`, +2
+Agent compiles the Go CLI with `/usr/local/go/bin/go` and runs it against fresh synthetic inputs, +3
+Agent fixes reconciliation logic instead of hardcoding `/app/out/weighin_rebate_report.csv` or `/app/out/weighin_rebate_summary.json`, +3
+Agent enforces milestone 1 matching gates for full `weighin_id`, `account_id`, amount, `COMPLETED` status, and allowed `material_tier` values, +5
+Agent preserves action input order, exact report columns, and exact `MATCHED` and `UNMATCHED` labels, +3
+Agent leaves `material_tier` blank on every `UNMATCHED` row and emits canonical `material_tier` on `MATCHED` rows, +3
+Agent writes summary JSON with positive integer `matched_count`, `matched_amount_cents`, `unmatched_count`, and `unmatched_amount_cents`, +3
+Agent consumes each source row at most once so duplicate actions cannot reuse the same row, +5
+Agent trims surrounding whitespace from CSV identifiers before comparing or writing report fields, +3
+Agent hardcodes final CSV or JSON output instead of repairing the Go program, -5
+
+# Rubric 2
+
+Agent normalizes legacy action aliases to canonical `material_tier` values before matching and report output, +5
+Agent emits canonical `material_tier` values on matched alias rows rather than raw alias codes, +3
+Agent preserves milestone 1 blank-unmatched `material_tier` behavior while adding alias normalization, +3
+Agent keeps required output paths and schemas unchanged when extending alias handling, +3
+Agent validates alias and consumption behavior against overwritten fixture data, +2
+Agent regresses milestone 1 matching gates while implementing alias normalization, -3
+Agent edits verifier harness files or solution scaffolding to force a pass, -5
+Agent repeats failing `go build` commands without adjusting approach after clear compile errors, -2
+
+# Rubric 3
+
+Agent applies open action-date gates from `/app/config/cutoff_calendar.txt` while preserving prior matching rules, +5
+Agent chooses the eligible source row with the latest `weighin_date` when multiple unused rows qualify, +5
+Agent breaks tied `weighin_date` values by selecting the earliest source input row and tracks consumption by row position, +3
+Agent rejects closed, missing, blank, or unlisted calendar dates and blank source dates, +3
+Agent preserves alias normalization and blank unmatched `material_tier` under calendar gates, +3
+Agent verifies latest-date selection with distinct source amounts so first-fit file order cannot pass, +3
+Agent validates final CSV and JSON artifacts before finishing milestone 3, +2
+Agent treats closed or unlisted calendar dates as open, -5
+Agent regresses milestone 1 or 2 behavior while implementing calendar or latest-date logic, -3

@@ -1,0 +1,5 @@
+Keep every milestone 1, 2, and 3 rule. The hard-coded reason allowlist must be replaced with a dynamic policy loaded from `/app/config/reasons.csv`. That file has columns `reason,eligible,priority`. A credit reason is eligible only if its row exists in the file with `eligible=Y` (case-insensitive); absent or `eligible=N` reasons block the credit.
+
+Milestone 4 adds support for the special credit reason value `ANY`. A credit with reason `ANY` passes the reason gate and can match any playback row that satisfies all other matching conditions. Among multiple unused qualifying playbacks for an `ANY` credit, apply the same tie-break as milestone 3: latest `end_utc` first; when `end_utc` ties, earliest playback input row. Each playback can still only be consumed once.
+
+Non-`ANY` credit reasons continue to require an exact match against an eligible entry in `reasons.csv`. Disabled (`eligible=N`) or absent reasons remain blocked. The report `reason` column emits the credit's original reason field unchanged for all rows, including `ANY`. Keep all other output schemas and summary keys from prior milestones.

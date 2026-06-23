@@ -1,0 +1,5 @@
+Extend `/app/lib/reconcile.rb` for dated refund batches. `enrollments.csv` may include `term_end` and `refunds.csv` may include `refund_date`. If both files still use the earlier schemas without those columns, keep the prior matching behavior. A refund can match only when all prior criteria still pass, `refund_date` is listed as `open` in `/app/config/cutoff_calendar.txt`, and `refund_date` is not later than the enrollment `term_end`. Missing, closed, or unlisted `refund_date` values are not eligible. An enrollment with missing `term_end` is not eligible.
+
+If multiple unused enrollment rows match one refund, choose the row with the latest `term_end`; if dates tie, choose the earliest enrollment input row. Consumption is by row position, not `enrollment_id`, so duplicate ids in separate rows remain separate. Keep aliases from milestone 2 and keep the existing report and summary schemas.
+
+Continue to write `/app/out/refund_report.csv` and `/app/out/refund_summary.json` with the same schemas, status labels, blank unmatched fields, and summary keys from the earlier milestone.

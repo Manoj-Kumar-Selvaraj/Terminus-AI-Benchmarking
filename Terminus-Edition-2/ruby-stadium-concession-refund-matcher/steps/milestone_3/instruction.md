@@ -1,0 +1,13 @@
+The realtime stadium concession refund reconciler is matching correction rows to the wrong source records. Finish fixing the Ruby entrypoint `/app/app/reconcile.rb` so `/app/data/refunds.csv` reconciles against `/app/data/folios.csv`, using `/app/config/windows.csv` for the active realtime window rules. The verifier runs `ruby /app/app/reconcile.rb`, so keep the solution in that Ruby file rather than adding a separate script in another language.
+
+A correction matches a source row only when the full `folio_id`, `fan_id`, `property_id`, `stand`, and `amount` all match, the source status is the literal `SOLD`, the correction reason is `SPOIL`, `DUP`, or `VOID`, and the item_type matches after alias normalization. Item_Type aliases must be normalized before matching: `FD` means `FOOD`, `DR` means `DRINK`, `MR` means `MERCH`.
+
+The source timestamp and correction timestamp must be numeric UTC timestamps. The source timestamp must be inside an `OPEN` window for the same `property_id` in `/app/config/windows.csv`, and the correction timestamp must be on or after the source timestamp but not after the window close. Closed, missing, malformed, or unlisted windows are not eligible. If multiple unused source rows qualify, choose the latest source timestamp and then the earliest source input row. Each source row can be consumed once.
+
+Write `/app/out/concession_refund_report.csv` with columns `refund_id,folio_id,fan_id,property_id,item_type,amount,reason,status`, preserving correction input order. Matched rows report the canonical source item_type; unmatched rows leave `item_type` blank. Write `/app/out/concession_refund_summary.txt` as `key=value` lines for `matched_count`, `matched_amount`, `unmatched_count`, and `unmatched_amount`, with amounts counted as positive integers.
+
+Milestone 3 keeps every milestone 1 and milestone 2 rule. The realtime window file is authoritative: only numeric timestamps in explicitly `OPEN` windows are eligible, closed, missing, malformed, or unlisted windows are not eligible, actions must occur after the source timestamp and before the window close, and multiple unused candidates are resolved by latest source timestamp with earliest input row as the tie-breaker.
+
+When several unused source rows qualify for the same correction, choose the row with the latest `sale_ts`; if `sale_ts` values tie, choose the earliest source input row. Consumption is tracked by source input position, not by `folio_id`, so duplicate ids in separate rows remain independently consumable until their specific rows are used.
+
+The report `status` column must use only the exact strings `MATCHED` and `UNMATCHED`.

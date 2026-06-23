@@ -1,0 +1,18 @@
+# Rubric 1
+Agent reads batch contract and trailer operations docs before changing PL/I decks, +2
+Agent sets KEY_COMPARE FULL and CONSUME ON in trailer_batch.pli for strict trailer reconciliation, +5
+Agent honors ELIGIBLE_STATE and REASON_1/2/3 gates from trailer_rules.pli, +3
+Agent preserves claim order and blanks dc_flag on REJECTED rows in trailer_report.csv, +3
+Agent writes balanced/rejected net_cents totals in trailer_summary.txt, +2
+Agent patches pli_trailer.awk instead of fixing .pli control decks, -5
+Agent clears claims on prefix batch_id match only or without consumption, -5
+# Rubric 2
+Agent keeps milestone 1 matching while enabling ALIAS_MODE for debit/credit flags, +3
+Agent normalizes D/C/X aliases case-insensitively from trailer_rules.pli, +5
+Agent emits canonical dc_flag on BALANCED rows only, +3
+Agent hard-codes dc_flag strings or disables alias deck, -5
+# Rubric 3
+Agent keeps milestones 1–2 while enabling WINDOW_MODE, +3
+Agent enforces settlement_windows.psv per account_no with OPEN_SETTLE_STATE bounds, +5
+Agent tie-breaks on latest posted_ts then earliest batch row, +3
+Agent reconciles trailer claims outside settlement window timestamps, -5

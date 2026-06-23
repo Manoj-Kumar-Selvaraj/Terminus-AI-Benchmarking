@@ -1,0 +1,35 @@
+# Rubric 1
+Agent inspects scrape samples, route labels, and persisted metrics state before changing alert logic, +2
+Agent keys gateway metrics by metric name, labels, and timestamp rather than metric name alone, +5
+Agent preserves route and environment labels needed by later milestones, +4
+Agent validates generated sample inputs rather than hardcoded series IDs, +3
+Agent enables behavior through a CAPABILITY or milestone constant instead of repairing logic, -5
+Agent rewrites expected output JSON without parsing metrics, -5
+# Rubric 2
+Agent suppresses non-production route noise using environment and route metadata without losing production pages, +5
+Agent preserves milestone 1 series identity and persisted state, +3
+Agent handles absent, malformed, and reordered labels safely, +4
+Agent validates staging/non-production and production route paths, +3
+Agent filters by fixture case ID or static route names only, -5
+Agent drops all noisy routes including production alerts, -5
+# Rubric 3
+Agent handles stale or repeated samples without double-counting alert transitions, +5
+Agent records state transitions audibly for changed samples only, +4
+Agent preserves route filtering and label identity behavior, +3
+Agent validates duplicate timestamps and changed values, +3
+Agent pages repeatedly for unchanged samples, -5
+Agent deletes persisted state to hide duplicate notifications, -5
+# Rubric 4
+Agent fail-closes malformed environment or route manifests and reports clear errors, +5
+Agent rejects unsafe missing route mappings while preserving previous alert semantics, +4
+Agent validates malformed JSON, missing routes, and safe defaults, +3
+Agent preserves all prior milestone behavior under manifest-backed runs, +3
+Agent treats malformed manifests as empty allow-all configuration, -5
+Agent bypasses manifest loading to make tests pass, -5
+# Rubric 5
+Agent gates release alerts using manifest, state, and environment compatibility rather than static release IDs, +5
+Agent preserves prior route, stale-sample, and manifest validation behavior, +3
+Agent records release-gate decisions in the documented output state, +4
+Agent validates blocked and allowed release paths with dynamic labels, +3
+Agent unlocks all behavior through a single CAPABILITY setting, -5
+Agent hardcodes the provided release names or route labels, -5

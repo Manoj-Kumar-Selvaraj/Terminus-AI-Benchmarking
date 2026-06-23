@@ -1,0 +1,51 @@
+# Rubric 1
+
+Agent inspects `/app/lib/reconcile.rb`, `/app/data/kegs.csv`, `/app/data/deposits.csv`, and the documented output files before editing, +2
+Agent fixes the Ruby reconciler logic instead of hardcoding `/app/out/deposit_report.csv` or `/app/out/deposit_summary.json`, +3
+Agent compares full `keg_id` values and does not use prefix or substring matching, +3
+Agent enforces milestone 1 matching gates including keg id, distributor id, amount, eligible returned status, and allowed keg type, +5
+Agent trims surrounding whitespace and compares returned status and keg type values case-insensitively without corrupting report values, +3
+Agent consumes each keg row at most once so duplicate deposit rows cannot reuse the same source row, +5
+Agent preserves deposit input order, exact `MATCHED` and `UNMATCHED` labels, and the required report schema, +3
+Agent reports matched and unmatched summary counts and positive integer cent totals in the required JSON keys, +3
+Agent hardcodes final output files instead of repairing the reconciliation logic, -5
+Agent edits or deletes verifier, oracle, metadata, or input fixture files to force a pass, -5
+
+# Rubric 2
+
+Agent normalizes every documented keg type alias case-insensitively before matching, +3
+Agent emits canonical keg type values for matched rows rather than raw aliases, +3
+Agent keeps unmatched keg type fields blank while preserving the report and summary schemas, +3
+Agent preserves milestone 1 matching, row consumption, ordering, status labels, and positive totals after adding keg type aliases, +5
+Agent regresses milestone 1 behavior while implementing alias handling, -3
+
+# Rubric 3
+
+Agent supports dated input columns without breaking older CSV files that do not include those columns, +3
+Agent reads `/app/config/cutoff_calendar.txt` and treats only deposit dates explicitly marked open as eligible, +5
+Agent rejects missing, malformed, closed, or unlisted deposit dates before allowing a match, +3
+Agent enforces that `deposit_date` is not later than `return_date` together with all prior matching gates, +5
+Agent selects the eligible keg row by the latest `return_date` rule and breaks equal-date ties deterministically, +5
+Agent verifies latest-date selection with distinct source amounts so first-fit order cannot pass, +3
+Agent preserves alias normalization and canonical report output under dated matching, +3
+Agent treats closed, missing, malformed, or unlisted calendar dates as open, -5
+
+# Rubric 4
+
+Agent reads `/app/config/methods.csv` and treats only enabled canonical keg types as matchable, +5
+Agent implements `ANY` deposit keg type matching by selecting latest return date, then lower configured keg type priority, then earliest keg input row, +5
+Agent emits the selected canonical keg type for matched `ANY` deposits and never emits raw `ANY` in the report, +3
+Agent preserves exact canonical keg type matching for non-`ANY` deposits while adding config-driven policy, +3
+Agent preserves prior schema, status, alias, date, consumption, and positive-total behavior while adding milestone 4 policy support, +5
+Agent emits raw aliases or raw `ANY` values in matched report rows, -5
+
+# Rubric 5
+
+Agent reads `/app/config/run_profile.ini` and applies `deposit_open_window_days` when dated columns are present, +5
+Agent counts only calendar lines explicitly marked `open` strictly after `deposit_date` through and including `return_date`, +5
+Agent treats same-day deposit and return dates as zero counted open days within the window rule, +3
+Agent keeps milestone 1–4 gates active together with the configurable open-day window, +3
+Agent confirms the window rule does not bypass keg type equality, consumption, or methods policy, +2
+Agent changes required output filenames, schemas, JSON keys, or status labels, -3
+Agent uses partial identifiers, wrong eligible-status literals, disabled keg types, or negative matched totals, -5
+Agent regresses earlier milestone behavior while implementing dated or config-driven matching, -3

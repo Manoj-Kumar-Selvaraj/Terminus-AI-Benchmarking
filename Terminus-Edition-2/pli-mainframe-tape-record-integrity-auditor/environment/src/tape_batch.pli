@@ -1,0 +1,5 @@
+/* mainframe tape record integrity auditor batch control deck */
+%SET KEY_COMPARE PREFIX5
+%SET CONSUME OFF
+%SET ALIAS_MODE OFF
+%SET WINDOW_MODE OFF

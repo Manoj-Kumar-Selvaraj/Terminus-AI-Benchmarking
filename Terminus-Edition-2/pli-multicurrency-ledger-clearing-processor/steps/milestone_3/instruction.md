@@ -1,0 +1,5 @@
+The multicurrency ledger clearing processor clears postings outside approved FX windows. Fix only the PL/I-style control files under `/app/src` so `/app/data/postings.psv` reconciles against `/app/data/ledger.psv`. Do not modify `/app/scripts/run_batch.sh` or `/app/scripts/pli_ledger.awk`; `/app/out/ledger_report.csv` remains pipe-delimited.
+
+Preserve the existing strict matching, alias normalization, row consumption, report, and summary behavior while enforcing `/app/config/fx_windows.psv`. Timestamps are 14-digit UTC strings. Ledger `book_ts` and posting `post_ts` must both fall inside an open window for the row's `account_id`, where window `state` equals `OPEN_FX_STATE` from `/app/src/ledger_rules.pli` case-insensitively.
+
+Read all rule constants dynamically from `/app/src/ledger_rules.pli`; the verifier may replace the rules, ledger, postings, and FX windows. Preserve posting order, single-consumption behavior, canonical currency output on `CLEARED` rows, blank currency output on `HELD` rows, and integer summary totals. Status must be exactly `CLEARED` or `HELD`.

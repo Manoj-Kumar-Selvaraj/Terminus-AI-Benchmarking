@@ -1,0 +1,5 @@
+Finish the denial adjustment rollup in `/app/src/claim_rollup.cbl` by enforcing the claim-cycle calendar. Claim ids are 12 characters and start with `CLM`; positions 4-11 are the claim cycle date in `YYYYMMDD` form. Use `/app/config/cycle_calendar.txt`, where each row is `YYYYMMDD STATUS`.
+
+A claim row is eligible only when its cycle date appears as `OPEN` in the final calendar view. Calendar status matching is case-insensitive, so `open`, `Open`, and `OPEN` all mean open. If a date appears more than once, the last row in the file is authoritative. Dates missing from the calendar are not open.
+
+Keep all prior behavior: full 12-character claim id matching, member id and amount checks, denied status `D`, canonical denial reasons (`MED`, `NEC`, `COB`, `AUT`), claim-side aliases (`BIL`, `AUN`, `CLN`), row-specific claim consumption, adjustment input order, blank `reason` on `UNMATCHED` rows, positive summary amounts, and the existing `/app/out/denial_report.csv` and `/app/out/denial_summary.txt` schemas.

@@ -1,0 +1,13 @@
+{
+  "schema_version": "release-history-keys/v1",
+  "keys_by_env": {
+    "prod": {
+      "key_id": "prod-rollback-2026",
+      "secret": "prod-history-secret"
+    },
+    "staging": {
+      "key_id": "staging-rollback-2026",
+      "secret": "staging-history-secret"
+    }
+  }
+}

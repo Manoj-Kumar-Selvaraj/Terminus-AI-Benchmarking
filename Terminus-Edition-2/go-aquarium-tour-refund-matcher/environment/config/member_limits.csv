@@ -1,0 +1,2 @@
+guest_id,tour_type,effective_date,max_daily_amount,status
+CUST-SAMPLE,REEF,2026-04-01,9999,ACTIVE

@@ -1,0 +1,24 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. TESTOPEN.
+       ENVIRONMENT DIVISION.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+           SELECT ENV-FILE ASSIGN TO "/tmp/finbulk_bridge.env"
+               ORGANIZATION IS LINE SEQUENTIAL.
+       DATA DIVISION.
+       FILE SECTION.
+       FD ENV-FILE.
+       01 ENV-LINE PIC X(80).
+       WORKING-STORAGE SECTION.
+       PROCEDURE DIVISION.
+           PERFORM OPEN-BRIDGE-ENV
+           MOVE "test" TO ENV-LINE
+           WRITE ENV-LINE
+           PERFORM CLOSE-BRIDGE-ENV
+           STOP RUN.
+       OPEN-BRIDGE-ENV.
+           OPEN OUTPUT ENV-FILE
+           .
+       CLOSE-BRIDGE-ENV.
+           CLOSE ENV-FILE
+           .

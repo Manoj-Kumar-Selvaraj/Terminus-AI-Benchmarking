@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ruby /app/lib/reconcile.rb

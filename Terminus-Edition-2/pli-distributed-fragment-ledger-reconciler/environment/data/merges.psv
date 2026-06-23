@@ -1,0 +1,2 @@
+merge_id|fragment_id|parent_id|shard_value|channel|merge_ts|opcode|ingest_class
+MRG-1|FRG-10001|ROOT-1|42|NORTH|20260612120500|APPEND|LEDGER

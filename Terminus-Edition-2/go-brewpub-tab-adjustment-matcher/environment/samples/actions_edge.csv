@@ -1,0 +1,3 @@
+tab_id,patron_id,amount_cents,pour_tier
+TABEDGE000001,CUST9001,100,PINT
+TABEDGE000002,CUST9002,200,PITCH

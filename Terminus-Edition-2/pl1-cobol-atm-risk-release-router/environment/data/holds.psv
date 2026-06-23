@@ -1,0 +1,2 @@
+hold_id|card_id|terminal_id|channel|amount_cents|hold_ts|status|region
+H-100|CARD-1|TERM-A|ATM|1200|20260528120000|HELD|NORTH

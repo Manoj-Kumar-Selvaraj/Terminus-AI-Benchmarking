@@ -1,0 +1,3 @@
+attendance_id,child_id,amount_cents,care_type
+INVEDGE000001,CUST9001,100,HALF
+INVEDGE000002,CUST9002,200,FULL

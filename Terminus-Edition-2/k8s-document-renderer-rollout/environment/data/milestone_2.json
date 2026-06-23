@@ -1,0 +1,68 @@
+{
+  "cases": [
+    {
+      "id": "m2_authorized",
+      "request": {
+        "id": "obj-101",
+        "tenant": "blue",
+        "actor": "blue",
+        "owner": "blue",
+        "resource": "queue:new",
+        "action": "read"
+      },
+      "policy": {
+        "allow_values": {
+          "tenant": [
+            "blue"
+          ],
+          "action": [
+            "read",
+            "write"
+          ]
+        },
+        "requires_owner": true
+      }
+    },
+    {
+      "id": "m2_owner_mismatch",
+      "request": {
+        "id": "obj-102",
+        "tenant": "blue",
+        "actor": "red",
+        "owner": "blue",
+        "resource": "queue:new",
+        "action": "read"
+      },
+      "policy": {
+        "requires_owner": true
+      }
+    },
+    {
+      "id": "m2_wildcard",
+      "request": {
+        "id": "obj-103",
+        "tenant": "blue",
+        "actor": "blue",
+        "owner": "blue",
+        "resource": "*",
+        "action": "*"
+      },
+      "policy": {
+        "deny_wildcard": true
+      }
+    },
+    {
+      "id": "m2_readiness",
+      "request": {
+        "id": "obj-104",
+        "probe": "readiness",
+        "actor": "svc",
+        "owner": "svc"
+      },
+      "policy": {
+        "health": "degraded",
+        "requires_owner": true
+      }
+    }
+  ]
+}

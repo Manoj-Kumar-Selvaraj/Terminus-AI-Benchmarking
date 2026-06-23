@@ -1,0 +1,15 @@
+Agent investigates and updates intended `cobol-java-remittance-router` implementation paths (/app/out/remit_export.csv, /app/src/remit_reconcile.cbl, /app/java/RemittanceAdapter.java) instead of unrelated files, +2
+Agent satisfies `cobol-java-remittance-router` milestone 1 core requirement: The verifier runs the adapter without the Compose `rules` service, so the Java adapter must tolerate a failed or unresolved rules-service call by falling back to the allowed rails in `/app/config/rails.csv`:..., +5
+Agent preserves milestone 1 rule for `cobol-java-remittance-router`: Counts must match the export., +3
+Agent handles milestone 1 edge/ordering behavior for `cobol-java-remittance-router` validated by tests: Replace the fixed-width remittance input data for a focused scenario., +3
+Agent satisfies `cobol-java-remittance-router` milestone 2 core requirement: **Duplicate transaction ids** - If the export contains the same `transaction_id` more than once, only the earliest exported row can be `ACCEPTED`; later rows with that id must stay in the payload in export o..., +5
+Agent preserves milestone 2 rule for `cobol-java-remittance-router`: Keep milestone 1 behavior and outputs: `/app/out/remit_export.csv`, `/app/out/remit_summary.txt` (`exported_count`, `exported_amount_cents`, `rejected_count`), and `/app/out/remit_payload.json` per `/app/con..., +3
+Agent handles milestone 2 edge/ordering behavior for `cobol-java-remittance-router` validated by tests: Replace the fixed-width remittance input data for a focused scenario., +3
+Agent satisfies `cobol-java-remittance-router` milestone 3 core requirement: The batch must still read `/app/data/remittances.dat`, write `/app/out/remit_export.csv` and `/app/out/remit_summary.txt`, try the rules service from `RULES_URL`, and write `/app/out/remit_payload.json` per..., +5
+Agent preserves milestone 3 rule for `cobol-java-remittance-router`: Only `OPEN` (any casing, e.g., +3
+Agent handles milestone 3 edge/ordering behavior for `cobol-java-remittance-router` validated by tests: Replace fixed-width remittance data and calendar rows., +3
+Agent validates `cobol-java-remittance-router` output artifacts against required schemas and deterministic ordering before finalizing, +3
+Agent hardcodes final output files for `cobol-java-remittance-router` instead of fixing underlying implementation, -5
+Agent edits tests/oracle/metadata in `cobol-java-remittance-router` to force a pass rather than solving the task, -5
+Agent regresses earlier milestones in `cobol-java-remittance-router` while implementing later milestone changes, -3
+Agent repeats failing commands for `cobol-java-remittance-router` without adjusting approach after clear errors, -2

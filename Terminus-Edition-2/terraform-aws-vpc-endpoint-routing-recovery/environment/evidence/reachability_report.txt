@@ -1,0 +1,12 @@
+Reachability fixture: staging after network module refactor
+
+probe private-a -> 0.0.0.0/0 via NAT: OK through nat-a
+probe private-b -> 0.0.0.0/0 via NAT: FAIL, no private NAT default route selected
+probe public-a -> 0.0.0.0/0 via IGW: OK
+probe public-b -> 0.0.0.0/0 via IGW: OK
+probe private-a -> s3 gateway endpoint: PARTIAL, route table rtb-private-a attached
+probe private-b -> s3 gateway endpoint: FAIL, route table rtb-private-b missing
+probe private-a -> dynamodb gateway endpoint: PARTIAL, public table also attached
+probe private-b -> dynamodb gateway endpoint: FAIL, route table rtb-private-b missing
+probe private-a -> ssm interface endpoint private DNS: FAIL, private DNS disabled
+probe private-b -> ec2messages interface endpoint: FAIL, endpoint ENI is not in private-b

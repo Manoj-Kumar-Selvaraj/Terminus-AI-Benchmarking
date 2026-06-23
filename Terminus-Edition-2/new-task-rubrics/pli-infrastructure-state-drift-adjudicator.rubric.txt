@@ -1,0 +1,18 @@
+# Rubric 1
+Agent reads batch contract and drift audit docs before changing PL/I decks, +2
+Agent sets KEY_COMPARE FULL and CONSUME ON in drift_batch.pli for strict state drift adjudication, +5
+Agent honors ELIGIBLE_STATE and scan_code gates from drift_rules.pli, +3
+Agent preserves scan order and blanks module_name on DRIFTED rows in drift_report.csv, +3
+Agent writes aligned/drifted attr_hash totals in drift_summary.txt, +2
+Agent patches pli_drift.awk instead of fixing .pli control decks, -5
+Agent compares resources on prefix resource_id match only or without consumption, -5
+# Rubric 2
+Agent keeps milestone 1 matching while enabling ALIAS_MODE for module/region codes, +3
+Agent normalizes rg/mod/aws aliases case-insensitively from drift_rules.pli, +5
+Agent emits canonical module_name on ALIGNED rows only, +3
+Agent hard-codes module strings or disables alias deck, -5
+# Rubric 3
+Agent keeps milestones 1–2 while enabling WINDOW_MODE, +3
+Agent enforces audit_windows.psv per resource_group with OPEN_AUDIT_STATE bounds, +5
+Agent tie-breaks on latest ideal_ts then earliest ideal row, +3
+Agent adjudicates scans outside audit window timestamps, -5

@@ -1,0 +1,5 @@
+seat_zone,enabled
+ACH,true
+CARD,true
+WIRE,true
+CHECK,false

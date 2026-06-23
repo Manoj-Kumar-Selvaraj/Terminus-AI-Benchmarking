@@ -1,0 +1,38 @@
+{
+  "agents": [
+    {
+      "name": "linux-builder-a",
+      "online": true,
+      "remoting_java_major": 11
+    },
+    {
+      "name": "linux-builder-b",
+      "online": true,
+      "remoting_java_major": 17
+    }
+  ],
+  "home_claim": {
+    "access_mode": "ReadWriteOnce",
+    "name": "jenkins-home-rwo"
+  },
+  "pods": [
+    {
+      "elected": false,
+      "mounts_home": true,
+      "name": "jenkins-0",
+      "read_write": true,
+      "role": "active"
+    },
+    {
+      "elected": false,
+      "mounts_home": true,
+      "name": "jenkins-restore-0",
+      "read_write": true,
+      "role": "active"
+    }
+  ],
+  "service": {
+    "name": "jenkins-web",
+    "routes_to": "jenkins-restore-0"
+  }
+}

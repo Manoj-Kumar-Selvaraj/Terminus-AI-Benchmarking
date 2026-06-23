@@ -1,0 +1,12 @@
+[batch]
+entrypoint = "/app/lib/reconcile.rb"
+bookings = "/app/data/bookings.csv"
+refunds = "/app/data/refunds.csv"
+report = "/app/out/refund_report.csv"
+summary = "/app/out/refund_summary.json"
+
+[matching]
+ticketed_status = "TICKETED"
+seat_config = "/app/config/methods.csv"
+alias_config = "/app/config/seat_aliases.json"
+calendar = "/app/config/cutoff_calendar.txt"

@@ -1,0 +1,2 @@
+release_id,hold_id,asset_id,aisle_id,access_tier,amount,release_ts,reason,rack
+ACT-SAMSEE-1,SRC-SAMSEE-1,PARTY-1,SAMSEE,IN,100,20260528121100,DECOMM,LOC-1

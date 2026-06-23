@@ -1,0 +1,42 @@
+# Rubric 1
+Agent updates `/app/cmd/reconcile/main.go` and compiles with `/usr/local/go/bin/go`, +2
+Agent enforces full `stall_id`, `vendor_id`, positive integer `amount_cents`, `RESERVED` status, and allowed stall-type gates for matching, +5
+Agent consumes each stall row at most once by input position and trims or case-folds compared fields, +5
+Agent writes `/app/out/refund_report.csv` and `/app/out/refund_summary.json` with exact schema, `MATCHED`/`UNMATCHED` only, blank unmatched `stall_type`, and positive summary totals, +3
+Agent hardcodes output files instead of fixing the Go reconciler, -5
+Agent tampers with platform files or runtime input fixtures to force a pass, -5
+Agent uses partial stall-id matching or allows consumed stall rows to be reused, -5
+# Rubric 2
+Agent normalizes legacy stall-type aliases `PRD`, `CRT`, and `FOD` to canonical `PRODUCE`, `CRAFT`, and `FOOD` before matching, +5
+Agent applies alias normalization case-insensitively after trimming fields, +3
+Agent emits canonical stall types on matched rows and leaves unmatched `stall_type` blank, +3
+Agent preserves milestone 1 gates, row consumption, and output schema while adding alias normalization, +3
+Agent hardcodes alias mappings instead of implementing reusable alias-aware matching in the Go source, -5
+Agent regresses milestone 1 matching or consumption while implementing alias normalization, -5
+Agent emits raw alias tokens on matched rows, -3
+# Rubric 3
+Agent applies `/app/config/cutoff_calendar.txt` so only open refund dates are eligible with case-insensitive status handling, +5
+Agent selects the unused stall row with the latest eligible `market_date`, breaking ties by earliest input row, +5
+Agent preserves alias normalization and milestone 1 gates under calendar constraints, +3
+Agent tracks consumption by stall row position rather than shared `stall_id` keys, +3
+Agent treats closed or unlisted calendar dates as open, -5
+Agent chooses stalls by file order alone instead of latest `market_date` and earliest-row tie-break rules, -5
+Agent regresses undated milestone-2 behavior while adding calendar gating, -3
+# Rubric 4
+Agent reads `/app/config/stall_policy.csv` and enables only canonical stall types whose policy row has `enabled` equal to `Y`, +5
+Agent parses refunds CSV with the leading `settlement_id` column without breaking header-based matching, +3
+Agent implements `ANY` refunds with latest `market_date`, then lowest configured `priority`, then earliest stall row, +5
+Agent reports canonical stall types for matched `ANY` refunds without emitting `ANY` in the report, +3
+Agent preserves milestone 1-3 schemas, consumption, and positive summary totals under policy gating, +3
+Agent matches disabled stall types or ignores configured priority ordering for `ANY` refunds, -5
+Agent emits `ANY` in matched report rows, -5
+Agent regresses earlier milestone behavior while implementing stall policy, -3
+# Rubric 5
+Agent reads `/app/config/market_calendar.txt` and treats only `OPEN` dates as open market days with case-insensitive status comparison, +5
+Agent counts open market days between stall and refund dates using the documented inclusive refund-date and exclusive market-date rules, +5
+Agent requires both `market_date` and `refund_date` to be open whenever date comparison is required, +3
+Agent preserves milestone 1-4 policy, alias, and consumption behavior under market-calendar gating, +3
+Agent keeps undated milestone-2 behavior when both `market_date` and `refund_date` are blank, +3
+Agent treats closed, missing, or unlisted market-calendar dates as open, -5
+Agent allows refunds spanning three or more open market days, -5
+Agent regresses `ANY` policy selection or enabled stall-type gating while adding market-calendar rules, -3

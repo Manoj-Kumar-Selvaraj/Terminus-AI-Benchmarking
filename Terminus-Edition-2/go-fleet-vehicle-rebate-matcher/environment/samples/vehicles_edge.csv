@@ -1,0 +1,3 @@
+vehicle_id,customer_id,amount_cents,status,channel
+VEHEDGE000001,CUST9001,100,POSTED,ACH
+VEHEDGE000002,CUST9002,200,POSTED,CARD

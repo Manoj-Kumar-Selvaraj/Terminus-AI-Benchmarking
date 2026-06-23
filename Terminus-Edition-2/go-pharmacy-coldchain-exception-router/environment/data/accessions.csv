@@ -1,0 +1,2 @@
+shipment_id,pharmacy_id,chain_id,package_type,amount,scan_ts,status,depot
+SRC-SAMPLE-1,PARTY-1,SAMPLE,CHEM,100,20260528121000,RECEIVED,LOC-1

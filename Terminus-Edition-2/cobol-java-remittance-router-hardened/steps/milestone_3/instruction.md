@@ -1,0 +1,9 @@
+Extend the remittance router in `/app` so the Java adapter enforces business-date controls after the COBOL export. The batch must still read `/app/data/remittances.dat`, write `/app/out/remit_export.csv` and `/app/out/remit_summary.txt`, try the rules service from `RULES_URL`, and write `/app/out/remit_payload.json` per `/app/config/payload_schema.json` and `/app/docs/payload_contract.md`. Preserve milestone 1-2 export and summary semantics and duplicate-id rules.
+
+**Rules service fallback** - If the rules service is unavailable or `rules` cannot be resolved, read allowed rails from `/app/config/rails.csv` at runtime (do not hardcode a fixed rail list in Java). The shipped file allows `ACH`, `WIR`, and `RTP` and rejects `CHK`, but tests may rewrite `rails.csv` instead of crashing.
+
+**Business-date calendar (`/app/config/cycle_calendar.txt`)** - Each line is `YYYYMMDD` followed by a status token. Compare status **case-insensitively**. Only `OPEN` (any casing, e.g. `open` or `OPEN`) means the date is open. A transaction can be `ACCEPTED` only when its `business_date` is listed as open, the rail is allowed, and the transaction id has not already been accepted. Dates missing from the file or with any other status (e.g. `CLOSED`, `holiday`) must produce status `CLOSED_DATE`, must not count toward accepted totals, and must count in `rejected_count`.
+
+**Status precedence** - `CLOSED_DATE` applies before duplicate detection on later rows: a row on a non-open date is `CLOSED_DATE` even if the same `transaction_id` was accepted earlier on an open date. Later rows with an id that has already been **accepted** must be `DUPLICATE`.
+
+**Payload totals** - Preserve export row order, keep 10-character zero-padded `amount_cents` strings, and count every non-accepted transaction in `rejected_count`. `accepted_count` and `accepted_amount_cents` include only `ACCEPTED` transactions. Rails blocked by the rules service still use status `REJECTED`.

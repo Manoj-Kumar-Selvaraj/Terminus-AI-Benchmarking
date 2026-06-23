@@ -1,0 +1,40 @@
+# Rubric 1
+Agent inspects `/app/src/wire_returns.cbl`, `/app/docs/record_layouts.md`, `/app/config/reason_codes.csv`, and the required output contracts before editing, +2
+Agent keeps the batch on the COBOL compile path and preserves `compile.sh`/`run_batch.sh` behavior rather than replacing the program with another language, +3
+Agent loads allowed wire reasons from `/app/config/reason_codes.csv` at runtime instead of hardcoding a fixed reason list, +5
+Agent matches milestone 1 returns only by full wire id, account id, amount, settled wire status, and an eligible wire reason from the runtime reason file, +5
+Agent writes `/app/out/wire_return_report.csv` in return-file order with columns `wire_id,account_id,reason,amount_cents,status`, +3
+Agent reports matched wire reasons in the `reason` column and leaves that field blank on every `EXCEPTION` row, +3
+Agent writes `/app/out/wire_return_summary.txt` with `cleared_count`, `cleared_amount_cents`, `exception_count`, and `exception_amount_cents` as positive integer key-value lines, +3
+Agent preserves raw fixed-width cents text in report rows while calculating positive integer summary totals, +2
+Agent hardcodes final output files instead of repairing the COBOL reconciliation logic, -5
+Agent edits verifier behavior, oracle scripts, task metadata, or verifier harness files to force a pass rather than solving the implementation task, -5
+Agent leaves the COBOL program unable to compile or run after changes, -5
+# Rubric 2
+Agent consumes each settled wire row at most once in milestone 2 so duplicate return rows cannot clear against the same source row, +5
+Agent preserves milestone 1 runtime reason loading, full-key matching, blank exception reasons, report schema, status labels, and positive summary totals while adding row consumption, +3
+Agent keeps `CLEARED` and `EXCEPTION` status labels exact and deterministic after milestone 2 changes, +2
+Agent tracks consumption by source row position rather than only by wire id when duplicate source ids exist, +3
+Agent validates runtime reason-code loading still works after milestone 2 consumption changes, +3
+Agent regresses an earlier milestone while implementing a later milestone, -3
+Agent allows one physical wire row to satisfy multiple returns, -5
+# Rubric 3
+Agent uses fixed-width byte offsets from `/app/docs/record_layouts.md` for wire and return settlement and return dates, +3
+Agent reads `/app/config/cycle_calendar.txt` in milestone 3 and treats only case-insensitive `OPEN` calendar rows as open cycle days, +3
+Agent rejects blank settlement dates, blank return dates, missing calendar dates, closed dates, and malformed dates as ineligible in milestone 3, +5
+Agent requires return dates to be on or after settlement dates and within two open cycle days after the settlement date, +3
+Agent counts open cycle days strictly after the settlement date through the return date, including the return date when open and excluding closed or absent dates, +3
+Agent selects the eligible unused wire with the latest settlement date when multiple rows qualify, and breaks date ties by earliest wire input row, +5
+Agent preserves blank `reason` fields on `EXCEPTION` rows, runtime reason loading, and all milestone 1-2 matching gates under milestone 3 calendar logic, +2
+Agent treats blank settlement and return dates as eligible same-day matches, -3
+Agent accepts closed, missing, malformed, or unlisted calendar dates as open, -3
+Agent chooses candidate wires by first file row, last file row, map iteration order, or identifier key instead of the required latest-date and row-order rules, -3
+# Rubric 4
+Agent reads `cycle_window_open_days` from `/app/config/job.properties` in milestone 4 and uses it as the maximum allowed open-day window, +5
+Agent defaults `cycle_window_open_days` to `2` when the property is missing or blank, +5
+Agent preserves milestone 3 date parsing, open-day counting, latest-settlement selection, tie-breakers, row consumption, schemas, and status labels while making the window configurable, +5
+Agent verifies non-default windows still enforce latest-settlement selection and wire-row consumption with distinguishable matched reasons, +5
+Agent validates runtime reason-code loading still works after milestone 4 window changes, +3
+Agent validates outputs and summaries after each milestone with fresh input fixtures before finalizing, +3
+Agent hardcodes final output files instead of repairing the COBOL reconciliation logic, -5
+Agent regresses an earlier milestone while implementing a later milestone, -3

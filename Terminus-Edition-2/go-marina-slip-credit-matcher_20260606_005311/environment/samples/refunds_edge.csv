@@ -1,0 +1,3 @@
+slip_id,member_id,amount_cents,dock_zone
+INVEDGE000001,CUST9001,100,NORTH
+INVEDGE000002,CUST9002,200,SOUTH

@@ -1,0 +1,7 @@
+Finish the streaming usage credit reconciler in `/app/cmd/reconcile/main.go`. Keep all milestone 1 and milestone 2 behavior: full stream keys, eligible reasons, device alias normalization to `CTV`, `MOBILE`, or `BROWSER`, canonical devices on matched rows, blank `device` on unmatched rows, and the same report and summary schemas.
+
+Milestone 3 stresses cutoff and timestamp edge cases. `/app/config/region_cutoffs.csv` is authoritative: a credit is eligible only when its `region` has a row with state `OPEN`, the `cutoff_utc` value is a 14-digit numeric timestamp, and `event_utc` is less than or equal to that cutoff. Closed, missing, malformed, or unlisted cutoffs are ineligible. Playback rows with non-numeric `start_utc` or `end_utc` cannot be matched. Credits with `event_utc` before the playback `end_utc`, after the open cutoff, or in a closed region must stay `UNMATCHED`.
+
+When duplicate `stream_id` values appear on separate playback rows, consumption is still tracked per playback input row. Among unused rows that qualify for the same credit, select the latest `end_utc`, then the earliest playback input row on a tie.
+
+Write `/app/out/usage_credit_report.csv` with columns `credit_id,stream_id,account_id,device,minutes,reason,status` and `/app/out/usage_credit_summary.txt` with `matched_count`, `matched_minutes`, `unmatched_count`, and `unmatched_minutes`. Keep the deliverable as a Go CLI compiled with `/usr/local/go/bin/go`.

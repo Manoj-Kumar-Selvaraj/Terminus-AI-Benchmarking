@@ -1,0 +1,3 @@
+ticket_id,patron_id,amount_cents,status,seat_zone
+INVEDGE000001,CUST9001,100,ISSUED,ORCH
+INVEDGE000002,CUST9002,200,ISSUED,MEZZ

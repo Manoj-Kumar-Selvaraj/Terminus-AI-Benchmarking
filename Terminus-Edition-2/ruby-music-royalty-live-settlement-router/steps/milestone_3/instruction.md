@@ -1,0 +1,11 @@
+The realtime music royalty live settlement reconciler is matching settlement rows to the wrong source records. Fix the existing Ruby entrypoint at `/app/app/reconcile.rb` so `/app/data/settlements.csv` reconciles against `/app/data/holds.csv`, using `/app/config/windows.csv` for the active realtime window rules.
+
+A settlement matches a source row only when the full `play_id`, `payee_id`, `trust_id`, `market`, and integer `amount` all match, the source status is the literal `HELD`, the settlement reason is `CLOSE`, `CORRECT`, or `PAY`, and the right_type matches after alias normalization. Right_type aliases must be normalized on both source and settlement rows before matching: `SLR` means `SELLER`, `BRK` means `BROKER`, `TAXAUTH` means `TAX`.
+
+The source timestamp and settlement timestamp must be numeric UTC timestamps. The source timestamp must be inside an `OPEN` window for the same `trust_id` in `/app/config/windows.csv`, and the settlement timestamp must be on or after the source timestamp but not after the window close. Closed, missing, malformed, or unlisted windows are not eligible. If multiple unused source rows qualify, choose the latest source timestamp and then the earliest source input row (lowest zero-indexed row in `/app/data/holds.csv`) when timestamps tie. Each source row can be consumed once.
+
+Write `/app/out/royalty_settlement_report.csv` with columns `settlement_id,play_id,payee_id,trust_id,right_type,amount,reason,status`, preserving settlement input order. Matched rows report the canonical source right_type; unmatched rows leave `right_type` blank. Write `/app/out/royalty_settlement_summary.txt` as `key=value` lines for `matched_count`, `matched_amount`, `unmatched_count`, and `unmatched_amount`, with amounts counted as positive integers.
+
+Milestone 3 keeps every milestone 1 and milestone 2 rule. The realtime window file is authoritative: only numeric timestamps in explicitly `OPEN` windows are eligible, closed, missing, malformed, or unlisted windows are not eligible, settlements must occur on or after the source timestamp and not after the window close, and multiple unused candidates are resolved by latest source timestamp with earliest input row as the tie-breaker.
+
+The report `status` column must use only the exact strings `MATCHED` and `UNMATCHED`.

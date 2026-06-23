@@ -1,0 +1,2 @@
+hold_id,vessel_id,dock_id,berth_type,amount,hold_ts,status,slip
+SRC-SAMPLE-1,PARTY-1,SAMPLE,SLIP,100,20260528121000,MOORED,LOC-1

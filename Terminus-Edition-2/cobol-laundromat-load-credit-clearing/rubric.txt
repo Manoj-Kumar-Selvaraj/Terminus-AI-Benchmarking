@@ -1,0 +1,36 @@
+# Rubric 1
+Agent produces a rebuilt COBOL reconciler that reads the documented fixed-width inputs and writes the documented report and summary outputs, +2
+Agent keeps rewritten COBOL valid for free-format compilation with `cobc -x -free -O2`, +3
+Agent parses record id after the one-byte record type prefix without including `S` or `A` in comparisons or CSV output, +5
+Agent fixes reconciliation logic instead of hardcoding `/app/out/` report or summary files, +3
+Agent enforces milestone 1 matching gates including record id, account, amount, branch, source status `R`, eligible reasons, allowed canonical machine_size values, and action date on or after source date, +5
+Agent preserves action input order, raw 10-character zero-padded CSV `amount_cents`, exact report columns including `source_date`, and exact `MATCHED` and `UNMATCHED` labels, +3
+Agent leaves `machine_size` and `source_date` blank on unmatched rows and emits canonical source `machine_size` plus matched `source_date` on matched rows, +3
+Agent writes positive integer `key=value` summary lines for matched and unmatched counts and amounts, +3
+Agent consumes each source row at most once so duplicate actions cannot reuse the same source row, +5
+Agent hardcodes final CSV or summary output instead of repairing the COBOL program, -5
+Agent tampers with platform files or runtime input fixtures to force a pass, -5
+Agent uses partial record-id matching or allows consumed source rows to be reused, -5
+# Rubric 2
+Agent normalizes legacy aliases `SM`, `MD`, and `LG` to canonical `SML`, `MDL`, and `LGE` before matching and report output, +5
+Agent trims and case-folds padded action machine_size fields before alias normalization, +3
+Agent rejects unknown machine_size aliases even when source and action values agree, +3
+Agent emits canonical machine_size values on matched alias rows rather than raw alias codes, +3
+Agent preserves milestone 1 blank-unmatched `machine_size` behavior while adding alias normalization, +3
+Agent keeps required output paths and schemas unchanged when extending alias handling, +3
+Agent trims trailing spaces from fixed-width identifiers when writing CSV fields, +3
+Agent preserves milestone 1 source-row consumption so the first eligible action wins when multiple actions target the same source, +3
+Agent emits raw alias values, ignores aliases, or bypasses route validation while attempting milestone 2, -5
+Agent regresses milestone 1 matching gates while implementing alias normalization, -5
+# Rubric 3
+Agent applies calendar eligibility from `/app/config/service_calendar.txt` while preserving prior matching gates, +5
+Agent trims whitespace around calendar dates, delimiters, and states before applying `OPEN` eligibility, +2
+Agent treats calendar state `OPEN` case-insensitively and rejects closed, missing, unlisted, or non-numeric source dates, +3
+Agent chooses the eligible unused source row with the latest open source date when multiple rows qualify, +5
+Agent emits the selected source row's `source_date` in matched report rows so latest-date selection is observable, +3
+Agent breaks tied source dates by selecting the earliest source input row, +3
+Agent tracks consumption by source row position rather than blocking all rows that share a record id, +3
+Agent preserves alias normalization, blank unmatched `machine_size`, and reason output under calendar gates, +3
+Agent treats closed or unlisted calendar dates as open, -5
+Agent chooses candidates by file order alone instead of latest open source date and earliest-row tie-break rules, -5
+Agent regresses milestone 1 or 2 behavior while implementing calendar or latest-date logic, -5

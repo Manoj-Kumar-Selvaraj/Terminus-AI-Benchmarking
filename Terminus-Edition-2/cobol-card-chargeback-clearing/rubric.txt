@@ -1,0 +1,66 @@
+# Rubric 1
+Agent investigates the COBOL batch behavior, `/app/src/chargeback_clear.cbl`, `/app/data/sales.dat`, `/app/data/chargebacks.dat`, `/app/out/chargeback_report.csv`, and `/app/out/chargeback_summary.txt` before changing logic, +2
+Agent runs the COBOL program through `/app/scripts/compile.sh` and `/app/build/batch` with fresh synthetic sale and chargeback inputs before finalizing the fix, +3
+Agent repairs the COBOL reconciliation algorithm directly instead of hardcoding `/app/out/chargeback_report.csv` or `/app/out/chargeback_summary.txt`, +5
+Agent enforces exact matching for the full 12-character `sale_id`, 8-character `merchant_id`, 10-digit `amount_cents`, settled sale status `S`, and allowed sale reasons, +5
+Agent treats `F10`, `F20`, `R99`, and `MRC` as allowed sale reasons from `/app/config/reason_codes.csv`, +3
+Agent prevents partial identifier collisions by requiring full `sale_id` equality rather than prefix, substring, or fuzzy matching, +3
+Agent preserves chargeback input order and writes exactly one report row per chargeback with schema `sale_id,merchant_id,reason,amount_cents,status`, +3
+Agent emits exactly `APPLIED` or `EXCEPTION` status labels, canonical matched reasons for applied rows, and blank `reason` fields for exception rows, +3
+Agent preserves the raw zero-padded `amount_cents` text from the chargeback record in the report, +3
+Agent writes `/app/out/chargeback_summary.txt` with `applied_count`, `applied_amount_cents`, `exception_count`, and `exception_amount_cents` as non-negative integer key-value lines, counting all cents as positive amounts, +3
+Agent keeps the implementation compiled from COBOL source through the provided compile path rather than replacing the batch with a non-COBOL shortcut, +2
+Agent hardcodes visible output rows instead of implementing general sale and chargeback matching behavior, -5
+Agent changes input assets, output schemas, required filenames, task metadata, or runtime contracts to force a pass instead of repairing reconciliation behavior, -5
+Agent uses prefix, substring, partial, fuzzy, or lossy normalized matching for `sale_id` or `merchant_id`, allowing unrelated records to collide, -3
+Agent omits `MRC` from allowed sale reasons or applies chargebacks with unsupported sale reasons, -3
+Agent emits nonblank `reason` values for exception rows or negative applied or exception summary cents, -3
+# Rubric 2
+Agent preserves all milestone 1 behavior before adding sale-row consumption logic, +3
+Agent consumes each eligible settled sale row at most once so duplicate chargebacks cannot reuse the same source sale row, +5
+Agent tracks consumption by physical sale row position rather than only by `sale_id`, so duplicate sale IDs in separate rows remain independently consumable until used, +5
+Agent preserves exact full `sale_id`, `merchant_id`, amount, status, and allowed-reason gates while adding consumption, +3
+Agent preserves chargeback input order and writes one report row per chargeback after consumption decisions, +3
+Agent leaves `reason` blank for chargebacks that become exceptions because the only matching sale row was already consumed, +3
+Agent keeps summary counts and positive amount totals consistent with consumed versus unconsumed sale rows, +3
+Agent handles duplicate sale rows and duplicate chargeback rows deterministically without fixture-specific conditionals, +3
+Agent keeps the report schema, status labels, zero-padded amount text, output paths, and four-key summary schema unchanged, +3
+Agent validates the final report and summary artifacts after row-consumption scenarios to confirm counts and totals reconcile, +2
+Agent allows one physical sale row to satisfy multiple chargebacks, -5
+Agent tracks consumption only by `sale_id` and incorrectly merges or blocks duplicate sale IDs that appear on separate input rows, -5
+Agent regresses milestone 1 exact matching, allowed reasons, blank exception reasons, positive cents, or output schemas while adding consumption, -5
+Agent hardcodes known duplicate sale or chargeback fixtures instead of implementing reusable consumption logic, -3
+Agent changes required filenames, output schemas, input assets, task metadata, or runtime contracts to force a pass, -5
+# Rubric 3
+Agent preserves milestone 1 and milestone 2 behavior before adding legacy reason aliases and cycle-date controls, +3
+Agent normalizes sale reason aliases `FRD`, `M20`, and `MER` to canonical `F10`, `F20`, and `MRC` before matching, +5
+Agent emits canonical reason values on applied alias rows rather than raw legacy aliases, +3
+Agent rejects unknown sale reasons as exceptions even when identifiers, merchant, amount, status, and dates otherwise match, +2
+Agent conditionally skips cycle-date gating only when both sale settlement date and chargeback date are absent from legacy-length records, +5
+Agent applies cycle rules when either side carries a date position, treating blank dated fields as ineligible, +2
+Agent reads `/app/config/cycle_calendar.txt` at runtime and treats only listed dates with `OPEN` status as open calendar dates, +5
+Agent rejects dated chargebacks when either date is blank, missing from the calendar, closed, malformed, or when the chargeback date is before the settlement date, +5
+Agent allows equal settlement and chargeback dates and enforces the maximum two-open-day window using only OPEN calendar days strictly after settlement through and including the chargeback date, not raw calendar span, +3
+Agent chooses the unused matching sale with the latest settlement date, breaks tied settlement dates by choosing the latest sale input row, and continues row-position consumption across repeated chargebacks, +5
+Agent preserves full identifier matching, merchant and amount gates, settled status, alias normalization, report schema, blank exception reasons, zero-padded amounts, and positive four-key summary totals under date rules, +2
+Agent treats closed, missing, unlisted, blank, malformed, or too-early cycle dates as eligible, -5
+Agent applies cycle-date gating to undated legacy records that should preserve milestone 1 and milestone 2 behavior, -5
+Agent chooses the first matching sale row instead of the latest eligible settlement date, or fails the latest-row tie-break when settlement dates tie, -5
+Agent emits raw aliases such as `FRD`, `M20`, or `MER` in applied report rows when canonical reasons are required, -3
+Agent regresses milestone 1 or milestone 2 matching, row consumption, output schema, blank exception reasons, or summary totals while implementing alias or date logic, -5
+# Rubric 4
+Agent preserves milestone 1 through milestone 3 behavior before adding merchant eligibility gating, +3
+Agent reads `/app/config/merchants.csv` at runtime using the required `merchant_id,chargeback_enabled` schema, +5
+Agent treats a sale as merchant-eligible only when its merchant id appears with `chargeback_enabled=true`, parsed case-insensitively and whitespace-tolerantly, +5
+Agent treats missing merchant rows, malformed merchant rows, blank values, unsupported values, and `chargeback_enabled=false` rows as ineligible, +5
+Agent applies the merchant gate in both undated legacy mode and dated cycle-gated mode, +3
+Agent applies the merchant gate in addition to all prior gates rather than bypassing sale id, merchant id, amount, status, reason, alias, date, or row-consumption rules, +5
+Agent handles enabled and disabled merchants independently so one disabled merchant does not incorrectly block or allow unrelated merchants, +3
+Agent preserves canonical reason output, blank exception reason output, chargeback input order, report schema, zero-padded amount text, output paths, and positive four-key summary totals after merchant gating, +3
+Agent keeps the merchant implementation data-driven without hardcoding visible merchant rows, sale IDs, chargeback IDs, dates, reasons, or expected outputs, +3
+Agent validates final report and summary artifacts after merchant-gated scenarios to confirm applied and exception counts and cents reconcile, +2
+Agent ignores `/app/config/merchants.csv` or applies merchant gating only in dated mode or only in undated mode, -5
+Agent treats disabled, missing, malformed, blank, unsupported, or non-true `chargeback_enabled` rows as eligible, -5
+Agent fails to trim leading or trailing whitespace or case-normalize `merchant_id` or `chargeback_enabled` values when parsing merchant configuration, -3
+Agent allows merchant eligibility to bypass amount, identifier, status, reason, alias, date, or row-consumption checks, -5
+Agent regresses matching, alias normalization, cycle-date gating, row consumption, report schema, blank exception reasons, or summary totals while adding merchant eligibility, -5

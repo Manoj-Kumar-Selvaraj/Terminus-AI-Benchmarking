@@ -1,0 +1,2 @@
+hold_id,asset_id,aisle_id,access_tier,amount,hold_ts,status,rack
+SRC-SAMSEE-1,PARTY-1,SAMSEE,HOT,100,20260528121000,LOCKED,LOC-1

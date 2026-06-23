@@ -1,0 +1,3 @@
+visit_id,customer_id,amount_cents,channel
+VISITEDGE000001,CUST9001,100,ACH
+VISITEDGE000002,CUST9002,200,CARD

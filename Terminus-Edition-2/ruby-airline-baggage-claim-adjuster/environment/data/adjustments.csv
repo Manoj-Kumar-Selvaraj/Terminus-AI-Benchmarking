@@ -1,0 +1,2 @@
+adjustment_id,bag_id,member_id,site_id,bag_type,amount,adjust_ts,reason,station
+ACT-SAMPLE-1,SRC-SAMPLE-1,PARTY-1,SAMPLE,PRIMARY,100,20260528121100,DAMAGED,LOC-1

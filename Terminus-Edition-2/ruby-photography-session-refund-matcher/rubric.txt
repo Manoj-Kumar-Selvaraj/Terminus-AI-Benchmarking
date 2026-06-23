@@ -1,0 +1,42 @@
+# Rubric 1
+Agent inspects `/app/lib/reconcile.rb`, `/app/data/sessions.csv`, `/app/data/refunds.csv`, and the documented output files before editing, +2
+Agent fixes the Ruby reconciler logic instead of hardcoding `/app/out/refund_report.csv` or `/app/out/refund_summary.json`, +3
+Agent compares full `session_id` values and does not use prefix or substring matching, +3
+Agent enforces milestone 1 matching gates including session id, client id, amount, eligible shot status, and allowed package, +5
+Agent trims surrounding whitespace and compares shot status and package values case-insensitively without corrupting report values, +3
+Agent consumes each session row at most once so duplicate refund rows cannot reuse the same source row, +5
+Agent preserves refund input order, exact `MATCHED` and `UNMATCHED` labels, and the required report schema, +3
+Agent reports matched and unmatched summary counts and positive integer cent totals in the required JSON keys, +3
+Agent hardcodes final output files instead of repairing the reconciliation logic, -5
+Agent edits or deletes verifier, oracle, metadata, or input fixture files to force a pass, -5
+# Rubric 2
+Agent normalizes every documented package alias case-insensitively before matching, +3
+Agent emits canonical package values for matched rows rather than raw aliases, +3
+Agent keeps unmatched package fields blank while preserving the report and summary schemas, +3
+Agent preserves milestone 1 matching, row consumption, ordering, status labels, and positive totals after adding package aliases, +5
+Agent regresses milestone 1 behavior while implementing alias handling, -3
+# Rubric 3
+Agent supports dated input columns without breaking older CSV files that do not include those columns, +3
+Agent reads `/app/config/cutoff_calendar.txt` and treats only refund dates explicitly marked open as eligible, comparing the open status case-insensitively, +5
+Agent rejects missing, malformed, closed, or unlisted refund dates before allowing a match, +3
+Agent enforces that `refund_date` is not later than `session_date` together with all prior matching gates, +5
+Agent selects the eligible session row by the latest `session_date` rule and breaks equal-date ties deterministically, +5
+Agent verifies latest-date selection with distinct source packages so first-fit order cannot pass, +3
+Agent preserves alias normalization and canonical report output under dated matching, +3
+Agent treats closed, missing, malformed, or unlisted calendar dates as open, -5
+# Rubric 4
+Agent reads `/app/config/methods.csv` and treats only enabled canonical packages as matchable, +5
+Agent implements `ANY` refund package matching by selecting latest session date, then lower configured package priority, then earliest session input row, +5
+Agent emits the selected canonical package for matched `ANY` refunds and never emits raw `ANY` in the report, +3
+Agent preserves exact canonical package matching for non-`ANY` refunds while adding config-driven policy, +3
+Agent preserves prior schema, status, alias, date, consumption, and positive-total behavior while adding milestone 4 policy support, +5
+Agent emits raw aliases or raw `ANY` values in matched report rows, -5
+# Rubric 5
+Agent reads `/app/config/client_limits.csv` and requires an enabled exact client-and-package limit row before matching, +5
+Agent enforces `max_refund_cents` caps using trimmed client ids, alias-normalized packages, and case-insensitive enabled parsing, +5
+Agent treats blank, malformed, disabled, over-limit, or missing client-limit rows as ineligible without crashing, +5
+Agent applies the last well-formed client-limit row in file order as authoritative for the same client and canonical package, +3
+Agent filters `ANY` refund candidates by the selected session package client limit before latest-date, priority, and source-row tie-breaks, +3
+Agent preserves methods eligibility, dated matching, row consumption, report schemas, and positive summary totals under client-limit gating, +3
+Agent consumes session rows or permits matches when client-limit policy is missing, malformed, or over cap, -5
+Agent regresses earlier milestone behavior while implementing client-limit policy, -3

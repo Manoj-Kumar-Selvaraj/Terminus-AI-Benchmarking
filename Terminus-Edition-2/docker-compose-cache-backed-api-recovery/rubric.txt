@@ -1,0 +1,35 @@
+# Rubric 1
+Agent inspects compose service state, dependency health, and request flow before changing API behavior, +2
+Agent blocks API startup and requests until database and cache dependencies are healthy, +5
+Agent preserves service status and error reporting without broad success defaults, +4
+Agent validates unhealthy dependency permutations rather than hardcoded fixture states, +3
+Agent enables behavior through a CAPABILITY constant rather than repairing dependency logic, -5
+Agent marks all services healthy without checking state, -5
+# Rubric 2
+Agent scopes cache keys by tenant, schema, app version, and request key, +5
+Agent preserves dependency gating from milestone 1, +3
+Agent prevents cross-tenant or stale-schema cache leakage, +4
+Agent validates changed tenant/version/schema inputs dynamically, +3
+Agent uses raw request key only or fixture-specific cache entries, -5
+Agent disables cache reads entirely instead of fixing namespacing, -5
+# Rubric 3
+Agent implements idempotent request processing using request IDs and persisted state, +5
+Agent prevents duplicate writes while returning stable repeat responses, +4
+Agent preserves dependency and cache namespace behavior, +3
+Agent validates duplicate request IDs and new request IDs separately, +3
+Agent appends duplicate writes on retried requests, -5
+Agent deletes processed-request state to mask idempotency bugs, -5
+# Rubric 4
+Agent serializes migrations with a lock and releases it only after safe completion, +5
+Agent preserves request, cache, and dependency behavior during migrations, +3
+Agent rejects concurrent migration attempts without corrupting schema version, +4
+Agent validates stale lock and active lock behavior, +3
+Agent runs concurrent migrations or leaves locks permanently stuck, -5
+Agent skips migrations to satisfy request tests, -5
+# Rubric 5
+Agent rolls back app and cache schema state without losing committed request provenance, +5
+Agent preserves migration locking, cache namespacing, and request idempotency, +3
+Agent prevents stale cache reads after rollback and records rollback provenance, +4
+Agent validates rollback after partial deploys and repeated rollback attempts, +3
+Agent unlocks all behavior through one constant or static fixture map, -5
+Agent wipes state or cache wholesale to hide rollback bugs, -5

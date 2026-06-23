@@ -1,0 +1,35 @@
+# Rubric 1
+Agent inspects the PL/I control deck, rule declarations, rollup harness, and PSV schemas before editing, +2
+Agent enables full five-field matching with one-use directive consumption and deterministic latest-ingest selection, +5
+Agent validates signed integer cents with opcode direction rules, nonblank keys, numeric 14-digit timestamps, eligible state, and opcode declarations before rolling rows, +5
+Agent preserves accumulator order and regenerates the exact pipe-delimited report and summary schemas with blank skipped segment values, +5
+Agent hardcodes report or summary outputs instead of repairing runtime rollup controls, -5
+Agent accepts malformed numeric, timestamp, state, opcode, prefix, or reused-directive rows, -5
+# Rubric 2
+Agent preserves strict validation, matching, consumption, ordering, and output contracts while adding windows, weighted controls, downstream delivery, and group downgrade, +5
+Agent enforces stream-scoped open windows requiring both ingest_ts and rollup_ts inside the window, +5
+Agent reads active radix weights keyed on directive canonical radix and reconciles weighted control totals with tolerance, +5
+Agent downgrades CONTROL_HELD group rows in the main report to SKIPPED with blank segment_id and publishes downstream accepted/rejected/manifest outputs, +5
+Agent treats closed, missing, malformed, or wrong-stream windows as eligible, -5
+Agent leaks control-held groups into accepted downstream output or ignores ingest_ts-only window failures, -5
+# Rubric 3
+Agent preserves all prior rollup behavior while adding ledger replay and settlement cutoff enforcement, +5
+Agent suppresses replay duplicates from committed ledger rows with REPLAY_DUPLICATE exceptions without consuming fresh directives, +5
+Agent derives business date from directive ingest_ts and enforces OPEN calendar cutoff on both ingest_ts and rollup_ts, +5
+Agent writes updated rollup_ledger.psv and restart_audit.txt with checkpoint_status and committed_rows, +5
+Agent uses rollup_ts instead of ingest_ts for calendar business date or blocks valid rows on checkpoint anomalies, -5
+Agent double-appends ledger rows or skips valid non-replay rollups on checkpoint warnings, -5
+# Rubric 4
+Agent preserves all prior behavior while adding stream capacity, directive holds, and ABEND-safe restart commits, +5
+Agent enforces cumulative absolute capacity per stream and canonical radix in claim order with CAPACITY_HOLD exceptions, +5
+Agent quarantines held claim_ids before matching and leaves directives available for other claims, +5
+Agent appends control-OK group commits idempotently and writes capacity_position.txt, +5
+Agent consumes directives on capacity overflow or double-commits groups on rerun, -5
+Agent bypasses hold quarantine or ignores remaining capacity reporting, -5
+# Rubric 5
+Agent preserves all prior behavior while adding directive sequence discipline and cross-claim netting, +5
+Agent requires expected_seq to match directive seq_no with monotonic lowest-unused sequence consumption per stream and segment slot, +5
+Agent evaluates netting after all group rows are seen and requires weighted netting total zero before acceptance, +5
+Agent downgrades non-zero netting groups to SKIPPED with NETTING_HOLD exceptions and blank segment_id, +5
+Agent evaluates netting before all rows are processed or accepts out-of-order sequence matches, -5
+Agent leaves partial netting groups rolled in the main report or downstream accepted output, -5

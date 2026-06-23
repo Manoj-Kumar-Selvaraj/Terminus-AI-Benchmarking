@@ -1,0 +1,50 @@
+version = "2.0"
+
+[metadata]
+author_name = "anonymous"
+author_email = "anonymous@example.com"
+difficulty = "hard"
+category = "software-engineering"
+subcategories = ["tool_specific"]
+number_of_milestones = 4
+codebase_size = "minimal"
+languages = ["python", "bash", "json"]
+tags = ["kubernetes", "rollout", "offline-simulator", "production-incident"]
+expert_time_estimate_min = 180
+junior_time_estimate_min = 420
+
+[environment]
+allow_internet = false
+build_timeout_sec = 1200.0
+cpus = 2
+memory_mb = 4096
+storage_mb = 10240
+workdir = "/app"
+
+[[steps]]
+name = "milestone_1"
+[steps.agent]
+timeout_sec = 1800.0
+[steps.verifier]
+timeout_sec = 900.0
+
+[[steps]]
+name = "milestone_2"
+[steps.agent]
+timeout_sec = 1800.0
+[steps.verifier]
+timeout_sec = 900.0
+
+[[steps]]
+name = "milestone_3"
+[steps.agent]
+timeout_sec = 1800.0
+[steps.verifier]
+timeout_sec = 900.0
+
+[[steps]]
+name = "milestone_4"
+[steps.agent]
+timeout_sec = 1800.0
+[steps.verifier]
+timeout_sec = 900.0

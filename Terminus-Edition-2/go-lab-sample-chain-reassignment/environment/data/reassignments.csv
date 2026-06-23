@@ -1,0 +1,2 @@
+action_id,sample_id,patient_id,chain_id,kind,amount,action_ts,reason,location
+ACT-SAMPLE-1,SRC-SAMPLE-1,PARTY-1,SAMPLE,CMP,100,20260528121100,SPLIT,LOC-1

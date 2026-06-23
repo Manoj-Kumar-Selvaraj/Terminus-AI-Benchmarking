@@ -1,0 +1,7 @@
+The final incident is replay safety. The batch may be interrupted after a complete reservation-cycle group is committed. Implement restart-safe clearing so a rerun continues pending groups without duplicating already committed groups or skipping uncommitted ones. Preserve all prior row, group, policy, capacity, and control-total behavior.
+
+The runtime may set `ABEND_AFTER_GROUPS=N` to simulate an ABEND after N newly committed groups. When that limit is reached, exit with status code `17` after writing the partial ledger and checkpoint. Commit only complete groups at deterministic group boundaries, ordered by billing cycle, region, then group ID. After each committed group, update `/app/out/credit_commit_ledger.csv` and `/app/out/restart_checkpoint.txt`. On rerun, read the existing commit ledger/checkpoint and never commit the same group twice.
+
+Write `/app/out/credit_commit_ledger.csv` with header `group_id,reservation_id,account_id,region,billing_cycle,sku_type,committed_amount,commit_status`. Write `/app/out/restart_checkpoint.txt` as `key=value` lines containing at least `last_committed_group` and `committed_count`. The final `/app/out/capacity_pool_after.csv` must reflect committed groups only, including after an interrupted run and subsequent restart.
+
+Do not bypass the application by directly prewriting expected output fixtures. The row report, group report, capacity pool, commit ledger, and checkpoint must be produced by the same batch workflow.

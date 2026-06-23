@@ -1,0 +1,15 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: invoice-batch-binding
+  namespace: billing-batch
+  labels:
+    app: invoice-nightly-batch
+subjects:
+  - kind: ServiceAccount
+    name: invoice-batch-sa
+    namespace: billing-batch
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: invoice-batch-role

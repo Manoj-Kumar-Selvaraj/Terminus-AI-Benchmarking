@@ -1,0 +1,27 @@
+# Rubric 1
+Agent inspects `/app/cmd/reconcile/main.go` and the accession, exception, and window input paths before editing, +2
+Agent repairs full shipment, pharmacy, chain, depot, and amount identity matching instead of prefix or partial keys, +5
+Agent enforces `RECEIVED` source status, allowed correction reasons, canonical `CHEM` or `HEME` package types, and numeric timestamp ordering, +5
+Agent consumes each accession row at most once and preserves exception input order in the report, +3
+Agent writes `/app/out/coldchain_exception_report.csv` and `/app/out/coldchain_exception_summary.txt` with the documented schema, `MATCHED` or `UNMATCHED` only, blank unmatched package types, and positive summary totals, +3
+Agent hardcodes output files instead of fixing the Go reconciler logic, -5
+Agent tampers with platform files, task metadata, or runtime input fixtures to force a pass, -5
+Agent regresses milestone 1 identity, status, reason, or consumption gates while editing the program, -3
+# Rubric 2
+Agent normalizes legacy package-type aliases from `/app/config/kind_aliases.csv` after trimming and case folding, +5
+Agent treats `CHEM`, `HEME`, and `MICRO` as the only eligible canonical package types from milestone 2 onward, +5
+Agent routes aliased values through the same identity, status, reason, timestamp, and consumption gates instead of bypassing them, +3
+Agent emits canonical package types on matched rows while keeping unmatched package types blank, +3
+Agent preserves milestone 1 report schema, status labels, ordering, and positive summary totals after alias support, +3
+Agent ignores documented aliases or leaves `CUL` unmatched because `MICRO` is not treated as canonical, -5
+Agent removes the canonical package-type gate while adding alias normalization, -5
+Agent regresses milestone 1 matching behavior while implementing alias support, -3
+# Rubric 3
+Agent reads `/app/config/windows.csv` and treats only explicitly `OPEN` windows as eligible for the matching chain id, +5
+Agent rejects closed, missing, malformed, or unlisted windows and enforces correction timing within the open window, +5
+Agent selects the unused accession with the latest eligible scan timestamp and breaks equal timestamps by earliest input row, +5
+Agent preserves alias normalization and the expanded canonical package-type gate under window enforcement, +3
+Agent keeps report and summary schemas, blank unmatched package types, and positive totals unchanged while adding window rules, +3
+Agent treats closed or absent windows as eligible, -5
+Agent chooses accessions by file order alone instead of latest scan timestamp then earliest-row tie-breaking, -5
+Agent regresses alias handling or canonical package-type gating while implementing window controls, -3

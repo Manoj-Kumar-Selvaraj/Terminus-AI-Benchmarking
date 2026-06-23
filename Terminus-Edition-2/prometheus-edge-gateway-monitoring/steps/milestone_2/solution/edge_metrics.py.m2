@@ -1,0 +1,156 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+import argparse, json, re, sys
+from pathlib import Path
+from typing import Dict, List, Tuple
+
+ROUTE_LABEL_IDENTITY = True
+NON_PROD_ROUTE_FILTERS = True
+STALE_SAMPLE_SUPPRESSION = False
+ENV_MANIFEST_VALIDATION = False
+RELEASE_GATE = False
+LINE_RE = re.compile(r'^(?P<name>[a-zA-Z_:][a-zA-Z0-9_:]*)(?:\{(?P<labels>[^}]*)\})?\s+(?P<value>[-+0-9.eE]+)(?:\s+(?P<ts>\d+))?$')
+
+class BadInput(Exception): pass
+
+def load_json(path: Path, default=None, required=False):
+    if not path.exists():
+        if required: raise BadInput(f"missing {path.name}")
+        return default
+    try:
+        return json.loads(path.read_text())
+    except Exception as exc:
+        raise BadInput(f"malformed {path.name}: {exc}")
+
+def parse_labels(raw: str) -> Dict[str,str]:
+    labels = {}
+    if not raw: return labels
+    pos = 0
+    for part in re.finditer(r'([a-zA-Z_][a-zA-Z0-9_]*)="((?:[^"\\]|\\.)*)"\s*(?:,|$)', raw + ','):
+        labels[part.group(1)] = part.group(2).replace('\\"','"')
+        pos = part.end()
+    if raw.strip() and not labels:
+        raise ValueError("bad label set")
+    return labels
+
+def parse_scrape(path: Path):
+    samples, rejects = [], []
+    if not path.exists():
+        return samples, [{"line": 0, "reason": "scrape file missing"}]
+    for idx, line in enumerate(path.read_text().splitlines(), 1):
+        line = line.strip()
+        if not line or line.startswith('#'): continue
+        m = LINE_RE.match(line)
+        if not m:
+            rejects.append({"line": idx, "reason": "unparseable"}); continue
+        try:
+            value = float(m.group('value'))
+            labels = parse_labels(m.group('labels') or '') if ROUTE_LABEL_IDENTITY else {}
+        except Exception as exc:
+            rejects.append({"line": idx, "reason": str(exc)}); continue
+        ts = int(m.group('ts') or '0')
+        if not ROUTE_LABEL_IDENTITY:
+            # legacy bug: series identity is only the metric name
+            labels = {}
+        samples.append({"name": m.group('name'), "labels": labels, "value": value, "timestamp": ts})
+    return samples, rejects
+
+def ident(sample):
+    return sample['name'] + '|' + ','.join(f"{k}={sample['labels'].get(k,'')}" for k in sorted(sample['labels']))
+
+def route_key(labels):
+    return (labels.get('tenant',''), labels.get('route',''))
+
+def previous_by_series(state):
+    return {x['id']: x for x in state.get('series', [])}
+
+def evaluate(samples, rejects, env, state, release, gate):
+    alerts, warnings = [], []
+    prev = previous_by_series(state)
+    current_series = []
+    totals = {}
+    seen = set()
+    stale_count = 0
+    for s in samples:
+        sid = ident(s)
+        p = prev.get(sid)
+        if p and s['timestamp'] and p.get('timestamp') and s['timestamp'] < p['timestamp']:
+            if ENV_MANIFEST_VALIDATION:
+                stale_count += 1
+                alerts.append({"name":"StaleSample","severity":"warning","series_id":sid,"labels":s['labels']})
+                continue
+        if p and s['timestamp'] == p.get('timestamp') and s['value'] == p.get('value') and STALE_SAMPLE_SUPPRESSION:
+            current_series.append(p)
+            continue
+        current_series.append({"id": sid, **s})
+        if s['name'] != 'edge_gateway_requests_total':
+            continue
+        labels = s['labels']
+        code = labels.get('code','')
+        key = route_key(labels) if ROUTE_LABEL_IDENTITY else ('','')
+        if NON_PROD_ROUTE_FILTERS:
+            route_meta = env.get('routes', {}).get(f"{key[0]}|{key[1]}")
+            if not route_meta:
+                warnings.append({"name":"UnmappedSeries","labels":labels}); continue
+            if route_meta.get('env') != 'prod':
+                continue
+        delta = s['value']
+        if STALE_SAMPLE_SUPPRESSION and p:
+            delta = s['value'] - p.get('value',0)
+            if delta < 0: delta = s['value']
+            if delta == 0: continue
+        totals.setdefault(key, {"total":0.0,"err":0.0,"labels":labels})
+        totals[key]['total'] += delta
+        if code.startswith('5'):
+            totals[key]['err'] += delta
+        seen.add(key)
+    for key, t in totals.items():
+        if t['total'] > 0 and t['err']/t['total'] > 0.05:
+            alert = {"name":"High5xxRate","severity":"critical","tenant":key[0],"route":key[1],"error_rate":round(t['err']/t['total'],4),"labels":t['labels']}
+            if RELEASE_GATE and release:
+                alert['release_sha'] = release.get('commit')
+            alerts.append(alert)
+    if ENV_MANIFEST_VALIDATION:
+        for rid, meta in env.get('routes', {}).items():
+            key = tuple(rid.split('|',1))
+            if meta.get('env') == 'prod' and key not in seen:
+                alerts.append({"name":"ScrapeMissing","severity":"critical","tenant":key[0],"route":key[1]})
+    promotable = True
+    if RELEASE_GATE and release:
+        if not gate or gate.get('commit') != release.get('commit') or gate.get('status') != 'PASS':
+            promotable = False
+            alerts.append({"name":"PromotionBlocked","severity":"critical","release_sha":release.get('commit'),"gate_commit": (gate or {}).get('commit'),"gate_status": (gate or {}).get('status','MISSING')})
+    if alerts: promotable = False
+    return alerts, warnings, current_series, promotable
+
+def run(args):
+    inp, out, st = Path(args.input), Path(args.out), Path(args.state)
+    out.mkdir(parents=True, exist_ok=True); st.mkdir(parents=True, exist_ok=True)
+    try:
+        env = load_json(inp/'environment.json', {"routes":{}}, required=ENV_MANIFEST_VALIDATION)
+        if 'routes' in env and isinstance(env['routes'], list):
+            env['routes'] = {f"{r['tenant']}|{r['route']}": r for r in env['routes']}
+        if not isinstance(env.get('routes',{}), dict):
+            raise BadInput('environment routes must be a map or list')
+        state = load_json(st/'series_index.json', {"series":[]})
+        release = load_json(inp/'release.json', None)
+        gate = load_json(inp/'quality_gate.json', None)
+        samples, rejects = parse_scrape(inp/'scrape.prom')
+        alerts, warnings, series, promotable = evaluate(samples, rejects, env, state, release, gate)
+        summary = {"status":"OK", "sample_count":len(samples), "reject_count":len(rejects), "alert_count":len(alerts), "warning_count":len(warnings), "promotable":promotable}
+        (st/'series_index.json').write_text(json.dumps({"series":series}, indent=2, sort_keys=True)+"\n")
+        (out/'series_index.json').write_text(json.dumps({"series":series}, indent=2, sort_keys=True)+"\n")
+        (out/'alerts.json').write_text(json.dumps(alerts, indent=2, sort_keys=True)+"\n")
+        (out/'warnings.json').write_text(json.dumps(warnings, indent=2, sort_keys=True)+"\n")
+        (out/'summary.json').write_text(json.dumps(summary, indent=2, sort_keys=True)+"\n")
+        return 0 if summary['status'] == 'OK' else 2
+    except BadInput as exc:
+        (out/'summary.json').write_text(json.dumps({"status":"FAILED_CLOSED", "error":str(exc), "promotable":False}, indent=2, sort_keys=True)+"\n")
+        return 2
+
+def main():
+    p=argparse.ArgumentParser()
+    p.add_argument('run', nargs='?')
+    p.add_argument('--input', required=True); p.add_argument('--out', required=True); p.add_argument('--state', required=True)
+    raise SystemExit(run(p.parse_args()))
+if __name__ == '__main__': main()

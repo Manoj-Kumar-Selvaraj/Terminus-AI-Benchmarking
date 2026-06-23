@@ -1,0 +1,3 @@
+fleet_id,batch_id,location,max_reversal_amount,allow_any,enabled
+FLEET-A,BATCH-A,LOC-A,999999,true,true
+FLEET-B,BATCH-B,LOC-B,999999,true,true

@@ -1,0 +1,3 @@
+Update `/app/cmd/reconcile/main.go` for legacy meal-tier aliases. The deliverable is a Go CLI; build it with the Go toolchain at `/usr/local/go/bin/go`. All milestone 1 matching, consumption, amount validation, and output schema rules still apply.
+
+Before comparison, normalize voucher and order `meal_tier` values after trim and case fold: `SN` to `SNACK`, `ML` to `MEAL`, and `CB` to `COMBO`. Eligible canonical tiers are `SNACK`, `MEAL`, and `COMBO`; unknown normalized values stay unmatched even when both sides share the same unknown alias. Matched report rows emit the canonical order meal tier; unmatched rows leave `meal_tier` blank.

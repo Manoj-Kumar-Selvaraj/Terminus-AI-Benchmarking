@@ -1,0 +1,32 @@
+# Rubric 1
+Agent updates `/app/cmd/reconcile/main.go` and compiles with `/usr/local/go/bin/go`, +2
+Agent reads `/app/data/devices.csv` and `/app/data/warranty_claims.csv` and writes `/app/out/warranty_report.csv` and `/app/out/warranty_summary.json`, +2
+Agent uses full identifier equality for `device_id` and does not rely on prefixes, truncation, or substring matching, +3
+Agent enforces core matching gates: id, owner id, amount, posted device status, and matching allowed reason, +5
+Agent handles all allowed reason values from the instruction, including values missing in the starter code, +3
+Agent trims surrounding whitespace and performs case-insensitive comparison for status and reason fields, +3
+Agent tracks consumption per input row so one source record can be matched at most once, +5
+Agent preserves claim input order, exact `MATCHED`/`UNMATCHED` labels, blank unmatched `reason`, and positive summary totals, +3
+Agent hardcodes output files, modifies verifier behavior/reference implementation paths files, or bypasses the CLI instead of fixing the program, -5
+Agent uses partial id matching or content-key consumption that collapses distinct duplicate input rows, -5
+Agent changes output filenames, column names, status strings, JSON keys, or amount sign conventions, -5
+# Rubric 2
+Agent preserves all milestone 1 behavior while adding legacy-export alias normalization only, +3
+Agent normalizes `BAT` to `BATTERY` and `WTR` to `WATER` before matching through the same validation and consumption path, +5
+Agent treats alias matching case-insensitively and trims alias fields before normalization, +3
+Agent emits canonical values, not raw aliases, for matched report rows while leaving `reason` blank for unmatched rows, +5
+Agent maintains positive summary totals and input-order report output, +3
+Agent implements aliases by bypassing status, amount, or id checks, -5
+Agent emits raw aliases in matched output where canonical values are required, -5
+Agent regresses milestone 1 behavior such as full-id matching, row-specific consumption, or blank unmatched fields, -3
+# Rubric 3
+Agent supports the dated CSV shape while keeping older rows readable without crashing, +3
+Agent treats missing date columns or blank required dates as ineligible rather than falling back to undated matching, +3
+Agent reads the configured calendar file and accepts only dates present and marked open, +5
+Agent enforces claim date not earlier than matched device purchase date, +3
+Agent selects the unused source row with the latest eligible purchase date and earliest input-row tie-break, +5
+Agent tracks consumption by row index so duplicate source rows remain independently consumable, +3
+Agent keeps prior report and summary schemas, canonical matched values, blank unmatched `reason`, and positive totals, +3
+Agent ignores the calendar or treats missing or closed dates as open, -5
+Agent matches records before their purchase date or chooses candidates by file order alone, -5
+Agent regresses milestone 1 or 2 behavior while implementing date logic, -3

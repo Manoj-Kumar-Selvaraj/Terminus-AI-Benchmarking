@@ -1,0 +1,4 @@
+screen_type,enabled,priority
+SMALL,true,2
+PREM,true,1
+IMAX,true,3

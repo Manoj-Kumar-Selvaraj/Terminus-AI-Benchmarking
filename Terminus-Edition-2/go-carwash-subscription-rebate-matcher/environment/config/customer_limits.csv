@@ -1,0 +1,4 @@
+customer_id,plan_tier,max_rebate_cents,enabled
+CUST1001,BASIC,20000,true
+CUST1002,PLUS,12000,true
+CUST1003,PRO,5000,false

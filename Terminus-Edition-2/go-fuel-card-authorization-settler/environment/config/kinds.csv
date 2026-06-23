@@ -1,0 +1,4 @@
+kind,enabled,priority
+DIESEL,true,2
+GAS,true,3
+EV,true,1

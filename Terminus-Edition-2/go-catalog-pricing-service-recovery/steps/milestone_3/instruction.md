@@ -1,0 +1,3 @@
+The cache rollout stabilized upstream traffic, but version 1 mobile clients began rejecting successful responses and version 2 exposed internal cache metadata. Review `/app/evidence/mobile_contract_failure.log`, `/app/docs/api_compatibility_contract.md`, and the HTTP handler under `/app/internal/api`. Restore both public response contracts, including their different `promotion` null/omission rules and the shared not-found response. Keep milestones 1 and 2 intact.
+
+The verifier checks JSON members semantically rather than relying on object order, exercises promoted and non-promoted prices, verifies the not-found contract, and reruns the synchronized cache regressions.

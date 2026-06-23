@@ -1,0 +1,2 @@
+# YYYY-MM-DD state (milestone 3 placeholder)
+20260501 open

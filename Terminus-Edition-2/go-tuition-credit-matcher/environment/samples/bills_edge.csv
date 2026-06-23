@@ -1,0 +1,3 @@
+enrollment_id,student_id,amount_cents,status,term
+INVEDGE000001,CUST9001,100,ENROLLED,ONL
+INVEDGE000002,CUST9002,200,ENROLLED,MAIL

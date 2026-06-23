@@ -1,0 +1,2 @@
+line_id|stream_id|value_cents|base_radix|segment_id|ingest_ts|state|kind_code
+DIR-10001|stream-01|50000|HEX|SEG-A|20260612120000|LIVE|TM

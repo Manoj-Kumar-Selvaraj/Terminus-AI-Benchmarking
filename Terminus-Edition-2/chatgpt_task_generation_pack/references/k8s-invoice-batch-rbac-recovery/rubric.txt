@@ -1,0 +1,24 @@
+# Rubric 1
+Agent inspects forbidden evidence, RBAC contract, and manifest bundle before editing Kubernetes objects, +2
+Agent restores the service-account authorization chain so the batch identity can read invoice-batch-config, +5
+Agent keeps the CronJob service account aligned with the RoleBinding subject in billing-batch, +3
+Agent preserves the publication contract and offline simulator workflow while fixing authorization, +3
+Agent patches manifests or simulator configuration instead of bypassing RBAC checks, +3
+Agent disables the batch CronJob or removes configuration reads to hide the Forbidden incident, -5
+Agent edits only the simulator to force a pass without repairing manifest authorization, -5
+# Rubric 2
+Agent uses duplicate ledger evidence and publication contract before changing schedule overlap behavior, +2
+Agent preserves milestone 1 configuration-read authorization while fixing overlapping publication, +3
+Agent configures the CronJob for single-flight behavior when a prior run is still active, +5
+Agent ensures only one ledger artifact is published per billing window under the overlap fixture, +5
+Agent keeps the offline overlap simulation honest instead of hardcoding publication counts, +3
+Agent allows overlapping runs to publish duplicate artifacts for the same billing window, -5
+Agent regresses milestone 1 authorization while changing concurrency behavior, -5
+# Rubric 3
+Agent reviews RBAC contract least-privilege expectations before narrowing Role permissions, +2
+Agent preserves milestone 1 authorization and milestone 2 single-publication behavior, +3
+Agent removes wildcard apiGroups, resources, and verbs from the batch Role, +5
+Agent grants only ConfigMap get and Secret create/get needed for the batch workflow, +5
+Agent avoids unrelated API resources and excess verbs while keeping the simulator green, +3
+Agent leaves cluster-wide wildcard permissions on the batch Role, -5
+Agent removes required ConfigMap or Secret permissions and breaks the recovered workflow, -5

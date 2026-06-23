@@ -1,0 +1,381 @@
+Common-issue audit for 213 task folders
+Mode: audit-only
+
+[53] rubric.txt missing # Rubric 1/2/3 milestone blocks
+  - cobol-ach-reversal-reconciliation
+  - cobol-bursar-return-clearing
+  - cobol-claims-denial-rollup
+  - cobol-draft-return-clearing
+  - cobol-insurance-return-settlement
+  - cobol-java-remittance-router
+  - cobol-java-remittance-router-hardened
+  - cobol-marina-docking-fee-reversal
+  - cobol-museum-membership-dues-refund
+  - cobol-treasury-return-clearing
+  - cobol-voucher-return-clearing
+  - cobol-warehouse-storage-credit-reconciler
+  - go-aquarium-tour-refund-matcher
+  - go-boat-tour-booking-credit-matcher
+  - go-childcare-attendance-credit-matcher
+  - go-cinema-private-screening-credit-matcher
+  - go-coffee-roastery-workshop-refund-matcher
+  - go-dance-studio-recital-credit-matcher
+  - go-dentist-appointment-copay-credit-matcher
+  - go-energy-meter-rebate-matcher
+  - go-event-ticket-refund-matcher
+  - go-farm-equipment-rental-credit-matcher
+  - go-ferry-ticket-rebooking-credit-matcher
+  - go-fitness-pt-session-rebate-matcher
+  - go-fleet-vehicle-rebate-matcher
+  - go-insurance-reimbursement-reconciler
+  - go-museum-membership-refund-matcher
+  - go-payroll-advance-matcher
+  - go-pharmacy-reversal-matcher
+  - go-rental-equipment-deposit-matcher
+  ... and 23 more
+
+[39] task.toml: [agent], [verifier]
+  - bash-coworking-room-credit-reconciler
+  - cobol-adjudicated-denial-clearing-reconciler
+  - cobol-brokerage-return-settlement
+  - cobol-brokerage-return-settlement_20260531_181407
+  - cobol-hospital-claim-denial-reconciler_20260607_revision
+  - cobol-statement-merge-control-totals
+  - cobol-utility-meter-adjustment-clearing_20260608_184830
+  - cobol-utility-return-reconciliation
+  - cobol-utility-return-reconciliation_20260526
+  - go-arcade-token-credit-matcher
+  - go-brewpub-tab-adjustment-matcher
+  - go-circulation-desk-waiver-reconciler
+  - go-citation-zone-credit-reconciler
+  - go-coldchain-pallet-hold-release
+  - go-conference-sponsor-rebate-matcher
+  - go-fuel-card-authorization-settler
+  - go-gym-membership-waiver-matcher
+  - go-library-loan-waiver-matcher_20260608_015756
+  - go-live-auction-bid-reversal-ledger
+  - go-port-terminal-container-hold-release
+  - go-telecom-service-credit-matcher
+  - go-transit-fare-rebate-matcher
+  - go-waterpark-pass-refund-matcher_20260605_222657
+  - pl1-cobol-atm-risk-release-router
+  - pli-numeric-directive-rollup-processor
+  - pli-orbit-downlink-frame-auditor
+  - ruby-brewery-keg-deposit-reconciler
+  - ruby-florist-wedding-order-credit-matcher
+  - ruby-go-bash-aquarium-membership-visit-credit-ledger
+  - ruby-go-bash-artisan-market-booth-refund-settler
+  ... and 9 more
+
+[29] milestone_1 instruction missing blank-unmatched category rule
+  - cobol-bursar-return-clearing
+  - cobol-draft-return-clearing
+  - cobol-healthcare-return-reversal
+  - cobol-insurance-return-settlement
+  - cobol-java-remittance-router
+  - cobol-java-remittance-router-hardened
+  - cobol-marina-docking-fee-reversal
+  - cobol-museum-membership-dues-refund
+  - cobol-payroll-return-clearing
+  - cobol-rail-fare-adjustment-clearing
+  - cobol-statement-merge-control-totals
+  - cobol-treasury-return-clearing
+  - cobol-utility-meter-adjustment-clearing
+  - cobol-utility-meter-adjustment-clearing_20260608_184830
+  - cobol-utility-return-reconciliation
+  - cobol-utility-return-reconciliation_20260526
+  - cobol-voucher-return-clearing
+  - cobol-warehouse-storage-credit-reconciler
+  - go-catalog-pricing-service-recovery
+  - go-edge-gateway-tls-recovery
+  - go-notification-dispatcher-stability
+  - go-partner-gateway-traffic-control
+  - go-release-pipeline-promotion-control
+  - go-tenant-route-service-recovery
+  - java-billing-service-container-health
+  - k8s-invoice-batch-rbac-recovery
+  - pli-distributed-fragment-ledger-reconciler
+  - pli-general-ledger-posting-normalizer
+  - terraform-aws-vpc-endpoint-routing-recovery
+
+[25] milestone_3 missing latest-date anti-first-fit test
+  - cobol-claims-denial-rollup
+  - cobol-java-remittance-router
+  - cobol-java-remittance-router-hardened
+  - cobol-statement-merge-control-totals
+  - go-brewpub-tab-adjustment-matcher
+  - go-catalog-pricing-service-recovery
+  - go-dental-claim-credit-matcher
+  - go-edge-gateway-tls-recovery
+  - go-notification-dispatcher-stability
+  - go-partner-gateway-traffic-control
+  - go-release-pipeline-promotion-control
+  - go-tenant-route-service-recovery
+  - java-billing-service-container-health
+  - k8s-invoice-batch-rbac-recovery
+  - pli-canonical-payload-semantic-matcher
+  - pli-distributed-fragment-ledger-reconciler
+  - pli-general-ledger-posting-normalizer
+  - pli-infrastructure-state-drift-adjudicator
+  - pli-multicurrency-ledger-clearing-processor
+  - pli-numeric-directive-rollup-processor
+  - pli-retail-batch-trailer-reconciler
+  - pli-workload-manifest-consistency-auditor
+  - ruby-go-bash-vineyard-club-shipment-credit-router
+  - template-go-matcher-milestone
+  - terraform-aws-vpc-endpoint-routing-recovery
+
+[13] task.toml: build_timeout_sec
+  - cobol-healthcare-return-reversal
+  - cobol-scooter-ride-surcharge-reversal
+  - go-aquarium-pass-credit-matcher
+  - go-datacenter-rack-hold-release
+  - go-escape-room-booking-refund-matcher
+  - go-lab-sample-chain-reassignment
+  - go-notification-dispatcher-stability
+  - go-release-pipeline-promotion-control
+  - go-tenant-route-service-recovery
+  - java-billing-service-container-health
+  - k8s-invoice-batch-rbac-recovery
+  - ruby-photography-session-refund-matcher
+  - terraform-aws-vpc-endpoint-routing-recovery
+
+[10] test.sh missing pytest -rA in milestone_1
+  - ruby-go-bash-aquarium-membership-visit-credit-ledger
+  - ruby-go-bash-artisan-market-booth-refund-settler
+  - ruby-go-bash-botanical-garden-tour-credit-matcher
+  - ruby-go-bash-concert-venue-merch-consignment-reconciler
+  - ruby-go-bash-ferry-harbor-reservation-adjustment-ledger
+  - ruby-go-bash-film-festival-pass-transfer-clearing
+  - ruby-go-bash-makerspace-tool-rental-deposit-clearing
+  - ruby-go-bash-robotics-league-parts-return-settler
+  - ruby-go-bash-satellite-launch-manifest-credit-reconciler
+  - ruby-go-bash-vineyard-club-shipment-credit-router
+
+[10] test.sh missing pytest -rA in milestone_2
+  - ruby-go-bash-aquarium-membership-visit-credit-ledger
+  - ruby-go-bash-artisan-market-booth-refund-settler
+  - ruby-go-bash-botanical-garden-tour-credit-matcher
+  - ruby-go-bash-concert-venue-merch-consignment-reconciler
+  - ruby-go-bash-ferry-harbor-reservation-adjustment-ledger
+  - ruby-go-bash-film-festival-pass-transfer-clearing
+  - ruby-go-bash-makerspace-tool-rental-deposit-clearing
+  - ruby-go-bash-robotics-league-parts-return-settler
+  - ruby-go-bash-satellite-launch-manifest-credit-reconciler
+  - ruby-go-bash-vineyard-club-shipment-credit-router
+
+[10] test.sh missing pytest -rA in milestone_3
+  - ruby-go-bash-aquarium-membership-visit-credit-ledger
+  - ruby-go-bash-artisan-market-booth-refund-settler
+  - ruby-go-bash-botanical-garden-tour-credit-matcher
+  - ruby-go-bash-concert-venue-merch-consignment-reconciler
+  - ruby-go-bash-ferry-harbor-reservation-adjustment-ledger
+  - ruby-go-bash-film-festival-pass-transfer-clearing
+  - ruby-go-bash-makerspace-tool-rental-deposit-clearing
+  - ruby-go-bash-robotics-league-parts-return-settler
+  - ruby-go-bash-satellite-launch-manifest-credit-reconciler
+  - ruby-go-bash-vineyard-club-shipment-credit-router
+
+[10] test.sh missing pytest -rA in milestone_4
+  - ruby-go-bash-aquarium-membership-visit-credit-ledger
+  - ruby-go-bash-artisan-market-booth-refund-settler
+  - ruby-go-bash-botanical-garden-tour-credit-matcher
+  - ruby-go-bash-concert-venue-merch-consignment-reconciler
+  - ruby-go-bash-ferry-harbor-reservation-adjustment-ledger
+  - ruby-go-bash-film-festival-pass-transfer-clearing
+  - ruby-go-bash-makerspace-tool-rental-deposit-clearing
+  - ruby-go-bash-robotics-league-parts-return-settler
+  - ruby-go-bash-satellite-launch-manifest-credit-reconciler
+  - ruby-go-bash-vineyard-club-shipment-credit-router
+
+[10] test.sh missing pytest -rA in milestone_5
+  - ruby-go-bash-aquarium-membership-visit-credit-ledger
+  - ruby-go-bash-artisan-market-booth-refund-settler
+  - ruby-go-bash-botanical-garden-tour-credit-matcher
+  - ruby-go-bash-concert-venue-merch-consignment-reconciler
+  - ruby-go-bash-ferry-harbor-reservation-adjustment-ledger
+  - ruby-go-bash-film-festival-pass-transfer-clearing
+  - ruby-go-bash-makerspace-tool-rental-deposit-clearing
+  - ruby-go-bash-robotics-league-parts-return-settler
+  - ruby-go-bash-satellite-launch-manifest-credit-reconciler
+  - ruby-go-bash-vineyard-club-shipment-credit-router
+
+[10] test.sh missing pytest -rA in milestone_6
+  - ruby-go-bash-aquarium-membership-visit-credit-ledger
+  - ruby-go-bash-artisan-market-booth-refund-settler
+  - ruby-go-bash-botanical-garden-tour-credit-matcher
+  - ruby-go-bash-concert-venue-merch-consignment-reconciler
+  - ruby-go-bash-ferry-harbor-reservation-adjustment-ledger
+  - ruby-go-bash-film-festival-pass-transfer-clearing
+  - ruby-go-bash-makerspace-tool-rental-deposit-clearing
+  - ruby-go-bash-robotics-league-parts-return-settler
+  - ruby-go-bash-satellite-launch-manifest-credit-reconciler
+  - ruby-go-bash-vineyard-club-shipment-credit-router
+
+[10] test.sh missing pytest -rA in milestone_7
+  - ruby-go-bash-aquarium-membership-visit-credit-ledger
+  - ruby-go-bash-artisan-market-booth-refund-settler
+  - ruby-go-bash-botanical-garden-tour-credit-matcher
+  - ruby-go-bash-concert-venue-merch-consignment-reconciler
+  - ruby-go-bash-ferry-harbor-reservation-adjustment-ledger
+  - ruby-go-bash-film-festival-pass-transfer-clearing
+  - ruby-go-bash-makerspace-tool-rental-deposit-clearing
+  - ruby-go-bash-robotics-league-parts-return-settler
+  - ruby-go-bash-satellite-launch-manifest-credit-reconciler
+  - ruby-go-bash-vineyard-club-shipment-credit-router
+
+[7] CRLF in steps/milestone_1/solution/solve1.sh
+  - go-aquarium-tour-refund-matcher
+  - go-ice-rink-session-credit-matcher
+  - go-laundromat-cycle-rebate-matcher
+  - go-loyalty-adjustment-matcher
+  - go-mini-golf-scorecard-credit-matcher
+  - go-museum-visit-audio-credit-matcher
+  - go-recycling-weighin-rebate-matcher
+
+[7] CRLF in steps/milestone_4/solution/solve4.sh
+  - go-aquarium-tour-refund-matcher
+  - go-fuel-card-authorization-settler
+  - go-hotel-reservation-credit-reconciler
+  - go-hotel-reservation-credit-reconciler_20260602_133327
+  - go-telemetry-incident-credit-reconciler
+  - ruby-photography-session-refund-matcher
+  - ruby-stadium-concession-refund-matcher
+
+[7] cross-milestone solve path in steps/milestone_1/solution/solve.sh
+  - bash-lab-sample-credit-reconciler
+  - cobol-pension-contribution-reversal
+  - cobol-telehealth-session-credit-clearing
+  - go-bike-share-trip-credit-matcher
+  - go-warehouse-pickwave-shortage-matcher
+  - ruby-brewery-keg-deposit-reconciler
+  - ruby-cooking-class-voucher-matcher
+
+[5] CRLF in steps/milestone_4/solution/solve.sh
+  - go-fuel-card-authorization-settler
+  - go-hotel-reservation-credit-reconciler
+  - go-hotel-reservation-credit-reconciler_20260602_133327
+  - go-telemetry-incident-credit-reconciler
+  - ruby-photography-session-refund-matcher
+
+[5] Dockerfile missing digest-pinned FROM
+  - cobol-card-chargeback-clearing
+  - cobol-utility-return-reconciliation_20260526
+  - ruby-theater-booking-refund-matcher
+  - ruby-theater-booking-refund-matcher_20260605_235419
+  - terraform-aws-vpc-endpoint-routing-recovery
+
+[5] cross-milestone solve path in steps/milestone_3/solution/solve3.sh
+  - cobol-campground-site-deposit-matcher
+  - cobol-pension-contribution-reversal
+  - cobol-telehealth-session-credit-clearing
+  - cobol-utility-meter-adjustment-clearing_20260608_184830
+  - java-billing-service-container-health
+
+[4] CRLF in steps/milestone_4/tests/test.sh
+  - go-hotel-reservation-credit-reconciler
+  - go-hotel-reservation-credit-reconciler_20260602_133327
+  - go-telemetry-incident-credit-reconciler
+  - ruby-stadium-concession-refund-matcher
+
+[4] Dockerfile hardcodes --platform=linux/amd64
+  - cobol-card-chargeback-clearing
+  - cobol-utility-return-reconciliation_20260526
+  - ruby-theater-booking-refund-matcher
+  - ruby-theater-booking-refund-matcher_20260605_235419
+
+[4] cross-milestone solve path in steps/milestone_2/solution/solve2.sh
+  - cobol-campground-site-deposit-matcher
+  - cobol-pension-contribution-reversal
+  - cobol-telehealth-session-credit-clearing
+  - cobol-utility-meter-adjustment-clearing_20260608_184830
+
+[4] task.toml: build_timeout_sec, [agent], [verifier]
+  - go-catalog-pricing-service-recovery
+  - go-edge-gateway-tls-recovery
+  - go-marketplace-payout-matcher
+  - go-partner-gateway-traffic-control
+
+[3] cross-milestone solve path in steps/milestone_2/solution/solve.sh
+  - bash-lab-sample-credit-reconciler
+  - ruby-brewery-keg-deposit-reconciler
+  - ruby-cooking-class-voucher-matcher
+
+[3] cross-milestone solve path in steps/milestone_3/solution/solve.sh
+  - bash-lab-sample-credit-reconciler
+  - ruby-brewery-keg-deposit-reconciler
+  - ruby-cooking-class-voucher-matcher
+
+[3] cross-milestone solve path in steps/milestone_4/solution/solve4.sh
+  - cobol-campground-site-deposit-matcher
+  - cobol-card-chargeback-clearing
+  - java-billing-service-container-health
+
+[2] CRLF in steps/milestone_2/solution/solve1.sh
+  - go-catering-order-adjustment-matcher
+  - go-loyalty-adjustment-matcher
+
+[2] CRLF in steps/milestone_3/solution/solve1.sh
+  - go-catering-order-adjustment-matcher
+  - go-loyalty-adjustment-matcher
+
+[2] CRLF in steps/milestone_5/solution/solve.sh
+  - go-veterinary-visit-credit-matcher
+  - ruby-brewery-keg-deposit-reconciler
+
+[2] CRLF in steps/milestone_5/solution/solve5.sh
+  - go-veterinary-visit-credit-matcher
+  - ruby-brewery-keg-deposit-reconciler
+
+[2] CRLF in steps/milestone_5/tests/test.sh
+  - go-veterinary-visit-credit-matcher
+  - ruby-brewery-keg-deposit-reconciler
+
+[2] Dockerfile missing tmux
+  - go-rail-yard-freight-hold-release
+  - terraform-aws-vpc-endpoint-routing-recovery
+
+[1] CRLF in steps/milestone_2/solution/solve2.sh
+  - go-aquarium-tour-refund-matcher
+
+[1] CRLF in steps/milestone_3/solution/solve2.sh
+  - go-catering-order-adjustment-matcher
+
+[1] CRLF in steps/milestone_3/solution/solve3.sh
+  - cobol-vendor-return-settlement
+
+[1] CRLF in steps/milestone_4/solution/solve1.sh
+  - go-loyalty-adjustment-matcher
+
+[1] CRLF in steps/milestone_5/solution/solve1.sh
+  - go-loyalty-adjustment-matcher
+
+[1] cross-milestone solve path in steps/milestone_1/solution/solve1.sh
+  - cobol-campground-site-deposit-matcher
+
+[1] cross-milestone solve path in steps/milestone_4/solution/solve.sh
+  - ruby-brewery-keg-deposit-reconciler
+
+[1] cross-milestone solve path in steps/milestone_5/solution/solve.sh
+  - ruby-brewery-keg-deposit-reconciler
+
+[1] cross-milestone solve path in steps/milestone_5/solution/solve5.sh
+  - cobol-campground-site-deposit-matcher
+
+[1] main.go writes credit_summary.json but tests expect lap_credit_summary.json
+  - go-community-pool-lap-credit-matcher
+
+[1] main.go writes credit_summary.json but tests expect tab_adjustment_summary.json
+  - go-brewpub-tab-adjustment-matcher
+
+[1] main.go writes credit_summary.json but tests expect wash_rebate_summary.json
+  - go-carwash-subscription-rebate-matcher
+
+[1] missing environment/.dockerignore
+  - cobol-utility-return-reconciliation_20260526
+
+Tasks with zero reported issues: 68/213
+
+Run: python scripts/audit_all_tasks_common_issues.py --fix
+Run: python scripts/audit_fix_task_toml_timeouts.py
+Run: python scripts/audit_all_tasks_common_issues.py --preflight

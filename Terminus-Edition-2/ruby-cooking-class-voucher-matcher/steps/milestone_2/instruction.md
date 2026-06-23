@@ -1,0 +1,3 @@
+Extend the Ruby reconciler for legacy `cuisine` aliases while keeping all milestone 1 behavior. Normalize aliases before matching on both sides: apply the same alias map to `cuisine` values read from `/app/data/classes.csv` and from `/app/data/vouchers.csv` after trimming surrounding whitespace and case folding. The aliases are `ITA` means `ITALIAN`, `THA` means `THAI`, and `PAS` means `PASTRY`. Matched report rows must emit the canonical `cuisine` value, not the raw alias. Unmatched rows still leave `cuisine` blank.
+
+Continue to write `/app/out/voucher_report.csv` and `/app/out/voucher_summary.json` with the same schemas, status labels, blank unmatched fields, and summary keys from the earlier milestone.

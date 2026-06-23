@@ -1,0 +1,5 @@
+Milestone 1 behavior must remain correct. Extend the reconciliation CLI under `/app` for a legacy payment export where `/app/data/payments.csv` may use method aliases. Keep the deliverable as a Go CLI compiled with `/usr/local/go/bin/go`.
+
+Treat payment method alias `CC` as canonical `CARD`, and alias `WIR` as canonical `WIRE`. Alias normalization is case-insensitive and whitespace-tolerant. Aliases must participate in the same matching path as normal methods, including exact identifiers, positive integer amount validation, `POSTED` status, allowed canonical methods, and one-time invoice-row consumption. Cross-method aliases must not match after canonicalization; for example, a payment alias that normalizes to `WIRE` cannot match a `CARD` invoice.
+
+For every matched payment, write the normalized canonical method `ACH`, `CARD`, or `WIRE` in `/app/out/payment_report.csv`; do not emit lowercase input values or legacy aliases. Unmatched rows keep the milestone 1 behavior of leaving `method` blank, and `/app/out/payment_summary.json` keeps the milestone 1 schema and positive-cent totals.

@@ -1,0 +1,67 @@
+# Rubric 1
+
+Agent investigates `/app/cmd/reconcile/main.go`, `/app/data/licenses.csv`, `/app/data/rebates.csv`, and the documented output files before editing, +2
+Agent compiles the Go CLI with `/usr/local/go/bin/go` and runs it against fresh synthetic inputs, +2
+Agent fixes reconciliation logic instead of hardcoding `/app/out/rebate_report.csv` or `/app/out/rebate_summary.json`, +3
+Agent enforces full `license_id` equality and does not use prefix or substring matching, +3
+Agent requires `tenant_id`, exact `amount_cents`, `LICENSED` license status, and allowed tier to all match before marking a rebate matched, +5
+Agent treats `STARTER`, `BUSINESS`, and `ENTERPRISE` as the only match-eligible canonical tiers in milestone 1, +3
+Agent rejects `DRAFT` status or unknown tiers such as `TRIAL` even when license_id, tenant_id, and amount align, +2
+Agent accumulates `matched_amount_cents` as a positive sum rather than subtracting or emitting negative totals, +3
+Agent trims surrounding whitespace and compares tier and status case-insensitively without corrupting report formatting, +2
+Agent consumes each license row at most once so duplicate rebates leave only the earliest eligible rebate matched, +2
+Agent writes `/app/out/rebate_report.csv` with columns `license_id,tenant_id,tier,amount_cents,status` in rebate input order, +2
+Agent leaves `tier` blank on every `UNMATCHED` row and emits the matched canonical tier on `MATCHED` rows, +3
+Agent writes `/app/out/rebate_summary.json` with integer `matched_count`, `matched_amount_cents`, `unmatched_count`, and `unmatched_amount_cents`, +2
+Agent hardcodes final CSV or JSON output instead of repairing the Go program, -5
+Agent tampers with verifier harness files, solution scaffolding, or input fixtures to force a pass, -5
+Agent still matches license ids by prefix or substring instead of exact full-string comparison, -3
+
+# Rubric 2
+
+Agent maps legacy alias `STR` to canonical tier `STARTER` before matching and report output, +3
+Agent maps legacy alias `BUS` to canonical tier `BUSINESS` before matching and report output, +3
+Agent maps legacy alias `ENT` to canonical tier `ENTERPRISE` before matching and report output, +3
+Agent applies alias normalization after trimming and case folding so values such as ` str ` and `Bus` resolve correctly, +2
+Agent emits canonical `STARTER`, `BUSINESS`, or `ENTERPRISE` on matched rows rather than raw alias codes, +3
+Agent leaves `tier` blank on unmatched rows while preserving the milestone 1 report schema and output paths, +3
+Agent preserves milestone 1 full-key gates, earliest-rebate consumption, trim, case-insensitive status checks, and positive summary totals, +3
+Agent keeps summary JSON integer counts and positive cent amounts correct after adding alias handling, +2
+Agent compiles and runs the Go reconciler successfully after alias changes so output files are produced, +1
+Agent aliases only recognized legacy values and does not remap unknown tier strings to canonical tiers, +1
+Agent still compares full `license_id` values and does not regress to prefix matching while adding aliases, +3
+Agent hardcodes final output files instead of repairing the Go reconciliation logic, -5
+Agent tampers with verifier harness files, solution scaffolding, or input fixtures to force a pass, -5
+Agent regresses milestone 1 behavior while implementing alias handling, -3
+
+# Rubric 3
+
+Agent supports optional `license_end` in `licenses.csv` and `rebate_date` in `rebates.csv` without breaking undated fixtures, +2
+Agent loads `/app/config/cutoff_calendar.txt` and treats only dates explicitly marked `open` as eligible rebate dates, +3
+Agent treats `closed`, missing, blank, or unlisted `rebate_date` values as ineligible for matching, +3
+Agent treats licenses with missing `license_end` as ineligible because the date comparison cannot be satisfied, +2
+Agent requires `rebate_date` to be on or before the matched license `license_end` together with all prior matching gates, +3
+Agent selects the eligible unused license with the latest `license_end` when multiple licenses match the same rebate, +5
+Agent breaks tied `license_end` values by choosing the earliest license input row and tracks consumption by row position, +3
+Agent still applies milestone 2 alias normalization (`STR`, `BUS`, `ENT`) under calendar-gated matching, +2
+Agent still consumes each license row at most once across all rebates under dated matching, +3
+Agent preserves report CSV and summary JSON schemas with correct matched and unmatched counts and positive cent amounts, +2
+Agent compiles and runs the Go reconciler successfully after date-handling changes so output files are produced, +2
+Agent hardcodes final output files instead of repairing the Go reconciliation logic, -5
+Agent treats closed or unlisted calendar dates as open, or allows `rebate_date` later than `license_end`, -5
+Agent regresses milestone 1 or 2 matching behavior while implementing calendar or latest-end logic, -3
+
+# Rubric 4
+
+Agent loads `/app/config/tier_policy.csv`, `/app/config/tenant_limits.csv`, and `/app/config/license_blackouts.csv` and applies each only where milestone 4 rules require them, +3
+Agent treats only canonical tiers with `enabled` equal to `true` in tier policy as match-eligible while preserving alias normalization, +5
+Agent implements rebate tier `ANY` as a wildcard without emitting `ANY`, using latest `license_end`, lower priority number, then earliest license row, +5
+Agent enforces tenant daily caps by `tenant_id` and `rebate_date` in rebate input order without consuming license rows for limit-rejected rebates, +5
+Agent rejects dated rebates when no applicable tenant limit row exists for that tenant and rebate date, +3
+Agent applies license blackouts before candidate ranking and ignores rows with blank start or end dates or reversed windows, +3
+Agent preserves milestone 1 through 3 full-key, alias, calendar, row-consumption, blank unmatched tier, and positive summary behavior under policy gates, +3
+Agent keeps undated CSV inputs working with enabled tier policy and `ANY` while skipping tenant limits and blackouts when date columns are absent, +3
+Agent compiles and runs the Go reconciler successfully after policy changes so output files are produced, +2
+Agent hardcodes final output files instead of repairing the Go reconciliation logic, -5
+Agent consumes license rows or tenant budget for rebates rejected by policy, blackout, calendar, or limit rules, -5
+Agent regresses milestone 1, 2, or 3 behavior while implementing tier policy, `ANY`, limits, or blackouts, -3

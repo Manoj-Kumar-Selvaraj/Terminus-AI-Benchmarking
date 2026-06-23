@@ -1,0 +1,2 @@
+guest_id,access_type,effective_date,max_daily_amount,status
+CUST-SAMPLE,DAY,2026-04-01,9999,ACTIVE

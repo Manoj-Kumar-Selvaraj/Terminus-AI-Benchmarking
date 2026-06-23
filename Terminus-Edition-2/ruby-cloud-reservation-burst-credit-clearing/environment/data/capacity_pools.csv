@@ -1,0 +1,4 @@
+region,sku_type,capacity
+LOC-1,CPU,1000
+LOC-1,GPU,1000
+LOC-1,MEM,1000

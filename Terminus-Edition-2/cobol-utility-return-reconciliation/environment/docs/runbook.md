@@ -1,0 +1,1 @@
+Use /app/scripts/run_batch.sh to compile and run the job.

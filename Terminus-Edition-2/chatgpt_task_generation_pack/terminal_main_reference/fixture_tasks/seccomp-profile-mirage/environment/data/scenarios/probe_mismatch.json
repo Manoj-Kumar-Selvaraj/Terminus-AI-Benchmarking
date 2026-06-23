@@ -1,0 +1,12 @@
+{
+  "scenario": "probe_mismatch",
+  "primary_tag": "tag_open",
+  "fallback_tag": "tag_lock",
+  "declared_tag": "tag_open",
+  "retry_count": 0,
+  "prefer_alt": false,
+  "op_name": "bpf",
+  "declared_allows_op": true,
+  "runtime_denies_primary": true,
+  "runtime_denies_fallback": true
+}

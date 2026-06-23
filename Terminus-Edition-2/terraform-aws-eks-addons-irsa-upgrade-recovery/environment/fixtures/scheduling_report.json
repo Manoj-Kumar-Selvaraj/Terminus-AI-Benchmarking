@@ -1,0 +1,15 @@
+{
+  "regulated_workloads": [
+    {
+      "name": "settlement-ledger",
+      "capacity_type": "spot",
+      "nodepool": "default"
+    }
+  ],
+  "addon_pods": [
+    {
+      "name": "ebs-csi-controller",
+      "service_account": "default"
+    }
+  ]
+}

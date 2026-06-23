@@ -1,0 +1,2 @@
+pass_id,skier_id,lift_id,pass_tier,amount,scan_ts,status,slope
+SRC-SAMPLE-1,PARTY-1,SAMPLE,DAY,100,20260528121000,SCANNED,LOC-1

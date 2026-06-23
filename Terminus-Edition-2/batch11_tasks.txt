@@ -1,0 +1,23 @@
+# Remaining NEEDS_REVISION tasks — LOCAL folder names in repo
+# Platform submission IDs in needs_revision_mapped.txt (names may differ on platform)
+go-carwash-subscription-rebate-matcher
+go-lab-sample-chain-reassignment
+cobol-telehealth-session-credit-clearing
+ruby-music-royalty-live-settlement-router
+ruby-parking-garage-session-adjustment-clearing
+go-waterpark-pass-refund-matcher
+go-live-auction-bid-reversal-ledger
+pl1-cobol-atm-risk-release-router
+cobol-bowling-league-fee-reversal
+ruby-cooking-class-voucher-matcher
+ruby-go-bash-vineyard-club-shipment-credit-router
+go-bike-share-trip-credit-matcher
+cobol-healthcare-return-reversal
+cobol-escrow-return-reconciliation
+go-aquarium-pass-credit-matcher
+cobol-municipal-return-clearing
+go-catering-order-adjustment-matcher
+go-marketplace-payout-matcher
+go-device-warranty-claim-matcher
+go-utility-refund-reconciler
+cobol-wire-return-settlement

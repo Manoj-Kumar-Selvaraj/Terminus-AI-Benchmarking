@@ -1,0 +1,3 @@
+session_id,guardian_id,amount_cents,status,room,attendance_date
+BILL1001,CUST1001,1200,CHECKEDIN,TODDLER,2026-04-08
+BILL1002,CUST1002,900,CHECKEDIN,INFANT,2026-04-09

@@ -1,0 +1,5 @@
+The nightly statement merge under `/app` is writing the wrong account/date control totals. Operations saw `/app/out/merge_summary.txt` diverge from sort-run hash totals when a sort run revisits an earlier statement date for the same account. Review `/app/evidence/batch_incident.log`, `/app/docs/record_layouts.md`, and the GnuCOBOL program in `/app/src`.
+
+Restore correct committed rows in `/app/out/control_totals.dat` and keep `/app/out/merge_summary.txt` on the documented `key=value` schema. Each committed control row must represent one distinct occurrence of an `(account_id, stmt_date)` control group encountered during sequential processing. Commit a new row whenever the composite group key changes; if the same account revisits an earlier statement date later in the stream after that group has closed, the reopened group is a separate committed row. There is no cross-group deduplication by composite key alone.
+
+Example: statement rows for `(ACCT1001, 20260401)`, then `(ACCT1001, 20260402)`, then `(ACCT1001, 20260401)` again must produce three committed control rows, not two. See `/app/docs/control_total_contract.md` for the full contract.

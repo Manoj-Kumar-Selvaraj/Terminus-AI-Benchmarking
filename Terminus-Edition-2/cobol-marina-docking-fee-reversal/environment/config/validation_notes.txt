@@ -1,0 +1,1 @@
+Verifier scenarios rewrite dock_fees.dat, reversals.dat, and harbor_calendar.txt.

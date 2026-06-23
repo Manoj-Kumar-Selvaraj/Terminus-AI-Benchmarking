@@ -1,0 +1,3 @@
+Extend `/app/src/laundry_credit_reconcile.cbl` for legacy machine_size aliases. All milestone 1 matching, consumption, report schema, and summary rules still apply, including preserving the CSV `amount_cents` field as the raw 10-character zero-padded credit amount while keeping summary totals as unpadded integers.
+
+Before comparison, normalize action `machine_size` values after trim and case fold: `SM` to `SML`, `MD` to `MDL`, and `LG` to `LGE`. Eligible canonical sizes remain `SML`, `MDL`, and `LGE`; unknown normalized values stay unmatched even when both sides share the same unknown alias. Matched rows emit the canonical source `machine_size`; unmatched rows leave `machine_size` blank.

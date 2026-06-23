@@ -1,0 +1,26 @@
+# Rubric 1
+Agent inspects `/app/src/wire_returns.cbl` and `/app/config/reason_codes.csv` before editing, +2
+Agent fixes wire ID matching to use all 12 characters rather than a partial prefix, +5
+Agent adds B2B as an allowed return reason and reports cleared amounts as positive cents, +5
+Agent enforces full wire id, account, amount, settled status, and allowed reason gates for clearing, +3
+Agent writes `/app/out/wire_return_report.csv` and `/app/out/wire_return_summary.txt` with exact schema and positive summary cents, +3
+Agent compiles and runs the COBOL batch with `cobc` rather than hardcoding output files, +2
+Agent hardcodes final CSV or summary output instead of repairing the COBOL program, -5
+Agent tampers with platform files or runtime input fixtures to force a pass, -5
+Agent uses partial wire-id matching or leaves cleared amounts negative, -5
+# Rubric 2
+Agent prevents duplicate return rows from consuming the same settled wire more than once, +5
+Agent preserves milestone 1 report schema, return-file order, and positive summary totals, +3
+Agent tracks consumed wires so only the first eligible return clears each settled wire, +3
+Agent preserves full 12-character wire ID matching and allowed-reason gates under deduplication, +3
+Agent hardcodes outputs instead of implementing wire consumption in COBOL, -5
+Agent regresses milestone 1 clearing gates while adding duplicate-return protection, -3
+# Rubric 3
+Agent reads `/app/config/cycle_calendar.txt` and applies OPEN-only settlement-cycle day rules case-insensitively, +5
+Agent rejects blank dates, absent calendar rows, and closed settlement dates, +3
+Agent counts open cycle days after wire settlement through return date with at most two open days eligible, +5
+Agent selects the unused wire with the latest eligible settlement date and breaks ties by earliest wire input row, +5
+Agent leaves the reason field blank on EXCEPTION rows while preserving prior schemas, +3
+Agent treats closed or unlisted calendar dates as open, -5
+Agent chooses wires by file order alone instead of latest settlement date and earliest-row tie-break rules, -5
+Agent regresses milestone 1 or 2 behavior while implementing cycle-calendar logic, -3

@@ -1,0 +1,2 @@
+claim_id,repair_id,member_id,site_id,repair_type,amount,claim_ts,reason,bay
+ACT-SAMPLE-1,SRC-SAMPLE-1,PARTY-1,SAMPLE,PRIMARY,100,20260528121100,PARTS,LOC-1

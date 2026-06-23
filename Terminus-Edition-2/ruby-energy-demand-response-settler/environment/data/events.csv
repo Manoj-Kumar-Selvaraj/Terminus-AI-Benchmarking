@@ -1,0 +1,2 @@
+parcel_id,meter_id,station_id,resource_type,amount,event_ts,status,feeder
+SRC-SAMPLE-1,PARTY-1,SAMPLE,LOAD,100,20260528121000,CONFIRMED,LOC-1

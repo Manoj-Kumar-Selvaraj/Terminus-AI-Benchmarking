@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ledger
+  labels:
+    name: ledger
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: identity
+  labels:
+    name: identity

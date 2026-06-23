@@ -1,0 +1,18 @@
+# Rubric 1
+Agent reads batch contract and fragment operations docs before editing PL/I decks, +2
+Agent sets KEY_COMPARE FULL and CONSUME ON in fragment_batch.pli, +5
+Agent honors ELIGIBLE_STATE and OPCODE_1/2/3 from fragment_rules.pli, +3
+Agent preserves merge order and blanks ingest_class on ORPHAN rows, +3
+Agent writes linked/orphan shard totals in fragment_summary.txt, +2
+Agent edits pli_fragment.awk instead of .pli decks, -5
+Agent links merges on fragment_id prefix only or without consumption, -5
+# Rubric 2
+Agent keeps milestone 1 gates while enabling ALIAS_MODE for channels/classes, +3
+Agent normalizes NORTH/SOUTH/EDGE and ingest_class aliases case-insensitively, +5
+Agent emits canonical ingest_class on LINKED rows, +3
+Agent disables alias deck or hard-codes channel names, -5
+# Rubric 3
+Agent keeps milestones 1–2 while enabling WINDOW_MODE, +3
+Agent applies shard_windows.psv per channel with OPEN_SHARD_STATE timestamp bounds, +5
+Agent tie-breaks on latest ingest_ts then earliest fragment row, +3
+Agent links merges outside shard ingest windows, -5

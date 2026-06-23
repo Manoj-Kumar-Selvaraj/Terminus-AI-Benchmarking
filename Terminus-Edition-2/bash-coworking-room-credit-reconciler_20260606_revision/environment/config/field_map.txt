@@ -1,0 +1,7 @@
+# CSV column map for coworking room credit reconciliation
+/app/data/bookings.csv: booking_id, member_id, amount_cents, status, plan, optional booking_date
+/app/data/credits.csv: booking_id, member_id, amount_cents, plan, optional credit_date
+/app/out/credit_report.csv: booking_id, member_id, plan, amount_cents, status
+/app/out/credit_summary.json: matched_count, matched_amount_cents, unmatched_count, unmatched_amount_cents
+
+Dated matching is active only when `/app/data/bookings.csv` includes a `booking_date` header and `/app/data/credits.csv` includes a `credit_date` header. If either date header is missing, milestone 2 undated rules apply and calendar/profile files are ignored.

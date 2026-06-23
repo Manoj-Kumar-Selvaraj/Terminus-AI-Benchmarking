@@ -1,0 +1,1 @@
+Audit review expects the fixed reconciler to write one report row per credit input row and a JSON summary with positive cent totals. The starter `reconcile.sh` is intentionally defective and may produce negative matched totals until milestone 1 is solved. Operators compare unmatched rows against booking desk logs before issuing manual adjustments.

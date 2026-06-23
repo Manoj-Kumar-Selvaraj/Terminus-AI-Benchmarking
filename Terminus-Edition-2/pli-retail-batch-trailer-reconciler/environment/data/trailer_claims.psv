@@ -1,0 +1,2 @@
+claim_id|batch_id|account_no|net_cents|dc_flag|claim_ts|reason_code|branch_id
+CLM-1|BTCH-10001|991100|50000|DEBIT|20260612120500|SETTLE|NYC

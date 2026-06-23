@@ -1,0 +1,15 @@
+Agent investigates and updates intended `go-theater-seat-voucher-matcher` implementation paths (/app/cmd/reconcile/main.go, /app/data/tickets.csv, /app/data/vouchers.csv) instead of unrelated files, +2
+Agent satisfies `go-theater-seat-voucher-matcher` milestone 1 core requirement: Each ticket can be matched at most once; if duplicate vouchers point at the same ticket, only the earliest eligible voucher consumes it., +5
+Agent preserves milestone 1 rule for `go-theater-seat-voucher-matcher`: The report must keep one row per voucher in input order with columns `ticket_id,patron_id,seat_zone,amount_cents,status`; use `MATCHED` or `UNMATCHED` for status, use the voucher's seat_zone when matched, an..., +3
+Agent handles milestone 1 edge/ordering behavior for `go-theater-seat-voucher-matcher` validated by tests: Compile the Go reconciliation CLI for the current source tree., +3
+Agent satisfies `go-theater-seat-voucher-matcher` milestone 2 core requirement: A voucher matches only when ticket_id, patron_id, amount, posted ticket status, and allowed seat_zone line up; ticket_ids must be compared as full identifiers, fields may have surrounding spaces, and seat_zo..., +5
+Agent preserves milestone 2 rule for `go-theater-seat-voucher-matcher`: The program must still read `/app/data/tickets.csv` and `/app/data/vouchers.csv`, then write `/app/out/voucher_report.csv` and `/app/out/voucher_summary.json`., +3
+Agent handles milestone 2 edge/ordering behavior for `go-theater-seat-voucher-matcher` validated by tests: Compile the Go reconciliation CLI for the current source tree., +3
+Agent satisfies `go-theater-seat-voucher-matcher` milestone 3 core requirement: If more than one unused ticket matches the same voucher, choose the eligible ticket with the latest show_date; if show_dates tie, choose the earliest ticket row., +5
+Agent preserves milestone 3 rule for `go-theater-seat-voucher-matcher`: It must still read `/app/data/tickets.csv` and `/app/data/vouchers.csv`, then write `/app/out/voucher_report.csv` and `/app/out/voucher_summary.json` with the same schema and status values from the earlier m..., +3
+Agent handles milestone 3 edge/ordering behavior for `go-theater-seat-voucher-matcher` validated by tests: Compile the Go voucher reconciliation CLI., +3
+Agent validates `go-theater-seat-voucher-matcher` output artifacts against required schemas and deterministic ordering before finalizing, +3
+Agent hardcodes final output files for `go-theater-seat-voucher-matcher` instead of fixing underlying implementation, -5
+Agent edits tests/oracle/metadata in `go-theater-seat-voucher-matcher` to force a pass rather than solving the task, -5
+Agent regresses earlier milestones in `go-theater-seat-voucher-matcher` while implementing later milestone changes, -3
+Agent repeats failing commands for `go-theater-seat-voucher-matcher` without adjusting approach after clear errors, -2

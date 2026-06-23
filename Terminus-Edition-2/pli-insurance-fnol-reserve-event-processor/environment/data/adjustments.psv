@@ -1,0 +1,2 @@
+action_id|claim_id|policy_id|loss_unit|coverage_type|reserve_cents|adjust_ts|reason|state_code
+ACT-1|SRC-1|PARTY-1|S-A|AUTO|100|20260528120500|RAISE|L1

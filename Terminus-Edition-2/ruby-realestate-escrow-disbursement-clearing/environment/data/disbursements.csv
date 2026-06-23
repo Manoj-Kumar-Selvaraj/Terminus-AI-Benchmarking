@@ -1,0 +1,2 @@
+action_id,closing_id,escrow_id,payee_id,trust_id,kind,amount,action_ts,reason,location
+ACT-SAMPLE-1,CLOSE-SAMPLE,SRC-SAMPLE-1,PARTY-1,SAMPLE,SLR,100,20260528121100,CLOSE,LOC-1

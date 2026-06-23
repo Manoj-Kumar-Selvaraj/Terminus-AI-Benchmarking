@@ -1,0 +1,3 @@
+install_id,site_id,amount_cents,system_tier
+SOLEDGE000001,CUST9001,100,HOME
+SOLEDGE000002,CUST9002,200,BIZ

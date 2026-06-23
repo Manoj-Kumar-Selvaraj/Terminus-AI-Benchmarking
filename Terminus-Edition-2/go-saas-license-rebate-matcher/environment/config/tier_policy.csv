@@ -1,0 +1,4 @@
+tier,enabled,priority
+STARTER,true,20
+BUSINESS,true,10
+ENTERPRISE,true,30

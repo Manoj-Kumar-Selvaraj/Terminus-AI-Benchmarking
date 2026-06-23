@@ -1,0 +1,41 @@
+# Rubric 1
+Agent investigates `/app/cmd/reconcile`, `/app/internal/billing`, `/app/data/sessions.csv`, and `/app/data/refunds.csv` before editing, +2
+Agent implements header-addressed CSV parsing for sessions and refunds, tolerating reordered columns and extra columns, +3
+Agent enforces milestone 1 matching gates: full `session_id`, `guardian_id`, positive `amount_cents`, `CHECKEDIN` status, and allowed rooms `INFANT`/`TODDLER`/`PREK` after trim and case folding, +5
+Agent writes trimmed but otherwise unparsed `amount_cents` text in report rows while rejecting malformed or non-positive amounts for matching, +3
+Agent ignores session rows with missing, malformed, or non-positive required fields while keeping malformed refund rows in the report as `UNMATCHED`, +5
+Agent consumes each session input row at most once while preserving refund input order, +3
+Agent writes `/app/out/refund_report.csv` and `/app/out/refund_summary.json` with exact schemas, `MATCHED`/`UNMATCHED` only, blank unmatched room, canonical matched room, and positive summary cents, +5
+Agent hardcodes final output files instead of fixing reconciliation logic, -5
+Agent tampers with platform files or runtime input fixtures to force a pass, -5
+Agent uses prefix/fuzzy identifiers, reusable session rows, or negative/incorrect summary totals, -3
+# Rubric 2
+Agent loads `/app/config/room_aliases.csv` at runtime using header-addressed parsing with required columns `alias`, `canonical`, and `enabled`, +5
+Agent accepts enabled values `true`, `y`, `yes`, and `1` after trim and case folding and rejects disabled, malformed, blank, or unsupported alias rows, +5
+Agent applies room alias normalization to both session room values and refund room values while preserving canonical room identities when no alias row exists, +5
+Agent emits canonical `INFANT`, `TODDLER`, or `PREK` on matched report rows and leaves unmatched room blank, +3
+Agent preserves milestone 1 full-id, positive amount, status, consumption, ordering, schema, and positive-total behavior while adding aliases, +5
+Agent hardcodes sample aliases instead of honoring runtime `/app/config/room_aliases.csv`, -5
+Agent regresses milestone 1 behavior while implementing alias normalization, -3
+Agent tampers with platform files or runtime input fixtures to force a pass, -5
+# Rubric 3
+Agent supports dated batches with `attendance_date` in `sessions.csv` and `refund_date` in `refunds.csv` while preserving earlier schemas and rules, +3
+Agent parses dates strictly as `YYYY-MM-DD` and rejects missing, blank, malformed, closed, or unlisted dates, +5
+Agent reads `/app/config/cutoff_calendar.txt` at runtime, ignores blank/comment lines, and treats only trim/case-folded `open` statuses as eligible, +5
+Agent requires `refund_date` not later than session `attendance_date`, +3
+Agent chooses the eligible unused session row with the latest `attendance_date`, breaking equal dates by earliest session row and tracking consumption by row position, +5
+Agent preserves runtime room aliases, canonical output, exact schemas, refund input order, and positive summary totals under dated matching, +5
+Agent treats closed, missing, malformed, or unlisted calendar dates as open, -5
+Agent chooses candidates by file order alone instead of latest attendance date with earliest-row tie-break, -5
+Agent regresses milestone 1 or 2 behavior while adding date gates, -3
+# Rubric 4
+Agent supports optional input-only `refund_method` and `settlement_date` columns without adding report columns or summary keys, +3
+Agent loads `/app/config/methods.csv` at runtime using header-addressed parsing with required columns `method`, `enabled`, and `max_lag_days`, tolerating extra columns, +5
+Agent treats enabled values `true`, `y`, `yes`, and `1` as enabled after trim and case folding and rejects blank, disabled, malformed, unlisted, duplicate-later, or negative-lag methods as required, +5
+Agent applies first-row-wins semantics for duplicate method rows, even when the first row disables or malforms the method, +3
+Agent validates `settlement_date` as strict `YYYY-MM-DD`, not before `refund_date`, and within `max_lag_days` calendar days when the settlement column is present, +5
+Agent preserves dated matching when `refund_method` is absent and applies only the method gate when `settlement_date` is absent, +3
+Agent composes method and settlement gates with all prior identity, amount, status, alias, calendar, date, tie-break, consumption, schema, and positive-total rules, +5
+Agent hardcodes final output files or sample config rows instead of reading runtime inputs and configs, -5
+Agent regresses milestone 1-3 behavior while adding method or settlement logic, -5
+Agent tampers with platform files or runtime input fixtures to force a pass, -5

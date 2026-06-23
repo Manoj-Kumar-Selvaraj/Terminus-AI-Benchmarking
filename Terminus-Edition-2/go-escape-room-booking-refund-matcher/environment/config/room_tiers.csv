@@ -1,0 +1,4 @@
+tier,enabled,priority
+EASY,true,2
+HARD,true,1
+VIP,true,3

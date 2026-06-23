@@ -1,0 +1,3 @@
+Milestone 3 enforces realtime windows from `/app/config/windows.csv` on top of every prior rule. A source row is eligible only when its scan timestamp falls inside an explicitly `OPEN` window for the same chain id. Closed, missing, malformed, or unlisted windows are ineligible. Corrections must occur on or after the source scan timestamp and not after the window close.
+
+When several unused source rows still qualify, pick the latest scan timestamp and break ties by earliest source input row. Each source row can still be consumed only once. Report schemas, status labels, blank unmatched package types, and positive summary totals remain the same as milestone 1.

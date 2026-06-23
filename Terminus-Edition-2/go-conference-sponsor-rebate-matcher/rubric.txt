@@ -1,0 +1,22 @@
+# Rubric 1
+Agent updates `/app/cmd/reconcile/main.go` and compiles with `/usr/local/go/bin/go`, +2
+Agent enforces full `sponsorship_id`, `sponsor_id`, amount, `SIGNED` status, and allowed level gates for matching, +5
+Agent preserves rebate input order, exact report columns, exact `MATCHED`/`UNMATCHED` labels, blank unmatched `level`, and positive JSON summary totals, +3
+Agent consumes each sponsorship row at most once and trims or case-folds compared fields, +5
+Agent hardcodes output files instead of fixing the Go reconciler, -5
+Agent tampers with platform files or runtime input fixtures to force a pass, -5
+Agent uses partial sponsorship-id matching or allows consumed sponsorship rows to be reused, -5
+# Rubric 2
+Agent maps legacy rebate aliases `BRZ`, `GLD`, and `PLT` to canonical `BRONZE`, `GOLD`, and `PLATINUM` before matching, +5
+Agent rejects unsupported aliases and emits canonical `level` on matched rows, +3
+Agent preserves milestone 1 gates and consumption while adding alias normalization, +3
+Agent regresses milestone 1 behavior while implementing alias normalization, -3
+Agent hardcodes output files instead of fixing the Go reconciler, -5
+Agent treats unknown aliases as eligible without canonical normalization, -5
+# Rubric 3
+Agent applies `/app/config/cutoff_calendar.txt` so only open rebate dates are eligible, with case-insensitive open-state handling, +5
+Agent selects the unused sponsorship row with the latest eligible `event_end`, breaking same-date ties by earliest input row, +5
+Agent tracks consumption by sponsorship row position and enforces rebate date on or before `event_end`, +3
+Agent preserves alias normalization and milestone 1 gates under calendar constraints, +3
+Agent treats closed or unlisted calendar dates as open, -5
+Agent chooses sponsorships by file order alone instead of latest `event_end` and earliest-row tie-break rules, -5

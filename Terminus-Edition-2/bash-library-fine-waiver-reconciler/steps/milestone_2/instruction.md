@@ -1,0 +1,3 @@
+Extend the Bash reconciler for legacy `desk` aliases while keeping all milestone 1 behavior. The program still reads `/app/data/fines.csv` and `/app/data/waivers.csv` and writes `/app/out/waiver_report.csv` and `/app/out/waiver_summary.json`.
+
+Normalize aliases before matching: `FR` means `FRONT`, `WEB` means `ONLINE`, `APP` means `MOBILE`. Alias matching is case-insensitive and trimmed. The waiver `desk` must still equal the fine `desk` after canonicalization, not merely fall into the allowed set. Matched report rows must emit the canonical `desk` value, not the raw alias. Unmatched rows still leave `desk` blank.

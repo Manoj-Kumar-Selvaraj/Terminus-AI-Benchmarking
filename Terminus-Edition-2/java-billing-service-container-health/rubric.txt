@@ -1,0 +1,34 @@
+# Rubric 1
+Agent reviews `/app/evidence/incident.log`, `/app/docs/health_contract.md`, and `/app/config/application.properties` before changing service behavior, +2
+Agent repairs the JDBC datasource URL to reachable in-container H2 (`127.0.0.1:9092`) so readiness can connect, +5
+Agent preserves `/health/live` UP during startup and restores `/health/ready` HTTP 200 with body `UP` after migration, +3
+Agent confirms `GET /api/invoices` returns seeded row `inv-100,acct-1,2500` from the running service, +2
+Agent hardcodes health responses or disables readiness instead of fixing datasource reachability, -5
+Agent points the datasource at a mock or unrelated store or edits verifier fixtures, -3
+Agent replaces the Java billing service with a non-Java mock server instead of repairing the shipped service, -5
+# Rubric 2
+Agent reviews `/app/evidence/pool_soak.log`, `/app/docs/pool_contract.md`, and charge handler code before changing pool lifecycle, +2
+Agent returns borrowed JDBC connections on validation failures, missing accounts, and SQL errors in `handleCharge`, +5
+Agent preserves milestone 1 datasource, readiness, and invoice behavior while fixing pool cleanup, +3
+Agent restores `/internal/pool` to `active=0` after repeated invalid charge soak and keeps invoices readable, +5
+Agent raises pool max or disables validation instead of releasing connections on error paths, -5
+Agent leaves the pool exhausted after invalid charge traffic, -3
+Agent bypasses the charge handler or `/internal/pool` metrics instead of fixing borrowed connection lifecycle, -5
+# Rubric 3
+Agent uses `/app/evidence/kube_events.txt` and `/app/docs/container_runtime_contract.md` to adjust JVM options for the 256Mi limit, +2
+Agent sets `-XX:+UseContainerSupport` and `-XX:MaxRAMPercentage` between 25 and 75 in `/app/config/jvm.options`, +5
+Agent removes fixed `-Xmx` and `-Xms` heap-size flags and keeps `billing.container.memory.mb=256`, +3
+Agent validates the service still starts with readiness UP and charge validation still rejects invalid amounts, +2
+Agent uses oversized fixed `-Xmx` or `-Xms` or disables container memory awareness to hide OOMKilled exits, -5
+Agent regresses datasource reachability or pool cleanup while tuning JVM memory, -3
+Agent edits tests, scripts, or deployment resources to avoid starting the JVM under the documented memory limit, -5
+# Rubric 4
+Agent reviews `/app/evidence/kube_events.txt`, `/app/docs/health_contract.md`, `/app/docs/kube_probe_contract.md`, and `/app/deploy/kube/billing-deployment.yaml` before edits, +2
+Agent makes `/health/live` return HTTP 200 during migration without waiting for database warmup in the live handler, +5
+Agent configures `livenessProbe` for `/health/live` only with `startupProbe` or `livenessProbe.initialDelaySeconds` of at least 12, +5
+Agent sizes the startup or liveness delay budget from the configured migration duration with enough headroom to avoid restart loops, +3
+Agent preserves readiness on `/health/ready` (503 until migration completes) and prior milestone fixes, +3
+Agent validates live-versus-ready timing during startup and invoice reads after readiness returns, +2
+Agent points liveness at `/health/ready` or ties live success to migration completion, -5
+Agent shortens the migration window or removes migrations or readiness to satisfy probes, -3
+Agent configures probe timing that cannot cover the documented migration duration or removes startup safety from the manifest, -5

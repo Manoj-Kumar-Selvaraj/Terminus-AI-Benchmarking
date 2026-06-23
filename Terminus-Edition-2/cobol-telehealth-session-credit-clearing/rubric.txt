@@ -1,0 +1,23 @@
+# Rubric 1
+Agent updates `/app/src/session_credit_reconcile.cbl` and compiles through the documented COBOL batch path, +2
+Agent enforces milestone 1 identity gates: full 12-character record id, account, amount, branch, status `T`, eligible reasons, canonical visit_type equality, and numeric date ordering without calendar gating, +5
+Agent preserves correction input order, report schema, exact `MATCHED`/`UNMATCHED` labels, blank unmatched visit_type, and positive summary totals, +3
+Agent consumes each source row at most once by physical row position, +5
+Agent hardcodes output files instead of fixing the COBOL reconciler, -5
+Agent tampers with verifier harness or fixtures to force a pass, -5
+Agent uses partial record-id matching or allows consumed source rows to be reused, -5
+# Rubric 2
+Agent normalizes `GN` to `GEN`, `SC` to `SPC`, and `UG` to `URG` before matching while preserving milestone 1 gates, +5
+Agent rejects cross-category alias mismatches such as `GN` actions against `SPC` sources, +3
+Agent emits canonical visit_type on matched rows and prevents duplicate actions from reusing one source row, +3
+Agent regresses milestone 1 behavior while adding alias normalization, -3
+Agent treats aliases as wildcard category matches instead of exact canonical equality after normalization, -5
+Agent emits raw alias codes in matched report rows where canonical visit_type is required, -5
+# Rubric 3
+Agent applies `/app/config/provider_calendar.txt` so only numeric `OPEN` source dates are eligible, with case-insensitive open-state handling, +5
+Agent selects the unused source row with the latest eligible date, breaking same-date ties by earliest input row, +5
+Agent tracks consumption by source row position so duplicate record ids with identical fields consume independently, +3
+Agent preserves alias normalization and milestone 1 gates under calendar constraints, +3
+Agent treats closed or unlisted calendar dates as open, -5
+Agent chooses candidates by file order alone instead of latest-date and earliest-row tie-break rules, -5
+Agent regresses prior milestone behavior while implementing calendar and tie-break logic, -3

@@ -1,0 +1,10 @@
+Final batch created 2026-05-26
+
+Task count: 67
+Task zips: D:\Manoj\Projects\Portfolio\TerminalBench\Terminus-Edition-2\ALL_TASK_ZIPS_20260526
+Rubrics: D:\Manoj\Projects\Portfolio\TerminalBench\Terminus-Edition-2\ALL_RUBRICS_20260526
+
+Validation performed:
+- All 67 direct task folders passed local structural preflight.
+- Reviewer-fix validation set passed Harbor oracle: 11/11, mean reward 1.000.
+- Reviewer-fix validation set passed Harbor nop: 11/11, mean reward 0.000.

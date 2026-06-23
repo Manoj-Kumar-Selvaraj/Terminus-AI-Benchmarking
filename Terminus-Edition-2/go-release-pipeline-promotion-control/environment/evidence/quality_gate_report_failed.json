@@ -1,0 +1,7 @@
+{
+  "status": "fail",
+  "commit_sha": "6a0f5d3c8b21",
+  "artifact_hash": "example",
+  "coverage": 62.4,
+  "report_id": "qg-4187"
+}

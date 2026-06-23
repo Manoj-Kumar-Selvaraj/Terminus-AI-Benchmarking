@@ -1,0 +1,8 @@
+{
+  "alerts": [
+    "High5xxRate",
+    "ScrapeMissing",
+    "PromotionBlocked"
+  ],
+  "status_format": "json"
+}

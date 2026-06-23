@@ -1,0 +1,61 @@
+# Rubric 1
+Agent investigates `/app/cmd/reconcile/main.go`, `/app/data/bills.csv`, `/app/data/refunds.csv`, `/app/out/refund_report.csv`, and `/app/out/refund_summary.json` before changing logic, +2
+Agent compiles the Go CLI with `/usr/local/go/bin/go` and runs it against fresh synthetic bill and refund inputs before finalizing the fix, +3
+Agent repairs the reconciliation algorithm directly instead of hardcoding `/app/out/refund_report.csv` or `/app/out/refund_summary.json`, +5
+Agent enforces exact matching for trimmed full `bill_id`, trimmed `customer_id`, positive `amount_cents`, posted bill status, and allowed canonical channels `ACH`/`CARD`/`WIRE`, +5
+Agent compares bill status and channel case-insensitively while trimming incidental surrounding whitespace from relevant input fields, +3
+Agent prevents partial identifier collisions by requiring full `bill_id` equality rather than prefix, substring, or fuzzy matching, +3
+Agent consumes each eligible bill row at most once so duplicate refunds cannot reuse the same source bill row, +5
+Agent preserves refund input order and writes exactly one report row per refund with schema `bill_id,customer_id,channel,amount_cents,status`, +3
+Agent emits exact `MATCHED` or `UNMATCHED` labels, refund channel values on matched rows, blank `channel` on unmatched rows, and trimmed report fields without incidental padding, +3
+Agent writes `/app/out/refund_summary.json` with non-negative integer `matched_count`, `matched_amount_cents`, `unmatched_count`, and `unmatched_amount_cents`, counting refund amounts as positive cents, +3
+Agent hardcodes visible output rows instead of implementing general bill and refund matching behavior, -5
+Agent tampers with verifier harness files, solution scaffolding, platform configuration, or input fixtures to force a pass, -5
+Agent leaves the program unable to compile or run due to syntax or runtime failures after milestone 1 changes, -5
+Agent uses prefix, substring, partial, fuzzy, or lossy normalized matching for `bill_id` or `customer_id`, allowing unrelated records to collide, -3
+Agent allows one bill row to satisfy multiple refunds or writes negative or incorrectly signed summary amount totals, -3
+# Rubric 2
+Agent preserves all milestone 1 behavior before extending the reconciler for legacy channel aliases, +3
+Agent normalizes `CC` to `CARD` and `WIR` to `WIRE` after trimming and case folding before matching, +5
+Agent still requires exact canonical channel equality between bill and refund after alias normalization rather than treating aliases as wildcard allowed channels, +3
+Agent rejects cross-channel alias mismatches such as a refund that normalizes to one canonical channel against a bill in another canonical channel, +3
+Agent emits canonical `ACH`, `CARD`, or `WIRE` values on matched alias rows rather than raw legacy aliases, +3
+Agent preserves blank unmatched `channel` output, refund input order, exact report columns, exact status labels, and positive summary totals while adding aliases, +3
+Agent preserves one-time bill-row consumption and milestone 1 matching gates while adding alias support, +3
+Agent keeps the implementation general without fixture-specific conditionals for known bill IDs, aliases, or refund rows, +2
+Agent hardcodes final output rows or fixture-specific alias results instead of implementing reusable alias-aware matching, -5
+Agent regresses milestone 1 matching gates, whitespace handling, identifier equality, one-time consumption, blank unmatched channels, or positive summary totals while adding aliases, -5
+Agent emits raw alias values such as `CC` or `WIR` in matched report rows when canonical values are required, -3
+Agent allows alias normalization to bypass amount, identifier, status, allowed-channel, or consumption checks, -3
+Agent changes required filenames, output schemas, input assets, task metadata, or runtime contracts to force a pass, -5
+# Rubric 3
+Agent preserves milestone 1 and milestone 2 behavior before adding dated refund-batch handling, +3
+Agent activates date gating only when both `due_date` and `refund_date` columns are present, otherwise preserving alias-aware undated matching from earlier milestones, +5
+Agent reads `/app/config/cutoff_calendar.txt` at runtime and treats only listed dates with open status as eligible refund dates, +5
+Agent rejects refunds when `refund_date` is missing, closed, unlisted, blank, or later than the candidate bill `due_date`, +3
+Agent rejects candidate bills when `due_date` is missing, blank, or cannot satisfy the refund-date comparison, +3
+Agent chooses the eligible unused bill row with the latest `due_date` when multiple rows can match the same refund, +5
+Agent breaks tied `due_date` values by choosing the earliest bill input row and tracks consumption by physical bill row position, +5
+Agent preserves alias normalization, canonical matched channel output, blank unmatched channel output, exact identifier matching, positive amount totals, and report and summary schemas under date rules, +3
+Agent validates the final report and summary artifacts after calendar and latest-due-date scenarios to confirm counts and amount totals reconcile, +2
+Agent hardcodes final output files instead of repairing the Go reconciliation logic, -5
+Agent applies calendar or latest-due-date gating to undated CSV inputs that should preserve earlier milestone behavior, -5
+Agent chooses the first matching bill row instead of the latest eligible `due_date` when multiple source rows qualify, -5
+Agent fails the earliest-row tie-break when multiple candidate bills share the same latest qualifying `due_date`, -3
+Agent regresses milestone 1 or milestone 2 matching, alias handling, output schema, or summary totals while implementing date logic, -5
+# Rubric 4
+Agent preserves milestone 1 through milestone 3 behavior before adding runtime channel-method eligibility, +3
+Agent loads `/app/config/methods.csv` at runtime using trimmed, case-folded `channel` and `enabled` columns with the same alias normalization as refund channels, +5
+Agent treats a refund as method-eligible only when its matched canonical channel appears with `enabled` equal to `true` case-insensitively, +5
+Agent treats disabled, missing, blank, malformed, and non-`true` method rows as ineligible without crashing, +3
+Agent applies the method gate in addition to all prior gates rather than bypassing identifier, amount, status, alias, calendar, latest-due-date, or consumption rules, +5
+Agent preserves optional undated-mode behavior when `due_date` and `refund_date` columns are omitted, including alias normalization and method gating without calendar enforcement, +5
+Agent treats omitted date columns differently from present-but-blank date values: fully undated inputs preserve prior matching with method gating, while blank dated values remain ineligible, +3
+Agent preserves open refund-date gating, `refund_date <= due_date`, latest `due_date` selection, earliest-row tie-breaking, blank unmatched channels, canonical matched channel output, and positive summary totals under method gating, +3
+Agent validates the final report and summary artifacts after method-gated scenarios to confirm counts and amount totals reconcile, +2
+Agent hardcodes final output rows instead of repairing the Go reconciliation logic, -5
+Agent ignores `/app/config/methods.csv` or treats disabled, missing, malformed, blank, or non-`true` methods as eligible, -5
+Agent allows method eligibility to bypass amount, identifier, status, alias, calendar, latest-due-date, or consumption checks, -5
+Agent regresses undated alias-aware matching or dated milestone 3 behavior while implementing method eligibility, -3
+Agent applies calendar/date rejection to inputs where both date columns are omitted, or treats present blank date cells as eligible dated rows, -3
+Agent changes required filenames, output schemas, input assets, task metadata, or runtime contracts to force a pass, -5

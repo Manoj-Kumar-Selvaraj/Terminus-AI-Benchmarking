@@ -1,0 +1,49 @@
+# Rubric 1
+
+Agent updates /app/app/reconcile.rb, /app/cmd/normalize/main.go, and /app/scripts/run_batch.sh within the single-container Ruby/Go/Bash task instead of replacing the entrypoint, +4
+Agent preserves all prior milestone matching gates, source-row consumption, report schema, status labels, blank unmatched kind, and positive summary totals while implementing milestone 1, +6
+Agent implements the milestone 1 behavior described in steps/milestone_1/instruction.md using input data and configuration files instead of hardcoded output rows, +8
+Agent validates deterministic action ordering and canonical kind output for matched rows before finalizing milestone 1, +4
+Agent hardcodes outputs, removes one of the required Ruby/Go/Bash components, creates a second container path, or tampers with verifier/material files for milestone 1, -5
+# Rubric 2
+
+Agent updates /app/app/reconcile.rb, /app/cmd/normalize/main.go, and /app/scripts/run_batch.sh within the single-container Ruby/Go/Bash task instead of replacing the entrypoint, +4
+Agent preserves all prior milestone matching gates, source-row consumption, report schema, status labels, blank unmatched kind, and positive summary totals while implementing milestone 2, +6
+Agent implements the milestone 2 behavior described in steps/milestone_2/instruction.md using input data and configuration files instead of hardcoded output rows, +8
+Agent validates deterministic action ordering and canonical kind output for matched rows before finalizing milestone 2, +4
+Agent hardcodes outputs, removes one of the required Ruby/Go/Bash components, creates a second container path, or tampers with verifier/material files for milestone 2, -5
+# Rubric 3
+
+Agent updates /app/app/reconcile.rb, /app/cmd/normalize/main.go, and /app/scripts/run_batch.sh within the single-container Ruby/Go/Bash task instead of replacing the entrypoint, +4
+Agent preserves all prior milestone matching gates, source-row consumption, report schema, status labels, blank unmatched kind, and positive summary totals while implementing milestone 3, +6
+Agent implements the milestone 3 behavior described in steps/milestone_3/instruction.md using input data and configuration files instead of hardcoded output rows, +8
+Agent validates deterministic action ordering and canonical kind output for matched rows before finalizing milestone 3, +4
+Agent hardcodes outputs, removes one of the required Ruby/Go/Bash components, creates a second container path, or tampers with verifier/material files for milestone 3, -5
+# Rubric 4
+
+Agent updates /app/app/reconcile.rb, /app/cmd/normalize/main.go, and /app/scripts/run_batch.sh within the single-container Ruby/Go/Bash task instead of replacing the entrypoint, +4
+Agent preserves all prior milestone matching gates, source-row consumption, report schema, status labels, blank unmatched kind, and positive summary totals while implementing milestone 4, +6
+Agent implements the milestone 4 behavior described in steps/milestone_4/instruction.md using input data and configuration files instead of hardcoded output rows, +8
+Agent validates deterministic action ordering and canonical kind output for matched rows before finalizing milestone 4, +4
+Agent hardcodes outputs, removes one of the required Ruby/Go/Bash components, creates a second container path, or tampers with verifier/material files for milestone 4, -5
+# Rubric 5
+
+Agent updates /app/app/reconcile.rb, /app/cmd/normalize/main.go, and /app/scripts/run_batch.sh within the single-container Ruby/Go/Bash task instead of replacing the entrypoint, +4
+Agent preserves all prior milestone matching gates, source-row consumption, report schema, status labels, blank unmatched kind, and positive summary totals while implementing milestone 5, +6
+Agent implements the milestone 5 behavior described in steps/milestone_5/instruction.md using input data and configuration files instead of hardcoded output rows, +8
+Agent validates deterministic action ordering and canonical kind output for matched rows before finalizing milestone 5, +4
+Agent hardcodes outputs, removes one of the required Ruby/Go/Bash components, creates a second container path, or tampers with verifier/material files for milestone 5, -5
+# Rubric 6
+
+Agent updates /app/app/reconcile.rb, /app/cmd/normalize/main.go, and /app/scripts/run_batch.sh within the single-container Ruby/Go/Bash task instead of replacing the entrypoint, +4
+Agent preserves all prior milestone matching gates, source-row consumption, report schema, status labels, blank unmatched kind, and positive summary totals while implementing milestone 6, +6
+Agent implements the milestone 6 behavior described in steps/milestone_6/instruction.md using input data and configuration files instead of hardcoded output rows, +8
+Agent validates deterministic action ordering and canonical kind output for matched rows before finalizing milestone 6, +4
+Agent hardcodes outputs, removes one of the required Ruby/Go/Bash components, creates a second container path, or tampers with verifier/material files for milestone 6, -5
+# Rubric 7
+
+Agent updates /app/app/reconcile.rb, /app/cmd/normalize/main.go, and /app/scripts/run_batch.sh within the single-container Ruby/Go/Bash task instead of replacing the entrypoint, +4
+Agent preserves all prior milestone matching gates, source-row consumption, report schema, status labels, blank unmatched kind, and positive summary totals while implementing milestone 7, +6
+Agent implements the milestone 7 behavior described in steps/milestone_7/instruction.md using input data and configuration files instead of hardcoded output rows, +8
+Agent validates deterministic action ordering and canonical kind output for matched rows before finalizing milestone 7, +4
+Agent hardcodes outputs, removes one of the required Ruby/Go/Bash components, creates a second container path, or tampers with verifier/material files for milestone 7, -5

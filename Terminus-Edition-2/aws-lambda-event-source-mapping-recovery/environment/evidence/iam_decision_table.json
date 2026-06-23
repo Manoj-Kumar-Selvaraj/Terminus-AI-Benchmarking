@@ -1,0 +1,40 @@
+{
+  "role": "payments-ledger-ingestor-role",
+  "expected_queue_arn": "arn:aws:sqs:us-east-1:111122223333:payments-ledger-v2",
+  "required": [
+    {
+      "action": "sqs:ReceiveMessage",
+      "resource": "arn:aws:sqs:us-east-1:111122223333:payments-ledger-v2",
+      "decision": "allowed"
+    },
+    {
+      "action": "sqs:DeleteMessage",
+      "resource": "arn:aws:sqs:us-east-1:111122223333:payments-ledger-v2",
+      "decision": "allowed"
+    },
+    {
+      "action": "sqs:ChangeMessageVisibility",
+      "resource": "arn:aws:sqs:us-east-1:111122223333:payments-ledger-v2",
+      "decision": "allowed"
+    },
+    {
+      "action": "sqs:GetQueueAttributes",
+      "resource": "arn:aws:sqs:us-east-1:111122223333:payments-ledger-v2",
+      "decision": "allowed"
+    }
+  ],
+  "not_acceptable": [
+    {
+      "action": "sqs:*",
+      "resource": "*"
+    },
+    {
+      "action": "*",
+      "resource": "arn:aws:sqs:us-east-1:111122223333:payments-ledger-v2"
+    },
+    {
+      "action": "sqs:ReceiveMessage",
+      "resource": "arn:aws:sqs:us-east-1:111122223333:payments-ledger-old"
+    }
+  ]
+}

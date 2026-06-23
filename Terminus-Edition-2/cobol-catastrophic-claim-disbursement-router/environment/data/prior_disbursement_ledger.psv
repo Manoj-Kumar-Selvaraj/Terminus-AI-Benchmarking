@@ -1,0 +1,2 @@
+instruction_id|claim_id|event_id|rail|amount_cents|status
+PAY-CLM900-EVT900|CLM900|EVT900|CHECK|10000|COMMITTED

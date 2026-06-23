@@ -1,0 +1,3 @@
+A scheduled replay from `bulk-importer` was followed by 429 responses for unrelated tenants that had sent no recent traffic. Review `/app/evidence/tenant_starvation.log`, `/app/evidence/tenant_identity_matrix.csv`, `/app/docs/fairness_contract.md`, `/app/docs/identity_normalization_contract.md`, and the implementation under `/app/internal/limiter`. Restore the documented isolation while retaining token consumption, refill, and denial behavior.
+
+Tenant identifiers are compared case-insensitively after surrounding whitespace is removed. Keep the exported constructor, `Allow` method, and `Decision` fields compatible. The verifier uses arbitrary tenant values and concurrent calls, so do not special-case the evidence names or disable enforcement.

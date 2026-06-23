@@ -1,0 +1,57 @@
+# Rubric 1
+Agent inspects `/app/cmd/reconcile/main.go`, `/app/data/trips.csv`, `/app/data/rebates.csv`, and the documented output files before editing, +2
+Agent treats `BUS`, `RAIL`, and `FERRY` as allowed rebate modes when matching and reporting, +3
+Agent compares full `trip_id` values and does not use prefix or substring matching, +3
+Agent accumulates `matched_amount_cents` as a positive sum rather than subtracting or emitting negative totals, +3
+Agent trims surrounding whitespace from input CSV fields before comparison and report output, +2
+Agent compares mode and trip status values case-insensitively without corrupting required report formatting, +2
+Agent consumes each trip at most once so duplicate rebates targeting the same trip cannot both match, with the earliest eligible rebate winning, +3
+Agent writes `/app/out/rebate_report.csv` with columns `trip_id,rider_id,mode,amount_cents,status` in rebate input order, uses the rebate mode on matched rows, and leaves `mode` blank on unmatched rows, +2
+Agent writes `/app/out/rebate_summary.json` with integer `matched_count`, `matched_amount_cents`, `unmatched_count`, and `unmatched_amount_cents` fields with correct positive cent totals, +2
+Agent compiles and runs the Go reconciler successfully so `/app/out/rebate_report.csv` and `/app/out/rebate_summary.json` are produced, +2
+Agent omits incidental surrounding whitespace from report output fields copied from input CSVs, +1
+Agent requires `rider_id`, `route_id`, `amount`, `TAPPED` trip status, and allowed mode to all match before marking a rebate matched, +3
+Agent rejects `POSTED`, `DRAFT`, and unknown modes such as `CHECK` even when other fields align, +3
+Agent matches `RAIL` rebates when trip and rebate mode align and the trip status is `TAPPED`, +3
+Agent hardcodes final output files instead of repairing the Go reconciliation logic, -5
+Agent tampers with test fixtures, solution scaffolding, platform configuration, or input files to force a pass, -5
+Agent leaves the program unable to compile or run due to syntax or runtime failures after milestone 1 changes, -5
+Agent still matches trip ids by prefix or substring instead of exact full-string comparison, -3
+Agent writes negative or incorrectly signed `matched_amount_cents` values in the summary JSON, -3
+# Rubric 2
+Agent maps legacy alias `BST` to canonical mode `BUS` before matching and report output, +3
+Agent maps legacy alias `LRT` to canonical mode `RAIL` before matching and report output, +3
+Agent maps legacy alias `FRY` to canonical mode `FERRY` before matching and report output, +3
+Agent applies alias normalization case-insensitively so values such as `bst`, `lrt`, and `fry` resolve correctly, +2
+Agent emits canonical `BUS`, `RAIL`, or `FERRY` values on matched report rows rather than raw aliases such as `BST`, `LRT`, or `FRY`, +3
+Agent leaves `mode` blank on unmatched report rows while preserving the milestone 1 report schema, +2
+Agent preserves milestone 1 matching rules including exact trip id, rider, route, amount, `TAPPED` status, allowed modes, single-use trips, trim, and case-insensitive comparisons, +2
+Agent keeps summary JSON integer counts and positive cent amounts correct after adding alias handling, +2
+Agent compiles and runs the Go reconciler successfully after alias changes so output files are produced, +2
+Agent aliases only recognized legacy values and does not remap unknown mode strings to canonical modes, +1
+Agent still compares full `trip_id` values and does not regress to prefix matching while adding aliases, +3
+Agent normalizes padded or mixed-case legacy alias strings such as ` bst ` and `Lrt` before matching, +1
+Agent hardcodes final output files instead of repairing the Go reconciliation logic, -5
+Agent tampers with test fixtures, solution scaffolding, platform configuration, or input files to force a pass, -5
+Agent leaves the program unable to compile or run due to syntax or runtime failures after milestone 2 changes, -5
+Agent omits canonical alias mapping or maps legacy aliases to the wrong modes, -3
+Agent regresses milestone 1 behavior while implementing alias handling, -3
+# Rubric 3
+Agent supports optional `trip_date` in `trips.csv` and `rebate_date` in `rebates.csv` without breaking files that omit those columns, +2
+Agent loads `/app/config/cutoff_calendar.txt` and treats only dates explicitly marked open as eligible rebate dates, +3
+Agent allows a rebate to match only when its `rebate_date` is listed as open in the cutoff calendar, +3
+Agent treats missing, blank, or closed `rebate_date` values as ineligible for matching, +2
+Agent treats trips with missing or blank `trip_date` as ineligible because the rebate-date comparison cannot be satisfied, +2
+Agent requires `rebate_date` to be on or before the matched trip `trip_date` together with all prior matching gates, +3
+Agent selects the eligible unused trip with the latest `trip_date` when multiple trips match the same rebate and breaks equal dates by earliest trip row order, +3
+Agent still applies milestone 2 alias normalization (`BST` to `BUS`, `LRT` to `RAIL`, `FRY` to `FERRY`) under dated matching, +2
+Agent still consumes each trip row at most once across all rebates under calendar-gated matching, tracking consumption by input row position, +3
+Agent preserves the report CSV and summary JSON schemas with correct matched and unmatched counts and positive cent amounts, +1
+Agent compiles and runs the Go reconciler successfully after date-handling changes so output files are produced, +2
+Agent rejects rebates whose `rebate_date` is after the open calendar window or otherwise outside eligible dated matching, +2
+Agent verifies latest `trip_date` selection with distinct trip rows so first-fit file order cannot pass, +2
+Agent hardcodes final output files instead of repairing the Go reconciliation logic, -5
+Agent tampers with test fixtures, solution scaffolding, platform configuration, or input files to force a pass, -5
+Agent leaves the program unable to compile or run due to syntax or runtime failures after milestone 3 changes, -5
+Agent inverts date eligibility by allowing `rebate_date` later than `trip_date` or treating closed or missing calendar dates as open, -3
+Agent regresses earlier milestone behavior while implementing calendar and date gates, -3

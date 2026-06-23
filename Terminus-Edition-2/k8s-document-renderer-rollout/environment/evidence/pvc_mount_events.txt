@@ -1,0 +1,2 @@
+k8s-document-renderer-rollout evidence artifact: pvc_mount_events.txt
+This file contains incident observations, including some stale and noisy notes.

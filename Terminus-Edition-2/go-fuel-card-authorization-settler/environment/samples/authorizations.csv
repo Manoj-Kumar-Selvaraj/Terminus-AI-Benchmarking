@@ -1,0 +1,2 @@
+auth_id,fleet_id,batch_id,kind,amount,source_ts,status,location
+SRC-SAMPLE-1,PARTY-1,SAMPLE,DIESEL,100,20260528121000,SETTLED,LOC-1

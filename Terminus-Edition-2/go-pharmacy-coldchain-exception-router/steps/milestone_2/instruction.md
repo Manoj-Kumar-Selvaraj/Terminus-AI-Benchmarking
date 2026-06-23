@@ -1,0 +1,3 @@
+Milestone 2 adds legacy package-type aliases from `/app/config/kind_aliases.csv`. After trimming and case folding, map `CMP` to `CHEM`, `CBC` to `HEME`, and `CUL` to `MICRO`. From this milestone on, the valid canonical package types are `CHEM`, `HEME`, and `MICRO`.
+
+Apply alias normalization before matching, then run the normalized value through the same gates as milestone 1. Matched report rows must emit only canonical package types. Unknown values stay unmatched even when source and correction share the same unknown token. Output schemas, status labels, blank unmatched package types, and positive summary totals stay unchanged.

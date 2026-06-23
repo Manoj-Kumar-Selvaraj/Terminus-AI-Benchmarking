@@ -1,0 +1,3 @@
+tour_id,guest_id,amount_cents,tour_type
+INVEDGE000001,CUST9001,100,REEF
+INVEDGE000002,CUST9002,200,SHARK

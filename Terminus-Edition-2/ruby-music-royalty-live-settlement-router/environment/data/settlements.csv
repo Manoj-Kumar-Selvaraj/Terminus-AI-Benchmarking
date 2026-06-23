@@ -1,0 +1,2 @@
+settlement_id,play_id,payee_id,trust_id,right_type,amount,settle_ts,reason,market
+SYNT-SAMPLE-1,SRC-SAMPLE-1,PARTY-1,SAMPLE,SLR,100,20260528121100,CLOSE,LOC-1

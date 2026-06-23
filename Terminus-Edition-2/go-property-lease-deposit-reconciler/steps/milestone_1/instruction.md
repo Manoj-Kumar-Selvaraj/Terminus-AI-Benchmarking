@@ -1,0 +1,5 @@
+The lease deposit reconciliation CLI under `/app/cmd/reconcile/main.go` must read `/app/data/leases.csv` and `/app/data/deposits.csv`, then write `/app/out/deposit_report.csv` and `/app/out/deposit_summary.json`.
+
+A deposit matches only when the full cleaned lease id, customer id, amount, posted lease status, and allowed channel all line up. Channels `ACH`, `CARD`, and `WIRE` are allowed. Each lease input row can be matched at most once; if duplicate deposits point at the same lease row, the earliest eligible deposit consumes it. Input fields can have incidental surrounding spaces, and channel and status comparisons should be case-insensitive.
+
+The report must keep one row per deposit in input order with columns `lease_id,customer_id,channel,amount_cents,status`; use `MATCHED` or `UNMATCHED` for status, use the deposit's channel when matched, and leave `channel` blank when no lease matched. Report fields should not carry incidental surrounding spaces from the input. The summary JSON must contain integer fields `matched_count`, `matched_amount_cents`, `unmatched_count`, and `unmatched_amount_cents`, with deposit amounts counted as positive cents.

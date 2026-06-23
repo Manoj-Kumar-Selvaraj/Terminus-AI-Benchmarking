@@ -1,0 +1,3 @@
+booking_id,attendee_id,amount_cents,tier
+INVEDGE000001,CUST9001,100,GA
+INVEDGE000002,CUST9002,200,VIP

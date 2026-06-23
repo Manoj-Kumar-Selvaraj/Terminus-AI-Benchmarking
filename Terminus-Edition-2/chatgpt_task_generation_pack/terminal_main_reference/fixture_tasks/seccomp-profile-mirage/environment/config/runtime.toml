@@ -1,0 +1,5 @@
+[runtime]
+scenario_root = "/app/data/scenarios"
+output_file = "/app/output/report.json"
+# Verifier harness: cargo path when pytest runs with a minimal PATH (not read by the analyzer).
+verifier_cargo_bin = "/usr/local/cargo/bin/cargo"

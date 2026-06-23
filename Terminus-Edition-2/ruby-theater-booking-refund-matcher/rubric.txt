@@ -1,0 +1,27 @@
+# Rubric 1
+Agent inspects `/app/lib/reconcile.rb` and the booking and refund input paths before editing, +2
+Agent repairs full `booking_id`, `patron_id`, amount, `TICKETED` status, and allowed `seat_zone` gates instead of prefix matching, +5
+Agent consumes each booking row at most once and preserves refund input order in the report, +3
+Agent writes `/app/out/refund_report.csv` and `/app/out/refund_summary.json` with the documented schema, `MATCHED` or `UNMATCHED` only, blank unmatched `seat_zone`, and positive summary cents, +3
+Agent hardcodes output files instead of fixing the Ruby reconciler logic, -5
+Agent tampers with platform files, task metadata, or runtime input fixtures to force a pass, -5
+Agent uses prefix booking-id matching or allows consumed booking rows to be reused, -5
+# Rubric 2
+Agent normalizes legacy seat-zone aliases on both booking and refund sides before matching, +5
+Agent rejects unknown aliases and emits canonical `seat_zone` on matched rows, +3
+Agent preserves milestone 1 gates, consumption, and output schema while adding alias support, +3
+Agent regresses milestone 1 behavior while implementing alias normalization, -3
+Agent matches aliases only on the refund side while ignoring booking-side alias values, -5
+# Rubric 3
+Agent applies `/app/config/cutoff_calendar.txt` so only open refund and show dates are eligible, with case-insensitive open-state handling, +5
+Agent selects the unused booking row with the latest eligible `show_date`, breaking same-date ties by earliest input row, +5
+Agent rejects closed `show_date` independently of open-date count rules, +3
+Agent preserves alias normalization and milestone 1 gates under calendar constraints, +3
+Agent treats closed or unlisted calendar dates as open, -5
+Agent chooses bookings by file order alone instead of latest `show_date` and earliest-row tie-break rules, -5
+# Rubric 4
+Agent reads `/app/config/methods.csv` with `fund,enabled` rows and maps `ORCH`, `MEZZ`, and `BALC` to `GENERAL`, `CAPITAL`, and `RELIEF`, +5
+Agent treats missing, malformed, or `enabled=false` methods rows as ineligible in both dated and undated modes, +5
+Agent preserves alias normalization, calendar gates, and prior matching rules under the methods gate, +3
+Agent hardcodes output files instead of fixing the Ruby reconciler logic, -5
+Agent regresses milestone 3 calendar or tie-break behavior while adding methods eligibility, -3

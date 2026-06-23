@@ -1,0 +1,3 @@
+pass_id|craft_id|channel|station_id|priority|handoff_open_ts|handoff_close_ts
+ORB-8841|ALPHA|TM|BLR-GS1|1|20260613173000|20260613173500
+ORB-8841|ALPHA|TM|SGP-GS2|2|20260613173430|20260613173959

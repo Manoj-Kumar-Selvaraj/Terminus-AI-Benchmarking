@@ -1,0 +1,3 @@
+class_id,member_id,amount_cents,status,class_type
+INVEDGE000001,CUST9001,100,ACTIVE,FLOW
+INVEDGE000002,CUST9002,200,ACTIVE,POWER

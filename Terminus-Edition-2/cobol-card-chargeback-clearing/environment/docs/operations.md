@@ -1,0 +1,1 @@
+Card chargeback clearing runs as a single COBOL batch job and writes CSV plus key-value summary outputs. The summary file uses `applied_count`, `applied_amount_cents`, `exception_count`, and `exception_amount_cents` key-value lines with positive cents.

@@ -1,0 +1,49 @@
+# Rubric 1
+Agent inspects `/app/lib/reconcile.rb`, `/app/data/pledges.csv`, `/app/data/adjustments.csv`, and the documented output files before editing, +2
+Agent fixes the Ruby reconciler logic instead of hardcoding `/app/out/adjustment_report.csv` or `/app/out/adjustment_summary.json`, +3
+Agent compares full `pledge_id` values and does not use prefix or substring matching, +3
+Agent enforces milestone 1 matching gates including pledge id, donor id, amount, `BOOKED` status, and allowed `GENERAL`/`CAPITAL`/`RELIEF` funds, +5
+Agent trims surrounding whitespace and compares pledge status and fund values case-insensitively without corrupting report values, +3
+Agent consumes each pledge row at most once so duplicate adjustment rows cannot reuse the same source row, +5
+Agent preserves adjustment input order, exact `MATCHED` and `UNMATCHED` labels, and the required report schema, +3
+Agent reports matched and unmatched summary counts and positive integer cent totals in the required JSON keys, +3
+Agent hardcodes final output files instead of repairing the reconciliation logic, -5
+Agent tampers with platform files or runtime input fixtures to force a pass, -5
+Agent uses partial pledge-id matching or allows consumed pledge rows to be reused, -5
+# Rubric 2
+Agent normalizes legacy fund aliases `GEN`, `CAP`, and `REL` to canonical `GENERAL`, `CAPITAL`, and `RELIEF` before matching and report output, +5
+Agent applies alias normalization case-insensitively and after trimming fields, +3
+Agent emits canonical fund values on matched alias rows rather than raw alias codes, +3
+Agent preserves milestone 1 matching, row consumption, ordering, status labels, blank unmatched funds, and positive totals after adding aliases, +5
+Agent hardcodes alias mappings instead of implementing reusable alias-aware matching in the Ruby source, -5
+Agent regresses milestone 1 behavior while implementing alias handling, -5
+Agent emits raw alias tokens on matched rows, -3
+# Rubric 3
+Agent supports optional `pledge_due` and `adjustment_date` columns without breaking undated CSV files that omit those columns, +3
+Agent reads `/app/config/cutoff_calendar.txt` and treats only adjustment dates explicitly marked open as eligible, +5
+Agent rejects missing, closed, or unlisted adjustment dates and missing pledge due dates before allowing a match, +3
+Agent enforces that `adjustment_date` is not later than `pledge_due` together with all prior matching gates, +5
+Agent selects the eligible pledge row with the latest `pledge_due` and breaks equal-date ties by earliest pledge input row, +5
+Agent preserves alias normalization, canonical report output, and row-position consumption under dated matching, +3
+Agent treats closed, missing, or unlisted calendar dates as open, -5
+Agent chooses pledges by file order alone instead of latest `pledge_due` and earliest-row tie-break rules, -5
+Agent regresses undated milestone-2 behavior while adding calendar gating, -3
+# Rubric 4
+Agent reads `/app/config/methods.csv` and treats only funds with `enabled=true` as match-eligible after alias normalization, +5
+Agent rejects missing, blank, disabled, malformed, short, or non-true methods rows without crashing the reconciler, +3
+Agent applies the methods gate in both dated and undated modes without bypassing calendar, alias, or core matching rules, +3
+Agent preserves exact full `pledge_id` matching and all prior schemas, consumption, and positive-total behavior while adding methods policy, +3
+Agent hardcodes methods eligibility instead of reading `/app/config/methods.csv` at runtime, -5
+Agent matches disabled funds or bypasses methods eligibility while implementing policy gating, -5
+Agent regresses earlier milestone behavior while implementing methods eligibility, -3
+# Rubric 5
+Agent reads `/app/config/donor_limits.csv` and requires a matching enabled donor-and-fund policy row before matching, +5
+Agent enforces `max_adjustment_cents` caps using trimmed donor ids, alias-normalized funds, and case-insensitive `enabled=true` parsing, +5
+Agent treats blank, malformed, short, non-integer, negative, disabled, or missing donor-limit rows as ineligible without crashing, +5
+Agent applies the last well-formed donor-limit row in file order as authoritative for the same donor and canonical fund, including disabled rows that override earlier enabled rows, +3
+Agent applies donor limits in both dated and undated modes after methods eligibility without bypassing prior gates, +3
+Agent preserves latest-`pledge_due` selection, row-position consumption, report schemas, and positive summary totals under donor-limit gating, +3
+Agent consumes pledge rows or permits matches when donor-limit policy is missing, malformed, or over cap, -5
+Agent ignores last-row-wins donor-limit semantics or uses first matching policy row instead, -5
+Agent skips disabled donor-limit rows during policy load so earlier enabled rows remain authoritative, -5
+Agent regresses earlier milestone behavior while implementing donor-limit policy, -3

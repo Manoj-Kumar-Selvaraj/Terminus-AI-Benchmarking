@@ -1,0 +1,2 @@
+release_id,hold_id,car_id,yard_id,cargo_class,amount,release_ts,reason,track
+ACT-SAMSEE-1,SRC-SAMSEE-1,PARTY-1,SAMSEE,IN,100,20260528121100,RELEASE,LOC-1

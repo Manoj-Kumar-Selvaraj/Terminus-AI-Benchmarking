@@ -1,0 +1,11 @@
+{
+  "required": [
+    "release_id",
+    "tag",
+    "digest",
+    "config_sha",
+    "routes",
+    "health",
+    "cert"
+  ]
+}

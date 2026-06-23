@@ -1,0 +1,15 @@
+Agent investigates and updates intended `ruby-bookstore-specialorder-credit-matcher` implementation paths (/app/lib/reconcile.rb, /app/data/orders.csv, /app/data/credits.csv) instead of unrelated files, +2
+Agent satisfies `ruby-bookstore-specialorder-credit-matcher` milestone 1 core requirement: Compare ids as full identifiers, trim incidental surrounding spaces, compare status and `section` case-insensitively, and consume each special order row at most once., +5
+Agent preserves milestone 1 rule for `ruby-bookstore-specialorder-credit-matcher`: It must read `/app/data/orders.csv` and `/app/data/credits.csv`, then write `/app/out/credit_report.csv` and `/app/out/credit_summary.json`., +3
+Agent handles milestone 1 edge/ordering behavior for `ruby-bookstore-specialorder-credit-matcher` validated by tests: Replace CSV inputs and optional calendar with a focused scenario., +3
+Agent satisfies `ruby-bookstore-specialorder-credit-matcher` milestone 2 core requirement: Alias matching is case-insensitive and trimmed., +5
+Agent preserves milestone 2 rule for `ruby-bookstore-specialorder-credit-matcher`: Matched report rows must emit the canonical `section` value, not the raw alias., +3
+Agent handles milestone 2 edge/ordering behavior for `ruby-bookstore-specialorder-credit-matcher` validated by tests: Replace CSV inputs and optional calendar with a focused scenario., +3
+Agent satisfies `ruby-bookstore-specialorder-credit-matcher` milestone 3 core requirement: If multiple unused special order rows match one credit, choose the row with the latest `receive_date`; if dates tie, choose the earliest special order input row., +5
+Agent preserves milestone 3 rule for `ruby-bookstore-specialorder-credit-matcher`: A credit can match only when all prior criteria still pass, `credit_date` is listed as `open` in `/app/config/cutoff_calendar.txt`, and `credit_date` is not later than the special order `receive_date`., +3
+Agent handles milestone 3 edge/ordering behavior for `ruby-bookstore-specialorder-credit-matcher` validated by tests: Replace CSV inputs and optional calendar with a focused scenario., +3
+Agent validates `ruby-bookstore-specialorder-credit-matcher` output artifacts against required schemas and deterministic ordering before finalizing, +3
+Agent hardcodes final output files for `ruby-bookstore-specialorder-credit-matcher` instead of fixing underlying implementation, -5
+Agent edits tests/oracle/metadata in `ruby-bookstore-specialorder-credit-matcher` to force a pass rather than solving the task, -5
+Agent regresses earlier milestones in `ruby-bookstore-specialorder-credit-matcher` while implementing later milestone changes, -3
+Agent repeats failing commands for `ruby-bookstore-specialorder-credit-matcher` without adjusting approach after clear errors, -2

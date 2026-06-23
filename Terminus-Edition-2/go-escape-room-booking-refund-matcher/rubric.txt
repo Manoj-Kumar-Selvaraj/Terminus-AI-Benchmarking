@@ -1,0 +1,45 @@
+# Rubric 1
+Agent reads `bookings.csv` and `refunds.csv` as header-addressed CSV files with reordered or extra columns while preserving required field names, +3
+Agent matches only on exact full booking id, team id, positive integer amount, completed booking status, supported canonical room tier, and one unused physical booking row, +5
+Agent trims fields, case-folds status and room tier values, preserves refund input order, and preserves refund amount text including leading zeros in the report, +5
+Agent writes `booking_refund_report.csv` and `booking_refund_summary.json` with the documented schemas, exact status labels, blank unmatched room tier, and integer JSON totals, +5
+Agent excludes only amount-invalid refunds from amount totals while counting valid positive amounts that fail any other match gate in `unmatched_amount_cents`, +3
+Agent hardcodes seed rows, output files, or expected summaries instead of reconciling runtime CSV inputs, -5
+Agent uses prefix or substring booking id matching, reuses a consumed booking row, or collapses duplicate physical booking rows, -5
+Agent changes output filenames, report headers, status strings, JSON keys, or amount sign conventions, -5
+# Rubric 2
+Agent preserves all milestone 1 matching, parsing, consumption, ordering, output, and amount-total behavior while adding runtime room-tier aliases, +5
+Agent reads `room_aliases.csv` by header name with reordered or extra columns and normalizes alias, canonical, and enabled fields by trimming and case folding, +5
+Agent ignores blank alias, blank canonical, malformed, disabled, duplicate-late, unsupported-target, and non-enabled alias rows while using the first well-formed enabled alias row, +5
+Agent applies alias normalization to both booking and refund room-tier fields and emits canonical matched tiers, +5
+Agent keeps canonical `EASY`, `HARD`, and `VIP` valid without alias rows and keeps `ANY` unmatched in this milestone, +3
+Agent implements a hardcoded alias map or ignores the runtime alias file headers, -5
+Agent lets malformed, blank, disabled, or unsupported alias rows create matches, -5
+Agent regresses full identity matching, row consumption, amount parsing, output schemas, or blank unmatched room tiers while adding aliases, -5
+# Rubric 3
+Agent preserves milestone 1 and 2 behavior while supporting optional dated booking and refund columns, +5
+Agent keeps legacy files without date columns reconciling without consulting the cutoff calendar, +3
+Agent treats date eligibility as active when either side has date columns and rejects rows missing counterpart dates or strict valid `YYYY-MM-DD` values, +5
+Agent reads `cutoff_calendar.txt` and accepts only refund dates explicitly marked open while ignoring blank, comment, malformed, closed, unlisted, and invalid calendar rows, +5
+Agent requires refund date to be on or before booking slot date and selects latest eligible slot date with earliest unused input row as tie-breaker, +5
+Agent treats closed, missing, malformed, or unlisted calendar dates as open, -5
+Agent chooses the wrong dated booking candidate or consumes rows by content key instead of physical row, -5
+Agent regresses alias normalization, exact matching gates, output contracts, or amount totals while adding dates, -5
+# Rubric 4
+Agent preserves all prior behavior while adding refund-reason eligibility, room-tier policy, and `ANY` refund support, +5
+Agent reads `refund_reasons.csv` by header name and uses the last well-formed duplicate reason row to decide case-insensitive eligibility, +5
+Agent reads `room_tiers.csv` by header name, supports canonical tiers only, honors case-insensitive enabled values, and ranks missing or malformed priority after numeric priorities, +5
+Agent makes `ANY` match any enabled canonical booking tier only after all identity, amount, status, alias, date, calendar, reason, and consumption gates pass, +5
+Agent ranks `ANY` candidates by latest slot date when dated, then lower tier priority, then earliest unused booking row, and never emits `ANY` in matched output, +5
+Agent allows blank, missing, ineligible, or unknown refund reasons to match when the reason column is present, -5
+Agent treats disabled tiers as eligible or lets unsupported tiers participate in exact or `ANY` matching, -5
+Agent regresses earlier alias, date, output, amount, or consumption behavior while adding reason and tier policy, -5
+# Rubric 5
+Agent preserves all milestone 1-4 behavior while adding team-level refund policy enforcement from runtime `team_limits.csv`, +5
+Agent reads team policies by header name with extra columns and accepts only well-formed rows with nonblank team id, canonical tier, positive max amount, and boolean enabled and allow_any fields, +5
+Agent ignores malformed, incomplete, nonboolean, nonnumeric, zero, negative, unsupported-tier, `ANY`, blank, or comment-like policy rows and disables the policy gate when no well-formed rows exist, +5
+Agent uses the last well-formed duplicate `team_id` plus canonical tier policy as authoritative, +3
+Agent enforces exact team and selected tier policy keys, enabled status, max refund amount, and `allow_any` for `ANY` refunds without consuming policy-blocked candidates, +5
+Agent lets missing, disabled, over-limit, wrong-tier, malformed, or `allow_any=false` policies approve refunds, -5
+Agent consumes booking rows for candidates that are later blocked by team policy, -5
+Agent bypasses reason, calendar, alias, exact identity, amount, status, or row-consumption gates while enforcing team policy, -5

@@ -1,0 +1,3 @@
+craft_id|channel|vcid|min_seq|max_seq|wrap_enabled
+ALPHA|TM|VC0|000000|999999|Y
+BETA|TM|VC1|000001|999999|N

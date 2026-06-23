@@ -1,0 +1,9 @@
+steps/
+solution/
+tests/
+rubric.txt
+.git/
+.pytest_cache/
+__pycache__/
+*.pyc
+*.zip

@@ -1,0 +1,15 @@
+Agent investigates and updates intended `pli-hospital-bed-transfer-event-reconciler` implementation paths (/app/src/reconcile.pli, /app/src/reconcile_rules.pli, /app/data/transfers.psv) instead of unrelated files, +2
+Agent satisfies `pli-hospital-bed-transfer-event-reconciler` milestone 1 core requirement: Milestone 1 matches only when full `bed_id`, `patient_id`, `ward_id`, `nurse_unit`, and `charge_cents` agree, the source status equals `ELIGIBLE_STATUS` from `/app/src/reconcile_rules.pli`, and the action re..., +5
+Agent preserves milestone 1 rule for `pli-hospital-bed-transfer-event-reconciler`: Preserve action order, write `/app/out/transfer_report.csv` with the documented schema, blank kind for unmatched rows, and positive cent totals in `/app/out/transfer_summary.txt`., +3
+Agent handles milestone 1 edge/ordering behavior for `pli-hospital-bed-transfer-event-reconciler` validated by tests: Milestone 1 enforces full keys, PL/I status/reasons, consumption, and positive totals., +3
+Agent satisfies `pli-hospital-bed-transfer-event-reconciler` milestone 2 core requirement: Normalize aliases case-insensitively before matching and emit only canonical `bed_type` values for matched rows., +5
+Agent preserves milestone 2 rule for `pli-hospital-bed-transfer-event-reconciler`: Milestone 2 keeps every milestone 1 rule and adds aliases declared as `ALIAS_*` PL/I values in `raw=>canonical` form., +3
+Agent handles milestone 2 edge/ordering behavior for `pli-hospital-bed-transfer-event-reconciler` validated by tests: Milestone 1 enforces full keys, PL/I status/reasons, consumption, and positive totals., +3
+Agent satisfies `pli-hospital-bed-transfer-event-reconciler` milestone 3 core requirement: Timestamps must be numeric UTC strings, the source timestamp must be inside an explicit open window using `OPEN_WINDOW_STATUS`, the action timestamp must be on or after the source timestamp and not after clo..., +5
+Agent preserves milestone 3 rule for `pli-hospital-bed-transfer-event-reconciler`: Milestone 3 keeps every prior rule and adds `/app/config/windows.psv`., +3
+Agent handles milestone 3 edge/ordering behavior for `pli-hospital-bed-transfer-event-reconciler` validated by tests: Milestone 1 enforces full keys, PL/I status/reasons, consumption, and positive totals., +3
+Agent validates `pli-hospital-bed-transfer-event-reconciler` output artifacts against required schemas and deterministic ordering before finalizing, +3
+Agent hardcodes final output files for `pli-hospital-bed-transfer-event-reconciler` instead of fixing underlying implementation, -5
+Agent tampers with verifier harness files, solution scaffolding, platform configuration, or input fixtures in `pli-hospital-bed-transfer-event-reconciler` to force a pass, -5
+Agent regresses earlier milestones in `pli-hospital-bed-transfer-event-reconciler` while implementing later milestone changes, -3
+Agent repeats failing commands for `pli-hospital-bed-transfer-event-reconciler` without adjusting approach after clear errors, -2

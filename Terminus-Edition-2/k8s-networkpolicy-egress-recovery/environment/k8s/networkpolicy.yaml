@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: payment-adapter-egress
+  namespace: payments
+spec:
+  podSelector:
+    matchLabels:
+      app: payment-adapter
+  policyTypes: [Egress]
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53

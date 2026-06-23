@@ -1,0 +1,12 @@
+--- deploy-before.txt
++++ deploy-after.txt
+@@ queue
+- active queue: payments-ledger-old
++ active queue: payments-ledger-v2
+@@ warning
++ legacy queue drain probe reported empty shard marker old-queue-drain-017
++ cloudwatch dashboard still labels the live alias as payments-ledger-old-consumer
+@@ lambda
+  function target: payments-ledger-ingestor:live
+  partial batch response: ReportBatchItemFailures
+  batch size: 3

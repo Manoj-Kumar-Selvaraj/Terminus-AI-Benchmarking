@@ -1,0 +1,2 @@
+hold_id,bag_tag_id,gate_id,check_type,amount,hold_ts,status,carousel
+SRC-SAMSEE-1,PARTY-1,SAMSEE,MEDICAL,100,20260528121000,ACTIVE,LOC-1

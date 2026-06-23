@@ -1,0 +1,5 @@
+tier,enabled
+STARTER,true
+BUSINESS,true
+ENTERPRISE,true
+TRIAL,false

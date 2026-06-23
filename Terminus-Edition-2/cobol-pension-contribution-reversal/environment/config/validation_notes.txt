@@ -1,0 +1,1 @@
+Verifier scenarios rewrite contributions.dat, reversals.dat, and posting_calendar.txt.

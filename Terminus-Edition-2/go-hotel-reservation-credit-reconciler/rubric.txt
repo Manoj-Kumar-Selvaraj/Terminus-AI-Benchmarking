@@ -1,0 +1,51 @@
+# Rubric 1
+
+Agent investigates and updates intended `go-hotel-reservation-credit-reconciler` implementation paths (/app/cmd/reconcile/main.go, /app/data/reservations.csv, /app/data/credits.csv) instead of unrelated files, +2
+Agent fixes the Go reconciler logic instead of hardcoding `/app/out/credit_report.csv` or `/app/out/credit_summary.json`, +3
+Agent compares full `reservation_id` values and does not use prefix or substring matching, +3
+Agent enforces milestone 1 matching gates including reservation id, customer id, amount, posted status, and allowed channel (ACH, CARD, WIRE), +5
+Agent trims surrounding whitespace and compares status and channel values case-insensitively without corrupting report values, +3
+Agent consumes each reservation row at most once so duplicate credit rows cannot reuse the same source row, +5
+Agent preserves credit input order, exact `MATCHED` and `UNMATCHED` labels, and the required report schema, +3
+Agent reports matched and unmatched summary counts and positive integer cent totals in the required JSON keys, +3
+Agent compiles and runs the Go reconciler successfully so output files are produced, +2
+Agent hardcodes final output files instead of repairing the reconciliation logic, -5
+Agent edits or deletes verifier, oracle, metadata, or input fixture files to force a pass, -5
+Agent leaves the program unable to compile or run after milestone 1 changes, -5
+
+# Rubric 2
+
+Agent maps legacy alias `CC` to canonical channel `CARD` before matching and report output, +3
+Agent maps legacy alias `WIR` to canonical channel `WIRE` before matching and report output, +3
+Agent applies alias normalization case-insensitively so values such as `cc` and `wir` resolve correctly, +3
+Agent emits canonical `ACH`, `CARD`, or `WIRE` values on matched report rows rather than raw aliases, +3
+Agent leaves `channel` blank on unmatched report rows while preserving the milestone 1 report schema, +2
+Agent preserves milestone 1 matching rules after adding alias handling, +3
+Agent compiles and runs the Go reconciler successfully after alias changes, +2
+Agent hardcodes final output files instead of repairing the reconciliation logic, -5
+Agent omits canonical alias mapping or maps legacy aliases to the wrong channels, -3
+Agent regresses milestone 1 behavior while implementing alias handling, -3
+
+# Rubric 3
+
+Agent supports optional `due_date` in reservations and `credit_date` in credits without breaking files that omit those columns, +3
+Agent reads `/app/config/cutoff_calendar.txt` and treats only dates explicitly marked open as eligible, +5
+Agent rejects missing, malformed, closed, or unlisted credit dates before allowing a match, +3
+Agent enforces that `credit_date` is not later than `due_date` together with all prior matching gates, +5
+Agent selects the eligible reservation by the latest `due_date` rule and breaks equal-date ties by earliest reservation row, +5
+Agent verifies latest-date selection so first-fit order cannot hide the bug, +3
+Agent preserves alias normalization and canonical report output under dated matching, +3
+Agent compiles and runs the Go reconciler successfully after dated changes, +2
+Agent treats closed, missing, or unlisted calendar dates as open, -5
+Agent regresses earlier milestone behavior while implementing dated matching, -3
+
+# Rubric 4
+
+Agent reads `/app/config/methods.csv` and treats only enabled canonical channels as matchable, +5
+Agent implements `ANY` credit channel matching by selecting latest due date, then lower configured channel priority, then earliest reservation input row, +5
+Agent emits the selected canonical channel for matched `ANY` credits and never emits raw `ANY` in the report, +3
+Agent preserves exact canonical channel matching for non-`ANY` credits while adding config-driven policy, +3
+Agent preserves prior schema, status, alias, date, consumption, and positive-total behavior while adding milestone 4 policy support, +5
+Agent compiles and runs the Go reconciler successfully after policy changes, +2
+Agent emits raw aliases or raw `ANY` values in matched report rows, -5
+Agent regresses earlier milestone behavior while implementing policy, -3

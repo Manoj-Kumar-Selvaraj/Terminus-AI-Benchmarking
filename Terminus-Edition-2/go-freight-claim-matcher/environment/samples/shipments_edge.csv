@@ -1,0 +1,3 @@
+shipment_id,admgount_id,amount_cents,status,reason
+INVEDGE000001,CUST9001,100,POSTED,DAMAGED
+INVEDGE000002,CUST9002,200,POSTED,LOST

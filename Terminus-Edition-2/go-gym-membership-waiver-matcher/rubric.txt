@@ -1,0 +1,45 @@
+# Rubric 1
+Agent builds and runs the Go reconciliation workflow for the gym membership waiver matcher from the documented `/app` location, +2
+Agent reads `/app/data/memberships.csv` and `/app/data/waivers.csv` and writes `/app/out/waiver_report.csv` and `/app/out/waiver_summary.json`, +2
+Agent compares membership identifiers using full string equality rather than prefixes or substrings, +3
+Agent enforces milestone 1 matching gates including membership ID, member ID, amount, `ACTIVE` status, and matching allowed plans on both sides, +5
+Agent trims surrounding whitespace and handles documented case-insensitive plan and status fields correctly, +3
+Agent consumes each membership row at most once so duplicate waiver rows cannot reuse the same row, +5
+Agent preserves waiver input order, exact output schemas, and exact `MATCHED` and `UNMATCHED` status values, +3
+Agent reports matched and unmatched amount totals as positive integer cents, +3
+Agent hardcodes output files or changes task behavior outside the reconciler instead of fixing the Go source, -5
+Agent uses partial identifier matching or allows consumed membership rows to be reused, -5
+Agent accepts non-`ACTIVE` statuses, unknown plans, or negative matched summary totals in milestone 1, -5
+# Rubric 2
+Agent implements every documented legacy plan alias and canonicalizes aliases before matching, +5
+Agent applies alias normalization case-insensitively and after trimming fields, +3
+Agent routes aliased values through all milestone 1 matching gates instead of bypassing validation, +5
+Agent emits canonical matched plan values while keeping unmatched plan fields blank, +3
+Agent preserves milestone 1 row consumption, report ordering, schemas, status names, and positive totals after alias support, +5
+Agent maps unsupported alias-like values to ineligible plans without changing output schemas, +2
+Agent ignores a documented alias, emits raw aliases, or bypasses core matching gates for aliases, -5
+Agent regresses milestone 1 behavior while implementing alias support, -5
+Agent special-cases known alias output rows without routing aliases through shared normalization and matching logic, -3
+# Rubric 3
+Agent supports the dated milestone input columns while preserving prior parsing where specified, +3
+Agent reads `/app/config/cutoff_calendar.txt` and treats only listed open waiver dates as eligible, +5
+Agent enforces missing, closed, unlisted, or blank waiver and renewal dates as ineligible match candidates, +3
+Agent enforces the waiver-date not-later-than renewal-date rule before allowing a match, +5
+Agent selects the correct candidate by latest `renewal_date` when multiple unused rows qualify, +5
+Agent breaks equal-date ties by earliest membership input row and tracks consumption by row position, +3
+Agent keeps milestone 2 aliases working under dated matching, including direct `BAS` to `BASIC` coverage, +3
+Agent preserves prior report and summary schemas, exact status strings, blank unmatched plan fields, and positive totals, +3
+Agent ignores calendar/date eligibility or treats missing and closed dates as open, -5
+Agent chooses candidates by file order alone or by identifier key instead of the documented row/date rules, -5
+Agent regresses earlier milestone behavior while implementing dated matching, -5
+# Rubric 4
+Agent inspects `/app/config/methods.csv` and the milestone 4 `waiver_method` input contract before adding policy gating, +2
+Agent parses method policy rows as CSV with `method,enabled` columns and compares methods after trimming and case folding, +3
+Agent enables a waiver method only when the config row's enabled value is `true` after trimming and case folding, +5
+Agent applies method gating only when the waiver input header includes `waiver_method`, preserving milestone 3 behavior when that column is absent, +3
+Agent composes method eligibility with all prior identity, amount, status, plan alias, calendar, date ordering, candidate selection, and consumption rules, +5
+Agent preserves the existing report schema without adding a method column, emits canonical matched plans, and keeps unmatched plans blank, +3
+Agent reads `/app/config/methods.csv` and applies enabled-method policy during reconciliation, +3
+Agent treats disabled, missing, blank, malformed, or non-true method policy rows as eligible, -5
+Agent lets an enabled method bypass prior identity, amount, status, plan, date, or consumption gates, -5
+Agent changes the output schema or emits method values in the report while implementing milestone 4, -3

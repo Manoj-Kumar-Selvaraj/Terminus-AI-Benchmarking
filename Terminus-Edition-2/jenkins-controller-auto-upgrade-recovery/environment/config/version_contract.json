@@ -1,0 +1,47 @@
+{
+  "essential_plugins": [
+    "workflow-job",
+    "credentials-binding",
+    "matrix-auth",
+    "git"
+  ],
+  "required_agent_java": 17,
+  "target_plugin_baseline": {
+    "credentials-binding": {
+      "min_core": "2.462.3",
+      "min_java": 17,
+      "min_version": "687.v619cb_15e923f"
+    },
+    "git": {
+      "min_core": "2.462.3",
+      "min_java": 17,
+      "min_version": "5.2.2"
+    },
+    "matrix-auth": {
+      "min_core": "2.462.3",
+      "min_java": 17,
+      "min_version": "3.2.2"
+    },
+    "workflow-job": {
+      "min_core": "2.462.3",
+      "min_java": 17,
+      "min_version": "1400.v7fd111b_ec82f"
+    }
+  },
+  "versions": {
+    "2.426.3": {
+      "required_java": 11,
+      "supported_java": [
+        11,
+        17
+      ]
+    },
+    "2.462.3": {
+      "required_java": 17,
+      "supported_java": [
+        17,
+        21
+      ]
+    }
+  }
+}

@@ -1,0 +1,40 @@
+# Rubric 1
+Agent inspects `/app/src/meter_adjust_reconcile.cbl`, `/app/docs/record_layouts.md`, `/app/data/readings.dat`, and `/app/data/meter_adjustments.dat` before editing, +2
+Agent keeps rewritten COBOL valid for free-format compilation with `cobc -x -free`, +3
+Agent fixes the COBOL reconciler logic instead of hardcoding `/app/out/meter_adjustment_report.csv` or `/app/out/meter_adjustment_summary.txt`, +3
+Agent enforces milestone 1 matching gates including full record id, account, amount, branch, source status `R`, eligible reasons `M03`/`M09`/`M12`, and allowed canonical rate_code values `RES`/`COM`/`IND`, +5
+Agent requires the action date to be on or after the matched source date, +3
+Agent trims fixed-width padding from `record_id` and `account` before writing CSV output, +3
+Agent preserves action input order, zero-padded `amount_cents`, exact report columns, and exact `MATCHED` and `UNMATCHED` labels, +3
+Agent leaves `rate_code` blank on every `UNMATCHED` row and emits canonical source `rate_code` on `MATCHED` rows, +3
+Agent writes positive integer `key=value` summary lines for matched and unmatched counts and amounts, +3
+Agent consumes each source row at most once so duplicate actions cannot reuse the same source row, +5
+Agent hardcodes final CSV or summary output instead of repairing the COBOL program, -5
+Agent tampers with platform files, task metadata, or runtime input fixtures to force a pass, -5
+Agent writes action rate_code values or fixed-width spaces into unmatched report rows instead of an empty CSV field, -3
+Agent emits fixed-width padding in CSV `record_id` or `account` fields, -3
+# Rubric 2
+Agent inspects legacy rate_code alias rules before changing normalization logic, +2
+Agent normalizes legacy action aliases `RS`/`CM`/`IN` to canonical `RES`/`COM`/`IND` before matching and report output, +5
+Agent emits canonical source `rate_code` on matched alias rows rather than raw alias codes, +3
+Agent keeps unmatched `rate_code` fields blank while preserving trimmed CSV identifiers and summary schemas, +3
+Agent preserves milestone 1 matching gates, row consumption, action ordering, status labels, and positive totals after adding alias normalization, +5
+Agent lets the earliest eligible action win when duplicate action rows target the same source row, +3
+Agent applies alias normalization without bypassing identity, reason, branch, date, or one-use source consumption gates, +3
+Agent regresses milestone 1 behavior while implementing alias normalization, -3
+Agent hardcodes final CSV or summary output instead of repairing the COBOL program, -5
+Agent tampers with platform files, task metadata, or runtime input fixtures to force a pass, -5
+# Rubric 3
+Agent inspects `/app/config/meter_calendar.txt` and source/action date fields before changing calendar logic, +2
+Agent patches the existing milestone 2 COBOL program instead of rewriting the full source file wholesale, +3
+Agent applies calendar eligibility from `/app/config/meter_calendar.txt` while preserving prior matching gates, +5
+Agent treats calendar state `OPEN` case-insensitively and rejects closed, missing, unlisted, or malformed source dates, +3
+Agent chooses the eligible unused source row with the latest open source date when multiple rows qualify, +5
+Agent breaks tied source dates by selecting the earliest source input row, +3
+Agent tracks consumption by source row position rather than by record id alone, +3
+Agent leaves later duplicate actions unmatched after the selected source row is consumed, +3
+Agent preserves alias normalization, trimmed CSV identifiers, blank unmatched `rate_code`, and reason output under calendar gates, +3
+Agent treats closed, missing, malformed, or unlisted calendar dates as open, -5
+Agent regresses milestone 1 or 2 behavior while implementing calendar or latest-date logic, -3
+Agent chooses candidates by file order alone instead of latest source date then earliest source row, -5
+Agent rewrites the entire COBOL file via heredoc for milestone 3 instead of incremental edits, -5

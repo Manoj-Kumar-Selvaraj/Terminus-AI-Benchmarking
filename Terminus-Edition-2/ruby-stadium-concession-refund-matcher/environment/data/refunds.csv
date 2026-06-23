@@ -1,0 +1,2 @@
+refund_id,folio_id,fan_id,property_id,item_type,amount,refund_ts,reason,stand
+ACT-SAMPLE-1,SRC-SAMPLE-1,PARTY-1,SAMPLE,FD,100,20260528121100,SPOIL,LOC-1

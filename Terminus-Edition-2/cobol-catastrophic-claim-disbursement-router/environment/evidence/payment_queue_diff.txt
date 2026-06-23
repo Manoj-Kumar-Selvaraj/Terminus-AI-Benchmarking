@@ -1,0 +1,2 @@
+expected: sanctioned facilities -> manual review; high-value unverified EFT -> bank_verify_messages.psv
+observed: sanctioned facilities went to check_queue.psv; high-value EFT went directly to eft_queue.psv

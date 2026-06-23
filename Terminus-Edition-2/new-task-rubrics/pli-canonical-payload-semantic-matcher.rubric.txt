@@ -1,0 +1,18 @@
+# Rubric 1
+Agent reads batch contract and semantic compare docs before changing PL/I decks, +2
+Agent sets KEY_COMPARE FULL and CONSUME ON in semantic_batch.pli for strict payload matching, +5
+Agent honors ELIGIBLE_STATE and mode_code gates from semantic_rules.pli, +3
+Agent preserves check order and blanks segment_id on DIFFER rows in semantic_report.csv, +3
+Agent writes equal/differ payload_hash totals in semantic_summary.txt, +2
+Agent patches pli_semantic.awk instead of fixing .pli control decks, -5
+Agent matches fields on prefix field_id match only or without consumption, -5
+# Rubric 2
+Agent keeps milestone 1 matching while enabling ALIAS_MODE for tolerance keys, +3
+Agent normalizes S/N/B type aliases case-insensitively from semantic_rules.pli, +5
+Agent emits canonical segment_id on EQUAL rows only, +3
+Agent hard-codes segment labels or disables alias deck, -5
+# Rubric 3
+Agent keeps milestones 1–2 while enabling WINDOW_MODE, +3
+Agent enforces compare_windows.psv per schema_id with OPEN_COMPARE_STATE bounds, +5
+Agent tie-breaks on latest recv_ts then earliest expected row, +3
+Agent accepts semantic checks outside compare window timestamps, -5

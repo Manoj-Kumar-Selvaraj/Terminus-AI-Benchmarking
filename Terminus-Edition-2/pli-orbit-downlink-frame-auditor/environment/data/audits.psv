@@ -1,0 +1,2 @@
+audit_id|frame_id|craft_id|channel|payload_hash|audit_ts|verdict_code|service_class
+AUD-1|FRM-10001|ALPHA|D1|8f2a11|20260612120500|PASS|TM

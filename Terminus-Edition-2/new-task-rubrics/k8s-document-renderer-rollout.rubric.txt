@@ -1,0 +1,28 @@
+# Rubric 1
+Agent inspects rollout contract, manifest fields, cache references, and simulator inputs before changing behavior, +2
+Agent validates renderer image, cache PVC reference, schema version, and disabled-rollout flags before allowing a rollout, +5
+Agent rejects stale references and malformed rollout schemas with explicit reasons, +4
+Agent writes the documented rollout report without fixture-specific case maps, +3
+Agent hardcodes case IDs or flips a milestone level constant, -5
+Agent ignores manifest/cache contract and returns blanket allow decisions, -5
+# Rubric 2
+Agent enforces owner, tenant, service account, and wildcard authorization rules before routing work, +5
+Agent preserves milestone 1 rollout validation behavior, +3
+Agent checks readiness and ownership mismatches without broadening authorization, +4
+Agent validates unauthorized wildcard and owner-drift cases, +3
+Agent allows wildcard routing or owner mismatch to pass, -5
+Agent deletes readiness checks to make the simulator succeed, -5
+# Rubric 3
+Agent implements queue lease, stale ownership, retry, and poison-message handling with auditable ledger state, +5
+Agent separates retryable poison cases from dead-letter cases using documented counters, +4
+Agent preserves validation and authorization behavior from prior milestones, +3
+Agent validates ledger updates and retry suppression, +3
+Agent commits stale or non-owner leases, -5
+Agent hardcodes fixture IDs or writes static report JSON, -5
+# Rubric 4
+Agent enforces rollout failover, sequence gap, bad sequence, and conflict handling with stable reasons, +5
+Agent preserves queue ledger and all earlier validation behavior, +3
+Agent records summary counts and blocked decisions consistently, +4
+Agent validates gap, conflict, and failover cases independently, +3
+Agent accepts out-of-order rollout sequences or conflicting owners, -5
+Agent changes tests or input JSON instead of repairing simulator logic, -5

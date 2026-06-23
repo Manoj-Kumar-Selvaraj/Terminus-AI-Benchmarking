@@ -1,0 +1,3 @@
+ticket_id,rider_id,amount_cents,fare_type
+INVEDGE000001,CUST9001,100,ECON
+INVEDGE000002,CUST9002,200,BIKE

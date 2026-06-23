@@ -1,0 +1,21 @@
+# Rubric 1
+Agent investigates and updates `/app/app/reconcile.rb` with `/app/data/chargebacks.csv`, `/app/data/folios.csv`, and `/app/config/windows.csv`, +2
+Agent fixes the Ruby reconciler logic instead of hardcoding `/app/out/chargeback_report.csv` or `/app/out/chargeback_summary.txt`, +3
+Agent enforces milestone 1 matching gates including full identity fields, `POSTED` source status, eligible reasons, canonical `CARD`/`CASH`/`POINTS` kinds, numeric timestamps, and single-use source consumption, +5
+Agent writes the exact report schema and positive integer summary totals with `MATCHED`/`UNMATCHED` labels and blank unmatched kind fields, +3
+Agent hardcodes final output files instead of repairing the reconciliation logic, -5
+Agent tampers with verifier harness files, solution scaffolding, platform configuration, or input fixtures to force a pass, -5
+Agent treats unknown kind values, nonnumeric timestamps, or consumed source rows as match-eligible, -5
+# Rubric 2
+Agent normalizes legacy kind aliases `CC`, `CSH`, and `PTS` after trimming and case folding before applying all milestone 1 gates, +5
+Agent emits canonical `CARD`, `CASH`, or `POINTS` for matched alias rows and rejects unknown normalized kinds even when both sides share the same token, +5
+Agent preserves milestone 1 window, timestamp, consumption, location, and output rules after adding aliases, +3
+Agent regresses milestone 1 behavior while implementing alias normalization, -3
+Agent bypasses core matching gates for aliased kind values, -5
+# Rubric 3
+Agent enforces realtime window eligibility from `/app/config/windows.csv`, accepting only numeric timestamps in explicitly `OPEN` windows for the same `property_id`, +5
+Agent rejects closed, missing, unlisted, malformed, and after-close windows while preserving alias and identity gates, +5
+Agent chooses the eligible unused source row with the latest source timestamp and breaks equal-timestamp ties by earliest source input row, +3
+Agent preserves canonical kind emission, blank unmatched kind fields, correction input order, and positive summary totals under window selection, +3
+Agent treats closed or unlisted windows as open or chooses candidates by file order alone, -5
+Agent regresses milestone 1 or milestone 2 behavior while implementing realtime window selection, -3

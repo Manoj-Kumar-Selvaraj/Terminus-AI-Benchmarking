@@ -1,0 +1,12 @@
+pipeline {
+  agent any
+  stages {
+    stage('Build') { steps { sh 'pipelinesim run --scenario /app/scenarios/release_candidate.json --out /app/out/pipeline' } }
+    stage('Unit Test') { steps { echo 'simulated by pipelinesim' } }
+    stage('Integration Test') { steps { echo 'simulated by pipelinesim' } }
+    stage('Package') { steps { echo 'simulated by pipelinesim' } }
+    stage('Quality Gate') { steps { echo 'simulated by pipelinesim' } }
+    stage('Promote') { steps { echo 'simulated by pipelinesim' } }
+    stage('Rollback') { steps { sh 'pipelinesim rollback --history /app/out/pipeline/release/release_history.json --env prod --out /app/out/rollback' } }
+  }
+}

@@ -1,0 +1,33 @@
+# Rubric 1
+Agent inspects `/app/evidence/incident_log.txt`, `/app/config/reject_precedence.psv`, and claim/policy inputs before editing eligibility logic, +2
+Agent restores eligibility using policy existence, active status, member match, adjudication approval, catastrophic diagnosis, authorization, and positive amount checks, +5
+Agent independently enforces `ADJUDICATION_NOT_APPROVED` when all other eligibility gates pass, +3
+Agent selects the first configured reject reason from `/app/config/reject_precedence.psv` when multiple failures exist, +4
+Agent writes rejects to `/app/out/reject_ledger.psv` with `decision=REJECT` and emits `ELIGIBLE_PENDING_ROUTE` only for eligible claims without payment side effects, +3
+Agent hardcodes seed claim IDs or emits check, EFT, or ledger rows for rejected claims, -5
+Agent ignores reject precedence configuration or tampers with verifier input fixtures, -5
+# Rubric 2
+Agent repairs facility trust routing using `/app/config/facility_trust.psv` and `EXPEDITED_CHECK_LIMIT_CENTS` from `/app/config/payment_policy.pli`, +5
+Agent queues standard checks in `/app/out/check_queue.psv` with `priority=EXPEDITED` or `priority=NORMAL` and records `PAYMENT_QUEUED` versus `MANUAL_REVIEW` in `/app/out/payment_decision_report.psv`, +4
+Agent honors diagnosis `expedited_allowed` independently from facility trust and threshold checks, +3
+Agent preserves milestone 1 eligibility and reject behavior while adding routing rules, +3
+Agent honors emergency override for untrusted facilities and blocks sanctioned or untrusted facilities without override, +3
+Agent routes all trusted facilities to expedited checks regardless of threshold or diagnosis policy, -5
+Agent omits manual-review decision rows from the payment decision report, -5
+# Rubric 3
+Agent gates high-value EFT claims using `EFT_BANK_VERIFY_CENTS` and `/app/data/bank_verification_responses.psv` before writing `/app/out/eft_queue.psv`, +5
+Agent treats `status=APPROVED` as the approved bank verification status and routes other high-value EFTs to bank verification/manual review, +3
+Agent emits `/app/out/bank_verify_messages.psv` and manual-review routes for unverified high-value EFTs and identity conflicts, +4
+Agent handles identity conflicts from sentinel `identity_token` values and from duplicate nonblank tokens across multiple members in the same batch, +5
+Agent reconciles `/app/out/payment_ledger.psv` and `/app/out/control_totals.psv` using all documented metric names, including zero-count metrics, +4
+Agent preserves prior eligibility and facility routing behavior under changed verification fixtures, +3
+Agent bypasses bank verification for high-value EFTs or produces inconsistent control totals, -5
+Agent implements only one identity-conflict convention while ignoring the documented sentinel or duplicate-token rule, -5
+Agent regresses milestone 1-2 behavior while implementing payment-rail verification, -3
+# Rubric 4
+Agent makes `/app/scripts/run_batch.sh` restart-safe using committed ledger state and `/app/out/restart_checkpoint.txt`, +5
+Agent suppresses duplicate check, EFT, verification, and ledger rows for `ALREADY_COMMITTED` events across ABEND and clean reruns, +5
+Agent preserves stable instruction ids `PAY-<claim_id>-<event_id>` and all earlier milestone contracts, +3
+Agent validates ABEND simulation and idempotent rerun behavior instead of matching static outputs, +3
+Agent reissues committed payment instructions or hides ABEND failures by always exiting successfully, -5
+Agent deletes prior ledgers or queues to mask duplicate side effects, -5

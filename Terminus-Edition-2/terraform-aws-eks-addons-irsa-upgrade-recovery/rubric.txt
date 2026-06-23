@@ -1,0 +1,31 @@
+# Rubric 1
+Agent inspects upgrade evidence and the platform contract before changing EKS topology, +2
+Agent restores private EKS module with private subnet IDs and disabled public endpoint, +5
+Agent splits eks_managed_node_groups into system, apps, and batch with nodepool labels, +5
+Agent applies CriticalAddonsOnly NO_SCHEDULE taint on the system node group, +3
+Agent removes the collapsed default managed node group, +3
+Agent leaves public subnet wiring or a single default worker pool in place, -5
+# Rubric 2
+Agent preserves milestone 1 private topology while fixing add-on IAM boundaries, +3
+Agent version-pins vpc-cni, coredns, kube-proxy, and aws-ebs-csi-driver with resolve_conflicts_on_update, +5
+Agent wires EBS CSI and ALB Controller through IRSA service account modules, +5
+Agent binds kube-system:ebs-csi-controller-sa and kube-system:aws-load-balancer-controller with role-arn annotations, +3
+Agent attaches AdministratorAccess, node_addon_admin, or wildcard IAM to node roles, -5
+# Rubric 3
+Agent preserves prior milestone EKS and IRSA fixes while correcting Karpenter placement, +3
+Agent provisions Karpenter interruption queue and private discovery selectors, +5
+Agent creates regulated-on-demand NodePool with on-demand capacity only, +5
+Agent updates scheduling_report.json with on-demand regulated workloads and keeps evidence entries, +3
+Agent deletes regulated workload evidence or leaves regulated workloads on spot/default pools, -5
+# Rubric 4
+Agent preserves recovered cluster and add-on configuration while restoring compatibility outputs, +3
+Agent exposes all six legacy Terraform outputs with real module or var expressions, +5
+Agent adds addon_irsa_role_arns and removes cluster_endpoint_url-only rename, +3
+Agent includes moved block from node_addon_admin to module.ebs_csi_irsa, +5
+Agent writes empty-string output stubs or omits required legacy output names, -5
+# Rubric 5
+Agent preserves recovered Terraform while applying final upgrade guardrails, +3
+Agent removes node_addon_admin and AdministratorAccess from Terraform sources, +5
+Agent updates plan.json so protected cluster, security group, and node groups are not replaced, +5
+Agent keeps all six legacy outputs in plan configuration and passes plan_guard.py, +5
+Agent edits plan.json without fixing Terraform or reintroduces broad node admin attachments, -5

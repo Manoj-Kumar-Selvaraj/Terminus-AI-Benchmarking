@@ -1,0 +1,3 @@
+A client rollback then exposed a compatibility regression: requests without `X-Tenant-ID` received `tenant_required` and never reached the partner endpoint. Review `/app/evidence/rollback_client.log`, `/app/docs/legacy_client_contract.md`, `/app/docs/http_rate_limit_contract.md`, `/app/samples/rate_limited_response.json`, and the gateway middleware. Restore the documented fallback while continuing to rate-limit those calls.
+
+Absent and blank headers share one implicit legacy allowance. That allowance must remain distinct from every explicit tenant, including an explicit `legacy-default` value. Preserve normalized explicit identities, the downstream success response, the exact 429 JSON/header contract, and all earlier limiter guarantees.

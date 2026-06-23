@@ -1,0 +1,25 @@
+# Rubric 1
+Agent inspects the tenant starvation evidence, identity matrix, and fairness contract before changing limiter behavior, +2
+Agent gives each normalized tenant identity its own token bucket so one exhausted tenant cannot starve unrelated tenants, +5
+Agent normalizes tenant identifiers case-insensitively after trimming surrounding whitespace before bucket lookup, +5
+Agent preserves token consumption, refill, denial, and the exported limiter constructor and Allow decision fields, +3
+Agent validates fairness with arbitrary tenant values and concurrent admission attempts rather than evidence-name special cases, +2
+Agent uses one shared bucket for all tenants or disables rate limiting to clear starvation symptoms, -5
+Agent special-cases evidence tenant names instead of applying general normalization rules, -3
+# Rubric 2
+Agent uses the clock correction evidence and time safety contract before changing refill accounting, +2
+Agent applies refill only on forward clock movement and ignores backward observations for token grants, +5
+Agent prevents backward clock samples from minting immediate allowance or extending later recovery intervals, +5
+Agent preserves milestone 1 per-tenant isolation and normal forward refill behavior, +3
+Agent keeps positive retry-after calculations and the injected deterministic clock interface without reading the system clock directly, +3
+Agent uses absolute elapsed time or backward clock movement to grant refill tokens, -5
+Agent adds sleeps or disables refill to hide clock-skew admission bursts, -3
+# Rubric 3
+Agent inspects the rollback client evidence, legacy client contract, and rate-limit response contract before changing middleware behavior, +2
+Agent routes absent and blank X-Tenant-ID headers through one implicit legacy allowance bucket, +5
+Agent keeps the implicit legacy bucket distinct from every explicit tenant including an explicit legacy-default value, +5
+Agent preserves normalized explicit tenant handling and successful downstream pass-through for admitted requests, +3
+Agent preserves the exact HTTP 429 JSON body and header contract for denied requests, +3
+Agent preserves milestone 1 tenant isolation and milestone 2 clock-safe refill behavior, +3
+Agent returns tenant_required or blocks legacy clients without X-Tenant-ID from reaching the partner endpoint, -5
+Agent merges implicit legacy traffic into the same bucket as an explicit legacy-default tenant, -3

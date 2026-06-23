@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-adapter
+  namespace: payments
+spec:
+  selector:
+    matchLabels:
+      app: payment-adapter
+      component: invoice-batch
+  template:
+    metadata:
+      labels:
+        app: payment-adapter
+        component: invoice-batch
+    spec:
+      containers:
+        - name: adapter
+          image: registry.local/payment-adapter:20260613

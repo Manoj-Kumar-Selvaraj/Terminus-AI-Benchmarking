@@ -1,0 +1,42 @@
+# Rubric 1
+Agent inspects `/app/app/reconcile.rb`, the input layouts, and `/app/docs/reconciliation_contract.md` before editing, +2
+Agent implements full equality for parcel, meter, station, feeder, and amount instead of prefix or partial matching, +5
+Agent enforces source status, reason, canonical resource type, numeric timestamp, settlement-after-source, and one-time source-row consumption gates, +5
+Agent selects the latest eligible source timestamp and preserves the older eligible source for later settlements that only it can satisfy, +5
+Agent writes the required report and summary files with stable settlement order, exact statuses, blank unmatched resource type, and positive totals, +5
+Agent hardcodes outputs or rewrites the solution into an uninvoked language/file instead of fixing `/app/app/reconcile.rb`, -5
+Agent allows prefix matching, source reuse, invalid resource types, bad timestamps, or stale ordering behavior, -5
+# Rubric 2
+Agent preserves all milestone 1 matching, ordering, output, and consumption behavior while adding aliases, +5
+Agent normalizes `LD`, `QR`, and `CC` aliases case-insensitively on both source and settlement rows before validation and matching, +5
+Agent expands canonical eligibility to exactly `LOAD`, `SOLAR`, and `BATTERY` while keeping unknown values unmatched, +3
+Agent emits canonical selected source resource types in matched report rows and never raw aliases, +3
+Agent keeps exact `MATCHED` and `UNMATCHED` status labels, stable input order, blank unmatched resource type, and positive totals, +3
+Agent canonicalizes only settlement rows or only output rows while leaving aliased source rows unable to match, -5
+Agent lets aliases bypass identity, timestamp, reason, status, or consumption gates, -5
+# Rubric 3
+Agent preserves milestone 1 and 2 behavior while making `/app/config/windows.csv` authoritative, +5
+Agent accepts only numeric source and settlement timestamps in explicitly `OPEN` windows for the same station, +5
+Agent rejects closed, missing, malformed, unlisted, before-source, and after-window-close timestamp scenarios, +5
+Agent writes `/app/out/event_consumption.csv` with `settlement_id,event_row` and the actual zero-based consumed source row for each match, +5
+Agent preserves latest timestamp and earliest source row selection under window eligibility and records that selection in the trace, +3
+Agent treats closed, malformed, missing, or unlisted windows as eligible, -5
+Agent writes an incorrect consumption trace, traces unmatched rows, or reports logical IDs instead of physical source row positions, -5
+# Rubric 4
+Agent preserves all prior matching, alias, window, output, and consumption trace behavior while adding policy rules, +5
+Agent reads `/app/config/resource_policy.csv` and requires same station, canonical resource type, case-insensitive enabled `true`, numeric priority, and numeric max amount, +5
+Agent implements settlement `ANY` so it can select any enabled canonical source type while named settlements still require exact canonical equality, +5
+Agent orders `ANY` candidates by latest source timestamp, then lowest numeric policy priority, then earliest source row, +5
+Agent applies running `max_station_amount` caps per station and canonical resource type without consuming over-budget candidates, +5
+Agent emits the selected canonical source resource type for `ANY` matches and never emits `ANY` in matched report rows, +3
+Agent allows disabled, malformed, missing, or wrong-station policy rows to enable matches, -5
+Agent applies budget caps globally, consumes rejected candidates, or lets `ANY` bypass identity/window/reason/status gates, -5
+# Rubric 5
+Agent preserves all prior matching, alias, window, policy, budget, output, and consumption-trace behavior while adding overrides, +5
+Agent reads `/app/config/settlement_overrides.csv` and validates override settlement id, mode, resource type, and numeric unexpired `expires_ts`, +5
+Agent applies valid `DENY` overrides before candidate selection without consuming source rows or emitting trace rows, +5
+Agent applies valid `FORCE_RESOURCE` overrides to the settlement's effective canonical resource type without bypassing normal gates, +5
+Agent resolves multiple valid overrides deterministically with `DENY` precedence and latest-expiry force-resource selection, +3
+Agent ignores expired, malformed, unknown-mode, or invalid-resource override rows without changing ordinary matching behavior, +3
+Agent lets overrides bypass policy, budget, window, identity, timestamp, status, reason, or consumption gates, -5
+Agent consumes source rows for denied or over-budget settlements, or records denied/unmatched settlements in `event_consumption.csv`, -5

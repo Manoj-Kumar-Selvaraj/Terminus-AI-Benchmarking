@@ -1,0 +1,2 @@
+ticket_id,traveler_id,amount_cents,status,fare_class
+SRC1001,CUST1001,1200,FLOWN,ECONOMY

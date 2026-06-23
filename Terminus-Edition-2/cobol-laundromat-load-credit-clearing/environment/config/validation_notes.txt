@@ -1,0 +1,1 @@
+Verifier scenarios rewrite machine_loads.dat, credits.dat, and service_calendar.txt.

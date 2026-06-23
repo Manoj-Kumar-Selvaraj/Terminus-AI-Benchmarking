@@ -1,0 +1,3 @@
+pass_id,guest_id,amount_cents,status,access_type
+INVEDGE000001,CUST9001,100,ACTIVE,DAY
+INVEDGE000002,CUST9002,200,ACTIVE,SEASON

@@ -1,0 +1,61 @@
+{
+  "environment": "prod",
+  "account_id": "111122223333",
+  "app": "payments-api",
+  "instance_type": "m6i.large",
+  "service_port": 8080,
+  "ami_catalog": {
+    "latest": "ami-unstable-latest"
+  },
+  "release_artifact": {
+    "ami_id": "ami-0feed20260618",
+    "commit_sha": "8b95c7a12f20",
+    "build_id": "build-20260618.4",
+    "user_data_sha256": "71b7db2dd3f5ec4597a63fd0b4ef0d61c451e45e39d726b655f45a2d98d3fa21"
+  },
+  "alb_security_group_id": "sg-prod-alb",
+  "endpoint_prefix_lists": [
+    "pl-ssm",
+    "pl-logs",
+    "pl-s3"
+  ],
+  "artifact_bucket_arn": "arn:aws:s3:::release-artifacts-prod",
+  "metric_namespace": "Payments/EC2",
+  "subnets": [
+    {
+      "id": "subnet-app-a",
+      "az": "us-east-1a",
+      "tier": "private_app"
+    },
+    {
+      "id": "subnet-app-b",
+      "az": "us-east-1b",
+      "tier": "private_app"
+    },
+    {
+      "id": "subnet-app-c",
+      "az": "us-east-1c",
+      "tier": "private_app"
+    }
+  ],
+  "asg": {
+    "desired_capacity": 6,
+    "min_size": 3,
+    "max_size": 9
+  },
+  "candidate_health": "passing",
+  "security_group": {
+    "ingress": [],
+    "egress": []
+  },
+  "ebs_volumes": [
+    {
+      "name": "app-data",
+      "size_gb": 80,
+      "encrypted": true,
+      "kms_key_alias": "alias/payments-ebs",
+      "kms_key_arn": "arn:aws:kms:us-east-1:111122223333:key/payments",
+      "delete_on_termination": false
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+# 10 tasks batch (2 already done; script applies fixes to all 10)
+go-escape-room-booking-refund-matcher
+cobol-scooter-ride-surcharge-reversal
+cobol-campground-site-deposit-matcher
+ruby-photography-session-refund-matcher
+go-datacenter-rack-hold-release
+cobol-pension-contribution-reversal
+bash-lab-sample-credit-reconciler
+go-warehouse-pickwave-shortage-matcher
+go-travel-booking-adjustment-matcher
+ruby-cloud-reservation-burst-credit-ledger

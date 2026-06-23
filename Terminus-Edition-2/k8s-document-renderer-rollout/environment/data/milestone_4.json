@@ -1,0 +1,47 @@
+{
+  "cases": [
+    {
+      "id": "m4_failover",
+      "request": {
+        "id": "obj-301",
+        "seq": "0001",
+        "preferred": "primary"
+      },
+      "policy": {
+        "fallback": "secondary"
+      }
+    },
+    {
+      "id": "m4_gap",
+      "request": {
+        "id": "obj-302",
+        "seq": "0004"
+      },
+      "policy": {
+        "gap": true,
+        "gap_detail": "missing=0002-0003"
+      }
+    },
+    {
+      "id": "m4_badseq",
+      "request": {
+        "id": "obj-303",
+        "seq": "BAD"
+      },
+      "policy": {
+        "bad_sequence": true
+      }
+    },
+    {
+      "id": "m4_conflict",
+      "request": {
+        "id": "obj-304",
+        "seq": "0005"
+      },
+      "policy": {
+        "conflict": true,
+        "conflict_reason": "AUTHORITY_CONFLICT"
+      }
+    }
+  ]
+}

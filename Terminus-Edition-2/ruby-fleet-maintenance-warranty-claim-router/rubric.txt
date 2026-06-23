@@ -1,0 +1,17 @@
+Agent investigates and updates intended `ruby-fleet-maintenance-warranty-claim-router` implementation paths (/app/data/warranty_claims.csv, /app/data/appointments.csv, /app/config/windows.csv) instead of unrelated files, +2
+Agent satisfies `ruby-fleet-maintenance-warranty-claim-router` milestone 1 core requirement: Preserve action input order, write the documented report schema, use `MATCHED` or `UNMATCHED` only, leave the canonical repair_type field blank for unmatched rows, and write positive matched and unmatched su..., +5
+Agent preserves milestone 1 rule for `ruby-fleet-maintenance-warranty-claim-router`: A correction can match only when the full source identifier and all identity fields match, the amount matches as an integer value, the source status uses the documented eligible literal, the correction reaso..., +3
+Agent handles milestone 1 edge/ordering behavior for `ruby-fleet-maintenance-warranty-claim-router` validated by tests: Prepare the reconciler for one verifier scenario., +3
+Agent satisfies `ruby-fleet-maintenance-warranty-claim-router` milestone 2 core requirement: Normalize aliases after trimming and case folding before matching, validate the normalized value through the same matching gates, and emit only the canonical repair_type values in matched report rows., +5
+Agent preserves milestone 2 rule for `ruby-fleet-maintenance-warranty-claim-router`: Milestone 2 keeps every milestone 1 rule and adds the documented legacy repair_type aliases., +3
+Agent handles milestone 2 edge/ordering behavior for `ruby-fleet-maintenance-warranty-claim-router` validated by tests: Prepare the reconciler for one verifier scenario., +3
+Agent satisfies `ruby-fleet-maintenance-warranty-claim-router` milestone 3 core requirement: The realtime window file is authoritative: only numeric timestamps in explicitly `OPEN` windows are eligible, closed, missing, malformed, or unlisted windows are not eligible, actions must occur after the so..., +5
+Agent preserves milestone 3 rule for `ruby-fleet-maintenance-warranty-claim-router`: Repair_Type aliases must be normalized before matching: `PRIMARY` means `ENGINE`, `BRAKEIAL` means `BRAKE`, `TIREORATORY` means `TIRE`., +3
+Agent handles milestone 3 edge/ordering behavior for `ruby-fleet-maintenance-warranty-claim-router` validated by tests: Prepare the reconciler for one verifier scenario., +3
+Agent validates `ruby-fleet-maintenance-warranty-claim-router` output artifacts against required schemas and deterministic ordering before finalizing, +3
+Agent treats only canonical `repair_type` values ENGINE or BRAKE as match-eligible in milestone 1 and leaves rows with unknown `repair_type` values unmatched, +3
+Agent hardcodes final output files for `ruby-fleet-maintenance-warranty-claim-router` instead of fixing underlying implementation, -5
+Agent tampers with verifier harness files, solution scaffolding, platform configuration, or input fixtures in `ruby-fleet-maintenance-warranty-claim-router` to force a pass, -5
+Agent regresses earlier milestones in `ruby-fleet-maintenance-warranty-claim-router` while implementing later milestone changes, -3
+Agent repeats failing commands for `ruby-fleet-maintenance-warranty-claim-router` without adjusting approach after clear errors, -2
+Agent treats only canonical `repair_type` values ENGINE, BRAKE, or TIRE as match-eligible from milestone 2 onward and does not remove the canonical repair_type gate when adding aliases, +3

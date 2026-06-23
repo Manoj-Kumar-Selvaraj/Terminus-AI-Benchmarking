@@ -1,0 +1,23 @@
+# Rubric 1
+Agent updates `/app/cmd/reconcile/main.go` and compiles with `/usr/local/go/bin/go`, +2
+Agent enforces full `loan_id`, `customer_id`, positive integer `amount_cents`, `POSTED` status, and allowed `ACH`/`CARD`/`WIRE` channel gates for matching, +5
+Agent consumes each loan row at most once by input position and trims or case-folds compared fields, +5
+Agent writes `/app/out/waiver_report.csv` and `/app/out/waiver_summary.json` with exact schema, `MATCHED`/`UNMATCHED` only, blank unmatched `channel`, and positive summary totals, +3
+Agent hardcodes output files instead of fixing the Go reconciler, -5
+Agent tampers with platform files or runtime input fixtures to force a pass, -5
+Agent uses partial loan-id matching or allows consumed loan rows to be reused, -5
+# Rubric 2
+Agent normalizes legacy channel aliases `CC` and `WIR` to canonical `CARD` and `WIRE` on waiver and loan rows, +5
+Agent applies alias normalization case-insensitively after trimming fields, +3
+Agent emits canonical channel values on matched rows and leaves unmatched channel blank, +3
+Agent preserves milestone 1 gates, row consumption, and output schema while adding alias normalization, +3
+Agent hardcodes alias mappings instead of implementing reusable alias-aware matching in the Go source, -5
+Agent regresses milestone 1 matching or consumption while implementing alias normalization, -5
+# Rubric 3
+Agent applies `/app/config/cutoff_calendar.txt` so only open waiver dates are eligible with case-insensitive status comparison, +5
+Agent selects the unused loan row with the latest eligible `due_date`, breaking ties by earliest input row, +5
+Agent tracks consumption by loan row position and enforces waiver date on or before `due_date`, +3
+Agent preserves alias normalization and milestone 1 gates under calendar constraints, +3
+Agent treats closed or unlisted calendar dates as open, -5
+Agent chooses loans by file order alone instead of latest `due_date` and earliest-row tie-break rules, -5
+Agent keys consumption on shared `loan_id` instead of physical loan row position, -5

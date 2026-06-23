@@ -1,0 +1,14 @@
+{
+  "observed": [
+    {
+      "route_table": "rtb-prod-app-b",
+      "az": "us-east-1b",
+      "default_target": "nat-prod-a"
+    },
+    {
+      "route_table": "rtb-prod-data-c",
+      "az": "us-east-1c",
+      "default_target": "nat-prod-a"
+    }
+  ]
+}

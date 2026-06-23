@@ -1,0 +1,4 @@
+route,enabled,priority
+LOCAL,Y,20
+REGIONAL,Y,10
+EXPORT,Y,30

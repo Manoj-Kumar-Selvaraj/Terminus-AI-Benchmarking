@@ -1,0 +1,31 @@
+# Rubric 1
+Agent inspects release artifact evidence and module contract before changing module logic, +2
+Agent pins launch template AMI user-data hash commit and build to release_artifact, +5
+Agent fails closed on every missing release_artifact field with named errors, +5
+Agent preserves instance CommitSha and BuildId tags from artifact provenance, +3
+Agent keeps ec2sim plan apply validate and prior-state state CLI compatibility, +3
+Agent hardcodes ami_catalog.latest or bypasses release_artifact validation, -5
+# Rubric 2
+Agent preserves milestone 1 artifact pinning while fixing placement and ingress, +3
+Agent keeps instances in private_app subnets with public_ip_associated false, +5
+Agent restricts security group ingress to ALB TCP 8080 only, +5
+Agent rejects non-private_app subnet tiers with private_app in validate errors, +3
+Agent reopens SSH or public admin ingress on the service security group, -5
+# Rubric 3
+Agent preserves prior milestones while implementing safe instance refresh, +3
+Agent uses canary-then-batch strategy with min healthy percentage at least 90, +5
+Agent rolls back failed candidate health keeping prior capacity and instance IDs, +5
+Agent keeps plan idempotent with prior-state without duplicating instances, +3
+Agent uses terminate-first refresh that drops capacity on canary failure, -5
+# Rubric 4
+Agent preserves milestones 1-3 while attaching encrypted data volumes, +3
+Agent attaches non-orphaned KMS encrypted volumes per instance with ManagedBy tag, +5
+Agent keeps delete_on_termination false for stateful data volumes, +3
+Agent rejects unencrypted volume definitions with unencrypted in validate errors, +3
+Agent leaves instances without encrypted attached volumes or marks them orphaned, -5
+# Rubric 5
+Agent preserves milestones 1-4 while hardening metadata IAM and drift handling, +3
+Agent requires IMDSv2 with http_tokens required and hop limit 1, +5
+Agent removes wildcard admin IAM and includes scoped SSM S3 KMS CloudWatch actions, +5
+Agent reports launch template drift as report_only without replacing instances, +5
+Agent reintroduces wildcard admin policy or optional IMDSv1 metadata, -5

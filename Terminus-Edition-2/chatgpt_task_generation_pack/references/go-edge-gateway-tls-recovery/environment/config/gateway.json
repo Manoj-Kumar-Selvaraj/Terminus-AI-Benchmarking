@@ -1,0 +1,8 @@
+{
+  "listen_address": ":8080",
+  "upstream_url": "https://127.0.0.1:19443/ledger/status",
+  "server_name": "ledger.service.internal",
+  "root_ca_file": "/app/certs/trust/rotation-bundle.pem",
+  "client_cert_file": "/app/runtime/client-cert.pem",
+  "client_key_file": "/app/runtime/client-key.pem"
+}

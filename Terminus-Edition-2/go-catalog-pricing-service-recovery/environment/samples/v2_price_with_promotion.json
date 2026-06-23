@@ -1,0 +1,10 @@
+{
+  "sku": "CAMERA-4K",
+  "currency": "USD",
+  "amount_minor": 119900,
+  "catalog_version": 42,
+  "promotion": {
+    "code": "JUNE-CAMERA",
+    "label": "June camera event"
+  }
+}

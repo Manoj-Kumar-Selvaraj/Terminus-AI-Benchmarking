@@ -1,0 +1,2 @@
+card_id|business_date|active_hold_cents|released_today_cents|release_count_today|risk_flags
+CARD-EXAMPLE|20260613|125000|25000|1|NONE

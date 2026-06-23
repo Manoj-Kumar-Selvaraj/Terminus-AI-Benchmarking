@@ -1,0 +1,2 @@
+settlement_id,parcel_id,meter_id,station_id,resource_type,amount,settle_ts,reason,feeder
+ACT-SAMPLE-1,SRC-SAMPLE-1,PARTY-1,SAMPLE,LD,100,20260528121100,CURTAIL,LOC-1

@@ -1,0 +1,2 @@
+reservation_id,open_ts,close_ts,state
+SAMPLE,20260528120000,20260528150000,OPEN

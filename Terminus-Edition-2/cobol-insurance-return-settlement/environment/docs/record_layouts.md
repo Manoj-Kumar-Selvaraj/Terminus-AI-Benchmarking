@@ -1,0 +1,1 @@
+Records are fixed width. The source program defines the exact offsets used by the batch job.

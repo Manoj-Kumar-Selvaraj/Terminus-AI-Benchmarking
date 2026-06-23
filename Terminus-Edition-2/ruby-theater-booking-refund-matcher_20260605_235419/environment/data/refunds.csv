@@ -1,0 +1,2 @@
+booking_id,patron_id,amount_cents,seat_zone
+SRC1001,CUST1001,1200,ORCH

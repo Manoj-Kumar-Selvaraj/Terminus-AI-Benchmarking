@@ -1,0 +1,15 @@
+Agent investigates and updates intended `go-subscription-credit-reconciler` implementation paths (/app/cmd/reconcile/main.go, /app/data/subscriptions.csv, /app/data/credits.csv) instead of unrelated files, +2
+Agent satisfies `go-subscription-credit-reconciler` milestone 1 core requirement: Each subscription can be matched at most once; if duplicate credits point at the same subscription, only the earliest eligible credit consumes it., +5
+Agent preserves milestone 1 rule for `go-subscription-credit-reconciler`: The report must keep one row per credit in input order with columns `subscription_id,account_id,channel,amount_cents,status`; use `MATCHED` or `UNMATCHED` for status, use the credit's channel when matched, a..., +3
+Agent handles milestone 1 edge/ordering behavior for `go-subscription-credit-reconciler` validated by tests: Compile the Go reconciliation CLI for the current source tree., +3
+Agent satisfies `go-subscription-credit-reconciler` milestone 2 core requirement: These aliases must participate in the same matching path as normal channels, including all milestone 1 validation and subscription-consumption behavior., +5
+Agent preserves milestone 2 rule for `go-subscription-credit-reconciler`: For every matched credit, write the normalized canonical channel (`ACH`, `CARD`, or `WIRE`) in `/app/out/credit_report.csv`; do not emit lowercase input values or legacy aliases., +3
+Agent handles milestone 2 edge/ordering behavior for `go-subscription-credit-reconciler` validated by tests: Compile the Go reconciliation CLI for the current source tree., +3
+Agent satisfies `go-subscription-credit-reconciler` milestone 3 core requirement: If multiple unconsumed subscriptions satisfy all criteria for one credit, choose the subscription with the latest due date that is still on or after the credit date; when due dates tie, choose the earliest s..., +5
+Agent preserves milestone 3 rule for `go-subscription-credit-reconciler`: They are readable only for reporting: any subscription row without a `due_date`, or any credit row without a `credit_date`, is not eligible to match and must produce `UNMATCHED` credit rows rather than falli..., +3
+Agent handles milestone 3 edge/ordering behavior for `go-subscription-credit-reconciler` validated by tests: Compile the Go reconciliation CLI for the current source tree., +3
+Agent validates `go-subscription-credit-reconciler` output artifacts against required schemas and deterministic ordering before finalizing, +3
+Agent hardcodes final output files for `go-subscription-credit-reconciler` instead of fixing underlying implementation, -5
+Agent edits tests/oracle/metadata in `go-subscription-credit-reconciler` to force a pass rather than solving the task, -5
+Agent regresses earlier milestones in `go-subscription-credit-reconciler` while implementing later milestone changes, -3
+Agent repeats failing commands for `go-subscription-credit-reconciler` without adjusting approach after clear errors, -2

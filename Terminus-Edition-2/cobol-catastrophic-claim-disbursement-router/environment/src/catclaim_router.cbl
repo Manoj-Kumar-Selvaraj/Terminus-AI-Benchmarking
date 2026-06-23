@@ -1,0 +1,244 @@
+IDENTIFICATION DIVISION.
+PROGRAM-ID. catclaim-router.
+ENVIRONMENT DIVISION.
+INPUT-OUTPUT SECTION.
+FILE-CONTROL.
+    SELECT CLAIMS-FILE ASSIGN TO "/app/data/claims.psv"
+        ORGANIZATION IS LINE SEQUENTIAL FILE STATUS IS WS-FS.
+    SELECT POLICIES-FILE ASSIGN TO "/app/data/policies.psv"
+        ORGANIZATION IS LINE SEQUENTIAL FILE STATUS IS WS-FS.
+    SELECT DECISIONS-FILE ASSIGN TO "/app/out/payment_decision_report.psv"
+        ORGANIZATION IS LINE SEQUENTIAL.
+    SELECT REJECTS-FILE ASSIGN TO "/app/out/reject_ledger.psv"
+        ORGANIZATION IS LINE SEQUENTIAL.
+    SELECT CHECKS-FILE ASSIGN TO "/app/out/check_queue.psv"
+        ORGANIZATION IS LINE SEQUENTIAL.
+    SELECT EFT-FILE ASSIGN TO "/app/out/eft_queue.psv"
+        ORGANIZATION IS LINE SEQUENTIAL.
+    SELECT LEDGER-FILE ASSIGN TO "/app/out/payment_ledger.psv"
+        ORGANIZATION IS LINE SEQUENTIAL.
+    SELECT CONTROL-FILE ASSIGN TO "/app/out/control_totals.psv"
+        ORGANIZATION IS LINE SEQUENTIAL.
+DATA DIVISION.
+FILE SECTION.
+FD CLAIMS-FILE.
+01 CLAIM-LINE PIC X(512).
+FD POLICIES-FILE.
+01 POLICY-LINE PIC X(256).
+FD DECISIONS-FILE.
+01 DECISION-OUT PIC X(512).
+FD REJECTS-FILE.
+01 REJECT-OUT PIC X(256).
+FD CHECKS-FILE.
+01 CHECK-OUT PIC X(256).
+FD EFT-FILE.
+01 EFT-OUT PIC X(256).
+FD LEDGER-FILE.
+01 LEDGER-OUT PIC X(256).
+FD CONTROL-FILE.
+01 CONTROL-OUT PIC X(128).
+WORKING-STORAGE SECTION.
+01 WS-FS PIC XX.
+01 WS-EOF-CLAIM PIC X VALUE "N".
+01 WS-EOF-POL PIC X VALUE "N".
+01 WS-CLAIM-COUNT PIC 9(4) VALUE 0.
+01 WS-POL-COUNT PIC 9(4) VALUE 0.
+01 WS-LEDGER-COUNT PIC 9(4) VALUE 0.
+01 WS-LEDGER-AMT PIC 9(12) VALUE 0.
+01 WS-IDX PIC 9(4).
+01 WS-FOUND PIC 9(4) VALUE 0.
+01 WS-AMT PIC 9(12) VALUE 0.
+01 WS-INST PIC X(80).
+01 WS-RAIL PIC X(8).
+01 WS-F1 PIC X(32).
+01 WS-F2 PIC X(32).
+01 WS-F3 PIC X(32).
+01 WS-F4 PIC X(32).
+01 WS-F5 PIC X(32).
+01 WS-F6 PIC X(32).
+01 WS-F7 PIC X(32).
+01 WS-F8 PIC X(32).
+01 WS-F9 PIC X(32).
+01 WS-F10 PIC X(32).
+01 WS-F11 PIC X(32).
+01 WS-F12 PIC X(32).
+01 WS-F13 PIC X(32).
+01 WS-F14 PIC X(32).
+01 WS-ADJ PIC X(32).
+01 WS-BANK PIC X(32).
+01 WS-CLAIM-TABLE.
+   05 WS-CLAIM-ROW OCCURS 200 TIMES.
+      10 WS-C-CLAIM PIC X(32).
+      10 WS-C-EVENT PIC X(32).
+      10 WS-C-POL PIC X(32).
+      10 WS-C-AMT PIC X(16).
+      10 WS-C-PAYEE PIC X(16).
+      10 WS-C-BANK PIC X(32).
+      10 WS-C-ADJ PIC X(32).
+01 WS-POL-TABLE.
+   05 WS-POL-ROW OCCURS 100 TIMES.
+      10 WS-P-POL PIC X(32).
+      10 WS-P-MEM PIC X(32).
+      10 WS-P-STAT PIC X(16).
+PROCEDURE DIVISION.
+MAIN-PARA.
+    CALL "SYSTEM" USING "mkdir -p /app/out"
+    PERFORM LOAD-POLICIES
+    OPEN OUTPUT DECISIONS-FILE REJECTS-FILE CHECKS-FILE
+        EFT-FILE LEDGER-FILE CONTROL-FILE
+    MOVE "claim_id|event_id|policy_id|amount_cents|decision|reason_code|instruction_id" TO DECISION-OUT
+    WRITE DECISION-OUT
+    MOVE "claim_id|event_id|reason_code" TO REJECT-OUT
+    WRITE REJECT-OUT
+    MOVE "instruction_id|claim_id|payee_type|amount_cents|priority" TO CHECK-OUT
+    WRITE CHECK-OUT
+    MOVE "instruction_id|claim_id|bank_account|amount_cents" TO EFT-OUT
+    WRITE EFT-OUT
+    MOVE "instruction_id|claim_id|event_id|rail|amount_cents|status" TO LEDGER-OUT
+    WRITE LEDGER-OUT
+    MOVE "metric|count|amount_cents" TO CONTROL-OUT
+    WRITE CONTROL-OUT
+    OPEN INPUT CLAIMS-FILE
+    MOVE "N" TO WS-EOF-CLAIM
+    PERFORM UNTIL WS-EOF-CLAIM = "Y"
+        READ CLAIMS-FILE AT END MOVE "Y" TO WS-EOF-CLAIM
+        NOT AT END
+            IF CLAIM-LINE(1:8) = "claim_id"
+                CONTINUE
+            END-IF
+            ADD 1 TO WS-CLAIM-COUNT
+            PERFORM PARSE-CLAIM-LINE
+            MOVE WS-C-CLAIM(WS-CLAIM-COUNT) TO WS-F1
+            MOVE WS-C-EVENT(WS-CLAIM-COUNT) TO WS-F2
+            MOVE WS-C-POL(WS-CLAIM-COUNT) TO WS-F3
+            MOVE WS-C-AMT(WS-CLAIM-COUNT) TO WS-F4
+            MOVE WS-C-ADJ(WS-CLAIM-COUNT) TO WS-ADJ
+            MOVE WS-C-BANK(WS-CLAIM-COUNT) TO WS-BANK
+            MOVE 0 TO WS-FOUND
+            PERFORM VARYING WS-IDX FROM 1 BY 1 UNTIL WS-IDX > WS-POL-COUNT OR WS-FOUND > 0
+                IF WS-P-POL(WS-IDX) = WS-F3
+                    MOVE WS-IDX TO WS-FOUND
+                END-IF
+            END-PERFORM
+            IF WS-FOUND = 0 OR WS-ADJ NOT = "APPROVED"
+                MOVE SPACES TO DECISION-OUT
+                STRING WS-F1 DELIMITED BY SPACE "|"
+                    WS-F2 DELIMITED BY SPACE "|"
+                    WS-F3 DELIMITED BY SPACE "|"
+                    WS-F4 DELIMITED BY SPACE "|"
+                    "REJECT|GENERIC_REJECT|" DELIMITED BY SIZE
+                    INTO DECISION-OUT
+                END-STRING
+                WRITE DECISION-OUT
+                MOVE SPACES TO REJECT-OUT
+                STRING WS-F1 DELIMITED BY SPACE "|"
+                    WS-F2 DELIMITED BY SPACE "|"
+                    "GENERIC_REJECT" DELIMITED BY SIZE
+                    INTO REJECT-OUT
+                END-STRING
+                WRITE REJECT-OUT
+            ELSE
+                IF WS-BANK NOT = SPACES
+                    MOVE "EFT" TO WS-RAIL
+                ELSE
+                    MOVE "CHECK" TO WS-RAIL
+                END-IF
+                MOVE SPACES TO WS-INST
+                STRING "PAY-" DELIMITED BY SIZE
+                    WS-F1 DELIMITED BY SPACE
+                    INTO WS-INST
+                END-STRING
+                MOVE SPACES TO DECISION-OUT
+                STRING WS-F1 DELIMITED BY SPACE "|"
+                    WS-F2 DELIMITED BY SPACE "|"
+                    WS-F3 DELIMITED BY SPACE "|"
+                    WS-F4 DELIMITED BY SPACE "|"
+                    "PAYMENT_QUEUED|" DELIMITED BY SIZE
+                    WS-RAIL DELIMITED BY SPACE "|"
+                    WS-INST DELIMITED BY SPACE
+                    INTO DECISION-OUT
+                END-STRING
+                WRITE DECISION-OUT
+                ADD 1 TO WS-LEDGER-COUNT
+                COMPUTE WS-AMT = FUNCTION NUMVAL-C(WS-F4)
+                ADD WS-AMT TO WS-LEDGER-AMT
+                MOVE SPACES TO LEDGER-OUT
+                STRING WS-INST DELIMITED BY SPACE "|"
+                    WS-F1 DELIMITED BY SPACE "|"
+                    WS-F2 DELIMITED BY SPACE "|"
+                    WS-RAIL DELIMITED BY SPACE "|"
+                    WS-F4 DELIMITED BY SPACE "|"
+                    "COMMITTED" DELIMITED BY SIZE
+                    INTO LEDGER-OUT
+                END-STRING
+                WRITE LEDGER-OUT
+                IF WS-RAIL = "EFT"
+                    MOVE SPACES TO EFT-OUT
+                    STRING WS-INST DELIMITED BY SPACE "|"
+                        WS-F1 DELIMITED BY SPACE "|"
+                        WS-BANK DELIMITED BY SPACE "|"
+                        WS-F4 DELIMITED BY SPACE
+                        INTO EFT-OUT
+                    END-STRING
+                    WRITE EFT-OUT
+                ELSE
+                    MOVE SPACES TO CHECK-OUT
+                    STRING WS-INST DELIMITED BY SPACE "|"
+                        WS-F1 DELIMITED BY SPACE "|"
+                        WS-C-PAYEE(WS-CLAIM-COUNT) DELIMITED BY SPACE "|"
+                        WS-F4 DELIMITED BY SPACE "|"
+                        "NORMAL" DELIMITED BY SIZE
+                        INTO CHECK-OUT
+                    END-STRING
+                    WRITE CHECK-OUT
+                END-IF
+            END-IF
+        END-READ
+    END-PERFORM
+    CLOSE CLAIMS-FILE
+    MOVE SPACES TO CONTROL-OUT
+    STRING "queued|" DELIMITED BY SIZE
+        WS-LEDGER-COUNT DELIMITED BY SIZE "|"
+        WS-LEDGER-AMT DELIMITED BY SIZE
+        INTO CONTROL-OUT
+    END-STRING
+    WRITE CONTROL-OUT
+    CLOSE DECISIONS-FILE REJECTS-FILE CHECKS-FILE EFT-FILE LEDGER-FILE CONTROL-FILE
+    STOP RUN.
+
+LOAD-POLICIES.
+    MOVE 0 TO WS-POL-COUNT
+    OPEN INPUT POLICIES-FILE
+    MOVE "N" TO WS-EOF-POL
+    PERFORM UNTIL WS-EOF-POL = "Y"
+        READ POLICIES-FILE AT END MOVE "Y" TO WS-EOF-POL
+        NOT AT END
+            IF POLICY-LINE(1:9) = "policy_id"
+                CONTINUE
+            END-IF
+            ADD 1 TO WS-POL-COUNT
+            MOVE SPACES TO WS-F1 WS-F2 WS-F3 WS-F4 WS-F5 WS-F6
+            UNSTRING POLICY-LINE DELIMITED BY "|"
+                INTO WS-F1 WS-F2 WS-F3 WS-F4 WS-F5 WS-F6
+            END-UNSTRING
+            MOVE WS-F1 TO WS-P-POL(WS-POL-COUNT)
+            MOVE WS-F2 TO WS-P-MEM(WS-POL-COUNT)
+            MOVE WS-F3 TO WS-P-STAT(WS-POL-COUNT)
+        END-READ
+    END-PERFORM
+    CLOSE POLICIES-FILE.
+
+PARSE-CLAIM-LINE.
+    MOVE SPACES TO WS-F1 WS-F2 WS-F3 WS-F4 WS-F5 WS-F6 WS-F7 WS-F8
+        WS-F9 WS-F10 WS-F11 WS-F12 WS-F13 WS-F14
+    UNSTRING CLAIM-LINE DELIMITED BY "|"
+        INTO WS-F1 WS-F2 WS-F3 WS-F4 WS-F5 WS-F6 WS-F7
+             WS-F8 WS-F9 WS-F10 WS-F11 WS-F12 WS-F13 WS-F14
+    END-UNSTRING
+    MOVE WS-F1 TO WS-C-CLAIM(WS-CLAIM-COUNT)
+    MOVE WS-F2 TO WS-C-EVENT(WS-CLAIM-COUNT)
+    MOVE WS-F3 TO WS-C-POL(WS-CLAIM-COUNT)
+    MOVE WS-F7 TO WS-C-AMT(WS-CLAIM-COUNT)
+    MOVE WS-F8 TO WS-C-PAYEE(WS-CLAIM-COUNT)
+    MOVE WS-F9 TO WS-C-BANK(WS-CLAIM-COUNT)
+    MOVE WS-F11 TO WS-C-ADJ(WS-CLAIM-COUNT).

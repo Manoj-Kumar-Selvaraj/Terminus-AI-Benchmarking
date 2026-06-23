@@ -1,0 +1,38 @@
+# Rubric 1
+
+Agent inspects `/app/src/` COBOL source, `/app/docs/record_layouts.md`, and output contracts before editing `cobol-bowling-league-fee-reversal`, +2
+Agent keeps rewritten COBOL valid for free-format compilation with `cobc -x -free -O2`, +3
+Agent parses `record_id` after the one-byte record type prefix without including `S` or `A` in comparisons or CSV output, +5
+Agent fixes reconciliation logic instead of hardcoding `/app/out/` report or summary files, +3
+Agent enforces milestone 1 matching gates including record id, account, amount, branch, source status, eligible reasons, allowed canonical lane_type values, and action date ordering, +5
+Agent preserves action input order, zero-padded `amount_cents`, exact report columns, and exact `MATCHED` and `UNMATCHED` labels, +3
+Agent leaves `lane_type` blank on every `UNMATCHED` row and emits canonical source `lane_type` on `MATCHED` rows, +3
+Agent preserves action reason text in the report `reason` column for matched and unmatched rows, +3
+Agent writes positive integer `key=value` summary lines for matched and unmatched counts and amounts, +3
+Agent consumes each source row at most once so duplicate actions cannot reuse the same source row, +5
+Agent hardcodes final CSV or summary output instead of repairing the COBOL program, -5
+
+# Rubric 2
+
+Agent normalizes legacy action aliases to canonical lane_type codes before matching and report output, +5
+Agent emits canonical lane_type values on matched alias rows rather than raw alias codes, +3
+Agent preserves milestone 1 blank-unmatched `lane_type` behavior while adding alias normalization, +3
+Agent keeps required output paths and schemas unchanged when extending alias handling, +3
+Agent trims trailing spaces from fixed-width identifiers when writing CSV fields, +3
+Agent validates alias and consumption behavior against fresh synthetic fixtures, +2
+Agent regresses milestone 1 matching gates while implementing alias normalization, -3
+Agent tampers with verifier harness files or solution scaffolding to force a pass, -5
+Agent repeats failing compile or verifier behavior commands without adjusting approach after clear errors, -2
+
+# Rubric 3
+
+Agent applies calendar eligibility from the task config calendar file while preserving prior matching gates, +5
+Agent treats calendar state `OPEN` case-insensitively and rejects closed, missing, unlisted, or non-numeric source dates, +3
+Agent chooses the eligible source row with the latest open source date when multiple unused rows qualify, +5
+Agent breaks tied source dates by selecting the earliest source input row, +3
+Agent consumes duplicate record ids by source row position rather than blocking all rows that share an id, +3
+Agent preserves alias normalization, blank unmatched `lane_type`, and reason output under calendar gates, +3
+Agent verifies latest-date selection with distinct source amounts so first-fit file order cannot pass, +3
+Agent validates final report and summary artifacts before finishing milestone 3, +2
+Agent treats closed or unlisted calendar dates as open, -5
+Agent regresses milestone 1 or 2 behavior while implementing calendar or latest-date logic, -3

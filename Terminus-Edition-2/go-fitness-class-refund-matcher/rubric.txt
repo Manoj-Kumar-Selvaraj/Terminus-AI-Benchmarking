@@ -1,0 +1,36 @@
+# Rubric 1
+Agent inspects `/app/cmd/reconcile/main.go`, `/app/data/classes.csv`, `/app/data/refunds.csv`, and output contracts before editing, +2
+Agent matches refunds only when full `class_id`, `member_id`, amount, `BOOKED` status, and allowed studio all line up, +5
+Agent keeps the on-disk classpass status literal as `BOOKED` and does not treat `POSTED`, `DRAFT`, or other values as eligible, +3
+Agent trims input fields and compares studio and status case-insensitively when matching, +3
+Agent enforces one-use classpass consumption so duplicate refunds cannot reuse the same classpass row, +5
+Agent preserves refund input order, the required report schema, `MATCHED`/`UNMATCHED` status labels, and positive summary totals, +3
+Agent hardcodes output CSV or JSON instead of fixing the reconciliation logic, -5
+Agent writes `BOOKED` or any classpass status value into the report status column instead of `MATCHED`/`UNMATCHED`, -3
+Agent uses prefix or partial `class_id` matching instead of full identifier matching, -5
+Agent allows consumed classpass rows to be reused by later refunds, -3
+Agent edits or deletes files under `/tests` or `/oracle`, or alters `/app/data` input CSVs to coerce a pass, -5
+# Rubric 2
+Agent treats `YG`, `SP`, and `HT` refund aliases as canonical `YOGA`, `SPIN`, and `HIIT` in milestone 2, +5
+Agent emits canonical studios for matched alias rows and leaves `studio` blank for unmatched rows, +3
+Agent keeps full `class_id` matching and prior row-consumption behavior after adding aliases, +5
+Agent keeps required output paths and schemas unchanged when extending alias handling, +3
+Agent validates alias and consumption behavior against overwritten fixture data, +2
+Agent omits `YG` to `YOGA` alias handling while implementing the other aliases, -3
+Agent regresses milestone 1 matching gates, consumption rules, or report schema while adding aliases, -3
+Agent hardcodes final CSV or JSON output instead of repairing the Go program, -5
+Agent edits verifier harness files or solution scaffolding to force a pass, -5
+Agent repeats failing `go build` commands without adjusting approach after clear compile errors, -2
+# Rubric 3
+Agent applies open-calendar `refund_date` gating from `/app/config/cutoff_calendar.txt` while preserving prior matching rules, +5
+Agent rejects closed, missing, unlisted, or blank refund dates before clearing a refund, +3
+Agent rejects classpasses with blank `class_date` and rejects refunds later than the source `class_date`, +3
+Agent selects the unused eligible classpass with the latest `class_date` and breaks date ties by earliest classpass input row, +5
+Agent tracks consumption by classpass input row position rather than only by `class_id`, +3
+Agent preserves milestone 2 aliases and canonical studio output under milestone 3 dated batches, +3
+Agent validates final CSV and JSON artifacts before finishing milestone 3, +2
+Agent ignores date gates, treats closed or unlisted dates as open, or matches blank dates, -5
+Agent changes required output filenames, schemas, status labels, or summary JSON keys, -3
+Agent regresses milestone 1 or 2 behavior while implementing calendar or latest-date logic, -3
+Agent chooses candidate classpass rows by first file row instead of the required latest-date and row-order rules, -3
+Agent edits or deletes files under `/tests` or `/oracle` to force a pass rather than fixing the Go program, -5

@@ -1,0 +1,3 @@
+frame_id|craft_id|channel|payload_hash|recv_ts|state|service_class
+FRM-10001|ALPHA|D1|8f2a11|20260612120000|DOWNLINK|TM
+FRM-10002|BETA|D2|9b3c22|20260612120100|STALE|TM

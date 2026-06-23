@@ -1,0 +1,3 @@
+booking_id,guest_id,amount_cents,tour_type
+INVEDGE000001,CUST9001,100,HARBOR
+INVEDGE000002,CUST9002,200,SUNSET

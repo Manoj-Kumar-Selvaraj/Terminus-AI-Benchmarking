@@ -1,0 +1,2 @@
+hold_id,pallet_id,zone_id,temp_band,amount,hold_ts,status,bay
+SRC-SAMSEE-1,PARTY-1,SAMSEE,FROZEN,100,20260528121000,QUARANTINED,LOC-1

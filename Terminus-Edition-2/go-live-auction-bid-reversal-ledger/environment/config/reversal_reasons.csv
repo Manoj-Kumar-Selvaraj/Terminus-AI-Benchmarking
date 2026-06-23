@@ -1,0 +1,7 @@
+reason,eligible
+CANCEL,Y
+FRAUD,Y
+VOID,Y
+INFO,N
+MANUAL_REVIEW,N
+RESCIND,Y

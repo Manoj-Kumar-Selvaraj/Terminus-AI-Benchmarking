@@ -1,0 +1,45 @@
+# Rubric 1
+Agent preserves the `run_finbulk.sh` CLI and repairs `/app/internal/finbulk` Go sources rather than hardcoding sample outputs, +2
+Agent validates the fixed-width header, detail rows, trailer count, and BAL financial total before any master, risk, ledger, audit, checkpoint, or reject mutation, +5
+Agent treats missing master-row SQLCODE `+100` as a business reject while continuing later valid details, +5
+Agent writes `summary_<batch>.json`, `rejects_<batch>.dat`, ledger, and audit side effects under the requested output directory with deterministic DB state, +5
+Agent writes exact summary status `FAILED_CLOSED` for malformed input or fixed-width header/trailer mismatch while leaving DB state unchanged, +5
+Agent hardcodes sample batch ids, account ids, outputs, or DB snapshots instead of implementing the simulator workflow, -5
+Agent mutates DB state before validating fixed-width control records, -5
+Agent treats missing master rows as fatal ABENDs or silently drops rejects, -5
+# Rubric 2
+Agent preserves milestone 1 behavior while adding restart-safe checkpointing for simulated ABEND reruns, +5
+Agent returns status `66` with summary status `SIMULATED_ABEND` after persisting only fully committed records and compatible checkpoint/applied-event state, +5
+Agent skips already committed batch sequence events on rerun without duplicating balances, ledger rows, audit rows, or checkpoint advancement, +5
+Agent treats duplicate detail events within the same batch as already applied rather than double-posting, +3
+Agent preserves completed-batch rerun stability without deleting audit or ledger history, +3
+Agent clears the database, audit, ledger, or checkpoint tables to make reruns appear clean, -5
+Agent reposts committed records or advances checkpoints for records that were not committed, -5
+Agent changes the fixed-width input or output schemas while adding restart behavior, -3
+# Rubric 3
+Agent preserves milestone 1-2 behavior while handling SQLCODE `-911` as retryable lock contention, +5
+Agent returns status `75`, writes `pending_locks_<batch>.json`, summary status `RETRYABLE_LOCK` with integer `pending_locks`, and no lock business reject, +5
+Agent stops processing at the locked detail and does not advance checkpoint state beyond the last committed detail, +5
+Agent applies the locked and later details exactly once after the lock is cleared and the same batch is rerun, +5
+Agent handles lock state from runtime DB fixtures without sleeps, nondeterminism, or account-specific shortcuts, +3
+Agent treats locks as permanent rejects or fatal ABENDs, -5
+Agent processes later rows after a locked row or skips the locked row on rerun, -5
+Agent uses timing loops, wildcard lock clearing, or fixture-only account names, -3
+# Rubric 4
+Agent preserves milestone 1-3 behavior while making `LIM` credit-limit updates atomic across master and risk records, +5
+Agent updates `master.credit_limit_cents` and `risk.exposure_limit_cents` together for valid `LIM` details, +5
+Agent rolls back both sides when either update returns `+100`, `-911`, or `-530`, leaving no master/risk drift, +5
+Agent treats SQLCODE `-530` as a business reject rather than an applied event, +5
+Agent writes valid `LIM` audit and applied-event markers exactly once and keeps restart semantics intact, +3
+Agent partially updates master or risk on a failed `LIM` detail, -5
+Agent records failed `LIM` constraints as successful applied events, -5
+Agent changes DB schema, fixed-width layout, or SQLCODE meanings to avoid atomicity, -5
+# Rubric 5
+Agent preserves milestone 1-4 behavior while adding optional `--control PATH` settlement manifest support, +5
+Agent validates control manifest `batch_id`, `business_date`, `source`, `expected_detail_count`, and `expected_financial_total` against parsed input before mutation, +5
+Agent persists `control_totals[batch_id]` with `status`, `detail_count`, `financial_total`, `input_sha256`, and identifying control fields on successful controlled runs, +5
+Agent rejects same-batch-id reruns with a different input hash using summary status `FAILED_CLOSED` while allowing same-payload reruns to remain idempotent, +5
+Agent keeps legacy invocations without `--control` compatible and preserves summary/reject/pending-lock output behavior, +3
+Agent mutates DB state before detecting malformed, mismatched, or conflicting control manifests or emits a status other than `FAILED_CLOSED`, -5
+Agent omits the input hash provenance or overwrites settlement history to hide duplicate batch ids, -5
+Agent breaks restart, lock, atomicity, or legacy no-control behavior while adding settlement controls, -5

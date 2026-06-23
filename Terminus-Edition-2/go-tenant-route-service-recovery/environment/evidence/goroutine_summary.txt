@@ -1,0 +1,8 @@
+goroutine profile summary from edge-tenant-route-17:
+
+2187 goroutines in net/http.(*persistConn).readLoop
+2187 goroutines in net/http.(*persistConn).writeLoop
+1042 goroutines waiting on upstream response bodies
+  31 goroutines serving active client requests
+
+The count rose during repeated upstream failures on the same route path.

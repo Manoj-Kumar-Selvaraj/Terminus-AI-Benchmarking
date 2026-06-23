@@ -1,0 +1,1 @@
+CSV fields may carry incidental surrounding spaces. Match identifiers exactly after trimming only; do not prefix-match or fuzzy-match identifiers. Amount fields are base-10 positive integer cents after trimming. Leading zeroes are accepted for numeric comparison but summaries use integer arithmetic.

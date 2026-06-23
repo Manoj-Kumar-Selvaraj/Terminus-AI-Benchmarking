@@ -1,0 +1,3 @@
+# Edge gateway outbound TLS contract
+The gateway calls the ledger endpoint through `internal/upstream` and obtains TLS material from `internal/tlsmaterial`. Callers depend on the exported `tlsmaterial.Config`, `NewManager`, `ClientTLSConfig`, and `Reload` interfaces and on `upstream.NewClient`, `Get`, and `CloseIdleConnections`; preserve those interfaces.
+Outbound TLS must remain fully verified. The gateway may not disable certificate verification, accept arbitrary hostnames, or fall back to plaintext. TLS 1.2 or newer is required. The configured trust file is authoritative for this private endpoint and may be supplied at a temporary path by deployment tooling.

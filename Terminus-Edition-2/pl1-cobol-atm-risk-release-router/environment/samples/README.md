@@ -1,0 +1,1 @@
+sample operational fixtures for the ATM release router

@@ -1,0 +1,126 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.6.6",
+  "resource_changes": [
+    {
+      "address": "module.network.aws_route_table_association.subnet[\"subnet-private-a\"]",
+      "type": "aws_route_table_association",
+      "name": "subnet",
+      "change": {
+        "actions": [
+          "delete",
+          "create"
+        ],
+        "before": {
+          "subnet_id": "subnet-private-a",
+          "route_table_id": "rtb-private-a"
+        },
+        "after": {
+          "subnet_id": "subnet-private-a",
+          "route_table_id": "rtb-public-a"
+        }
+      }
+    },
+    {
+      "address": "module.network.aws_route.private_nat[\"private-b\"]",
+      "type": "aws_route",
+      "name": "private_nat",
+      "change": {
+        "actions": [
+          "delete"
+        ],
+        "before": {
+          "route_table_id": "rtb-private-b",
+          "nat_gateway_id": "nat-b"
+        },
+        "after": null
+      }
+    },
+    {
+      "address": "module.network.aws_vpc_endpoint.gateway[\"s3\"]",
+      "type": "aws_vpc_endpoint",
+      "name": "gateway",
+      "change": {
+        "actions": [
+          "update"
+        ],
+        "before": {
+          "route_table_ids": [
+            "rtb-private-a",
+            "rtb-private-b"
+          ]
+        },
+        "after": {
+          "route_table_ids": [
+            "rtb-private-a"
+          ]
+        }
+      }
+    },
+    {
+      "address": "module.network.aws_vpc_endpoint.gateway[\"dynamodb\"]",
+      "type": "aws_vpc_endpoint",
+      "name": "gateway",
+      "change": {
+        "actions": [
+          "update"
+        ],
+        "before": {
+          "route_table_ids": [
+            "rtb-private-a",
+            "rtb-private-b"
+          ]
+        },
+        "after": {
+          "route_table_ids": [
+            "rtb-private-a",
+            "rtb-public-a"
+          ]
+        }
+      }
+    },
+    {
+      "address": "module.network.aws_security_group.endpoint[0]",
+      "type": "aws_security_group",
+      "name": "endpoint",
+      "change": {
+        "actions": [
+          "delete",
+          "create"
+        ],
+        "before": {
+          "id": "sg-vpce-staging"
+        },
+        "after": {
+          "name": "staging-vpce-shared"
+        }
+      }
+    },
+    {
+      "address": "module.network.aws_route_table.private[0]",
+      "type": "aws_route_table",
+      "name": "private",
+      "change": {
+        "actions": [
+          "delete",
+          "create"
+        ],
+        "before": {
+          "id": "rtb-private-a"
+        },
+        "after": {
+          "id": "rtb-private-a"
+        }
+      }
+    }
+  ],
+  "configuration": {
+    "root_module": {
+      "module_calls": {
+        "network": {
+          "source": "../../modules/network"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,31 @@
+# Rubric 1
+Agent inspects `/app/cmd/reconcile/main.go`, `/app/data/hauls.csv`, and `/app/data/adjustments.csv` before editing, +2
+Agent repairs milestone 1 matching in the Go reconciler using full `haul_id`, `account_id`, exact amount, haul status `COMPLETED`, and allowed canonical routes, +5
+Agent trims fields and compares haul status and route case-insensitively while rejecting `POSTED`, `PENDING`, blank, and unknown values in milestone 1, +3
+Agent tracks consumed haul rows by input position so duplicate adjustments cannot reuse the same haul in milestone 1, +3
+Agent preserves adjustment input order, report columns, exact `MATCHED` and `UNMATCHED` labels, blank unmatched routes, and positive summary totals in milestone 1, +3
+Agent emits matched report routes from the adjustment row after trimming whitespace while preserving the adjustment route original casing, +3
+Agent hardcodes `/app/out/adjustment_report.csv` or `/app/out/adjustment_summary.json` instead of repairing milestone 1 reconciliation logic, -5
+Agent tampers with platform files or runtime input fixtures to force a milestone 1 pass, -5
+Agent treats `POSTED`, `PENDING`, blank, or unknown haul statuses or routes as milestone 1 match-eligible, -5
+# Rubric 2
+Agent inspects the milestone 2 alias requirement and maps `RES`, `COM`, and `INDL` to `RESI`, `COMM`, and `IND` in the matcher, +2
+Agent implements route alias normalization before matching instead of special-casing final output rows, +5
+Agent applies alias normalization after trimming and case folding while still rejecting unknown route strings in milestone 2, +3
+Agent preserves milestone 1 identity, status, amount, row-consumption, schema, and positive-total behavior while adding milestone 2 aliases, +3
+Agent emits canonical route values for matched alias rows and keeps unmatched route fields blank in milestone 2 output, +3
+Agent emits raw alias values, ignores aliases, or bypasses route validation while attempting milestone 2, -5
+Agent regresses milestone 1 full-id, `COMPLETED` status, amount, consumption, output schema, or summary behavior while adding aliases, -5
+Agent special-cases known output rows for milestone 2 without fixing the shared matching path, -3
+# Rubric 3
+Agent inspects `/app/config/cutoff_calendar.txt` and the dated milestone 3 CSV schemas before changing date logic, +2
+Agent reads the cutoff calendar and treats only listed `open` adjustment dates as eligible, case-insensitively, +5
+Agent skips calendar gating when either input file omits its date column and falls back to prior alias-aware matching rules, +3
+Agent rejects missing, blank, closed, or unlisted adjustment dates and missing haul service dates before matching in milestone 3, +3
+Agent enforces that `adjustment_date` must not be later than `service_date` before a dated match can occur, +5
+Agent selects among multiple eligible unused hauls by latest `service_date`, breaking same-date ties by earliest haul input row, +3
+Agent keeps milestone 2 route aliases, canonical route output, exact schemas, exact status strings, blank unmatched routes, and positive totals working under dated matching, +3
+Agent still requires `COMPLETED` haul status and exact amount equality when applying dated matching rules, +3
+Agent treats closed, absent, blank, malformed, or unlisted dates as eligible in milestone 3, -5
+Agent chooses candidate hauls by file order alone or by `haul_id` key instead of the documented consumption and latest-date rules, -5
+Agent regresses milestone 1 or milestone 2 behavior while implementing milestone 3 date and tie-break logic, -5

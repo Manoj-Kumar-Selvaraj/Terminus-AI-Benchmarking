@@ -1,0 +1,47 @@
+# Rubric 1
+Agent investigates the COBOL batch behavior, `/app/src/wire_returns.cbl`, `/app/data/wires.dat`, `/app/data/returns.dat`, `/app/out/wire_return_report.csv`, and `/app/out/wire_return_summary.txt` before changing logic, +2
+Agent runs the COBOL program through `/app/scripts/compile.sh` and `/app/build/batch` with fresh synthetic wire and return inputs before finalizing the fix, +3
+Agent repairs the COBOL reconciliation algorithm directly instead of hardcoding `/app/out/wire_return_report.csv` or `/app/out/wire_return_summary.txt`, +5
+Agent enforces exact matching for the full 12-character `wire_id`, 8-character `account_id`, 10-digit `amount_cents`, settled wire status `S`, and allowed return reasons, +5
+Agent treats `CON`, `REF`, `ADM`, and `B2B` as allowed return reasons from `/app/config/reason_codes.csv`, +3
+Agent prevents partial identifier collisions by requiring full `wire_id` equality rather than prefix, substring, or fuzzy matching, +3
+Agent preserves return input order and writes exactly one report row per return with schema `wire_id,account_id,reason,amount_cents,status`, +3
+Agent emits exactly `CLEARED` or `EXCEPTION` status labels, canonical matched reasons for cleared rows, and blank `reason` fields for exception rows, +3
+Agent preserves the raw zero-padded `amount_cents` text from the return record in the report, +3
+Agent writes `/app/out/wire_return_summary.txt` with `cleared_count`, `cleared_amount_cents`, `exception_count`, and `exception_amount_cents` as non-negative integer key-value lines, counting all cents as positive amounts, +3
+Agent keeps the implementation compiled from COBOL source through the provided compile path rather than replacing the batch with a non-COBOL shortcut, +2
+Agent hardcodes visible output rows instead of implementing general wire and return matching behavior, -5
+Agent changes input assets, output schemas, required filenames, task metadata, or runtime contracts to force a pass instead of repairing reconciliation behavior, -5
+Agent uses prefix, substring, partial, fuzzy, or lossy normalized matching for `wire_id` or `account_id`, allowing unrelated records to collide, -3
+Agent omits allowed return reasons or clears returns with unsupported wire reasons such as `INT`, -3
+Agent emits nonblank `reason` values for exception rows or negative cleared or exception summary cents, -3
+# Rubric 2
+Agent preserves all milestone 1 behavior before adding wire-row consumption logic, +3
+Agent consumes each eligible settled wire row at most once so duplicate returns cannot reuse the same source wire row, +5
+Agent tracks consumption by physical wire row position rather than only by `wire_id`, so duplicate wire IDs in separate rows remain independently consumable until used, +5
+Agent preserves exact full `wire_id`, `account_id`, amount, status, and allowed-reason gates while adding consumption, +3
+Agent preserves return input order and writes one report row per return after consumption decisions, +3
+Agent leaves `reason` blank for returns that become exceptions because the only matching wire row was already consumed, +3
+Agent keeps summary counts and positive amount totals consistent with consumed versus unconsumed wire rows, +3
+Agent handles duplicate wire rows and duplicate return rows deterministically without fixture-specific conditionals, +3
+Agent keeps the report schema, status labels, zero-padded amount text, output paths, and four-key summary schema unchanged, +3
+Agent validates the final report and summary artifacts after row-consumption scenarios to confirm counts and totals reconcile, +2
+Agent allows one physical wire row to satisfy multiple returns, -5
+Agent tracks consumption only by `wire_id` and incorrectly merges or blocks duplicate wire IDs that appear on separate input rows, -5
+Agent regresses milestone 1 exact matching, allowed reasons, blank exception reasons, positive cents, or output schemas while adding consumption, -5
+Agent hardcodes known duplicate wire or return fixtures instead of implementing reusable consumption logic, -3
+Agent changes required filenames, output schemas, input assets, task metadata, or runtime contracts to force a pass, -5
+# Rubric 3
+Agent preserves milestone 1 and milestone 2 behavior before adding settlement-cycle date controls, +3
+Agent reads `/app/config/cycle_calendar.txt` at runtime and treats only listed dates with case-insensitive `OPEN` status as open cycle days regardless of calendar row order, +5
+Agent requires nonblank 8-character wire settlement dates and return dates when cycle gating applies, treating blank dates as ineligible rather than same-day matches, +5
+Agent rejects returns when either settlement or return date is blank, missing from the calendar, closed, malformed, or when the return date is before the wire settlement date, +5
+Agent allows equal settlement and return dates and enforces the maximum two-open-day window using only OPEN calendar days strictly after settlement through and including the return date, not raw calendar span, +5
+Agent chooses the unused matching wire with the latest settlement date, breaks tied settlement dates by choosing the earliest wire input row, and continues row-position consumption across repeated returns, +5
+Agent preserves full identifier matching, account and amount gates, settled status, allowed reasons, report schema, blank exception reasons, zero-padded amounts, and positive four-key summary totals under date rules, +3
+Agent validates final report and summary artifacts after cycle-window and latest-wire selection scenarios to confirm counts and totals reconcile, +3
+Agent regresses milestone 1 or milestone 2 matching, row consumption, output schema, blank exception reasons, or summary totals while implementing cycle-date logic, -5
+Agent hardcodes final output files instead of fixing the COBOL reconciliation logic, -5
+Agent treats closed, missing, unlisted, blank, malformed, or too-early cycle dates as eligible, -5
+Agent validates only return-date calendar eligibility and ignores wire settlement-date open status, -5
+Agent chooses the first matching wire row instead of the latest eligible settlement date, or fails the earliest-row tie-break when settlement dates tie, -5

@@ -1,0 +1,2 @@
+stream_id,account_id,device,minutes,start_utc,end_utc,status,region
+STR-EDGE-001,ACCT-9,MOBILE,22,20260528130000,20260528132200,POSTED,NA

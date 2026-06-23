@@ -1,0 +1,3 @@
+# Client credential reload contract
+The ledger endpoint requires a client certificate issued by the replacement issuer. At startup, the gateway must present the certificate and key named by `ClientCertFile` and `ClientKeyFile` when both are configured.
+Operations replace those two files and invoke `Manager.Reload()` in the running process. Existing `upstream.Client` instances must use the renewed credential on subsequent TLS handshakes; rebuilding the gateway or HTTP client is not permitted. A malformed or mismatched replacement must make `Reload()` return an error while the last known-good credential remains active. Empty client-certificate paths are valid for endpoints that do not require mTLS.

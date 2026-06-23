@@ -1,0 +1,5 @@
+terminal_id|trust_tier|region|max_release_cents|supervisor_above_cents
+TERM-A|TRUSTED|N|70000|60000
+TERM-B|STANDARD|S|35000|30000
+TERM-C|UNTRUSTED|N|0|1
+TERM-D|BLOCKED|W|0|1

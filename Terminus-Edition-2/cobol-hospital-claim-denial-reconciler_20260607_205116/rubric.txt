@@ -1,0 +1,38 @@
+# Rubric 1
+Agent inspects the fixed-width layouts, COBOL source, runtime code tables, and batch scripts before changing reconciliation behavior, +2
+Agent keeps the effective implementation in `/app/src/claim_denial_reconcile.cbl` and compiles it through the provided batch path, +3
+Agent enforces full record id, account, amount, branch, active source status, eligible reason, canonical service, and date-order gates, +5
+Agent consumes each physical source row at most once while preserving denial input order, +5
+Agent regenerates the exact report header, row fields, status labels, blank unmatched service, reason values, and positive summary totals, +5
+Agent hardcodes report or summary artifacts instead of repairing general reconciliation logic, -5
+Agent changes runtime inputs or execution scaffolding to force expected output, -5
+Agent accepts prefix identifiers, invalid gates, or reused source rows, -5
+# Rubric 2
+Agent preserves full-key matching, source consumption, output order, report schema, and summary behavior while adding aliases, +5
+Agent normalizes action aliases `E1`, `LB`, and `XR` to canonical `ER`, `LAB`, and `IMG` before matching, +5
+Agent keeps source services restricted to canonical values and rejects alias or unknown values on source rows, +3
+Agent emits the selected source's canonical service for matched rows and leaves unmatched service fields blank, +3
+Agent preserves action reason values for both matched and unmatched report rows, +3
+Agent normalizes source aliases or allows two unsupported service values to match, -5
+Agent regresses identity, branch, status, reason, date ordering, or one-time consumption while adding aliases, -5
+Agent emits raw aliases or changes required output contracts, -3
+# Rubric 3
+Agent preserves all prior matching, alias, consumption, and output behavior while adding calendar eligibility and candidate ranking, +5
+Agent reads the adjudication calendar at runtime and treats only case-insensitive `OPEN` entries for the source date as eligible, +5
+Agent validates numeric date ordering without requiring the action date to have an open calendar entry, +5
+Agent supports the both-blank undated path and rejects pairs where only one date is blank, +3
+Agent selects the latest eligible source date, then the earliest source input row, consumes by row position, and emits an accurate source-consumption trace, +5
+Agent treats closed, missing, malformed, or unlisted source dates as eligible, -5
+Agent incorrectly requires the action date to be listed as open in the calendar, -5
+Agent uses first-fit selection or regresses prior aliases, gates, schemas, reasons, or totals, -5
+# Rubric 4
+Agent inspects the extended fixed-width layouts and OFAC screening contract before changing compliance behavior, +2
+Agent matches hospital and state exactly after text-padding normalization and requires source supporting-document approval while rejecting blank or malformed approval flags, +5
+Agent treats binary low-values as padding only in textual source, denial, calendar, and OFAC fields and prevents low-values from reaching report or summary output, +5
+Agent rejects records containing low-values or other non-numeric bytes in amount and date fields without crashing, +3
+Agent selects the latest applicable OFAC screen for the denial account and hospital and breaks equal-date ties by OFAC input order, +5
+Agent fails closed for hold, block, unknown, future, malformed, or missing OFAC decisions without consuming a source claim, +5
+Agent preserves aliases, calendar eligibility, latest-source selection, row consumption trace, report schema, reasons, and positive totals under compliance controls, +5
+Agent strips or ignores compliance suffix fields so hospital, state, or document mismatches can clear, -5
+Agent treats any historical CLEAR decision as sufficient despite a later HOLD or BLOCK, -5
+Agent replaces binary input fixtures, OFAC data, or output artifacts instead of fixing general COBOL processing, -5

@@ -1,0 +1,3 @@
+After stale fills were contained, the next normal expiry boundary produced a short catalog traffic surge while client traffic remained steady. Review `/app/evidence/upstream_call_spike.log` and `/app/docs/fill_collapse_contract.md`. Prevent concurrent misses for the same normalized price key from multiplying source requests while keeping unrelated keys independent. Preserve milestone 1 behavior.
+
+The verifier releases controlled source fetches under concurrent load, counts source calls, and checks that a slow key does not serialize another SKU or currency. Do not disable caching, pre-seed product values, or use a process-wide fetch lock.

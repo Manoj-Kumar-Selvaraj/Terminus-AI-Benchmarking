@@ -1,0 +1,1 @@
+Bursar return clearing settlement runs as a single COBOL batch job and writes CSV plus key-value summary outputs.

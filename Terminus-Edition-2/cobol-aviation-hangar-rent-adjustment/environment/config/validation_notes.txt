@@ -1,0 +1,1 @@
+Verifier scenarios rewrite invoices.dat, adjustments.dat, and hangar_calendar.txt.

@@ -1,0 +1,7 @@
+matched_count
+matched_amount_cents
+unmatched_count
+unmatched_amount_cents
+
+JSON object with integer fields only.
+All amount totals are positive integer cents.

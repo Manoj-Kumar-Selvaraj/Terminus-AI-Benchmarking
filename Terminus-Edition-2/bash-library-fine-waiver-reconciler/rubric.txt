@@ -1,0 +1,45 @@
+# Rubric 1
+
+Agent investigates `/app/scripts/reconcile.sh`, `/app/data/fines.csv`, and `/app/data/waivers.csv` instead of unrelated files, +2
+Agent satisfies milestone 1 core requirement: full `fine_id` equality, `patron_id` and `amount_cents` gates, `ASSESSED` fine status, allowed waiver reasons, and desk equality after trim and case folding, +5
+Agent restricts milestone 1 match-eligible desk values to `FRONT`, `ONLINE`, and `MOBILE` only, +3
+Agent consumes each fine row at most once while preserving waiver input order, +3
+Agent writes `/app/out/waiver_report.csv` and `/app/out/waiver_summary.json` with required schema, `MATCHED`/`UNMATCHED` only, blank unmatched `desk`, and positive summary totals, +3
+Agent hardcodes final output files instead of fixing reconciliation logic, -5
+Agent tampers with verifier harness files, oracle scripts, or input fixtures to force a pass, -5
+
+# Rubric 2
+
+Agent normalizes legacy desk aliases after trim and case folding before matching, +5
+Agent emits canonical desk values in matched report rows rather than raw alias codes, +3
+Agent preserves milestone 1 full-id, identity, consumption, schema, and positive-total behavior while adding aliases, +3
+Agent leaves `desk` blank on unmatched rows after alias-aware matching, +3
+Agent applies calendar or methods gates in milestone 2 before those rules belong in scope, -3
+Agent regresses milestone 1 behavior while implementing alias normalization, -3
+
+# Rubric 3
+
+Agent applies open-date gates from `/app/config/cutoff_calendar.txt` while preserving all earlier matching rules, +5
+Agent chooses the eligible fine with the latest `due_date` when multiple unused rows qualify for one waiver, +5
+Agent breaks tied `due_date` values by selecting the earliest fine input row and tracks consumption by row position, +3
+Agent rejects waivers whose `waiver_date` is later than the fine `due_date` or not listed as open, +3
+Agent preserves alias normalization and canonical report output under date-gated matching, +3
+Agent validates final CSV and JSON artifacts before finishing milestone 3, +2
+Agent regresses milestone 1 or 2 matching behavior while adding calendar logic, -3
+
+# Rubric 4
+
+Agent applies desk allowlist gates from `/app/config/channels.csv` while preserving milestones 1–3 behavior, +5
+Agent treats a desk as allowed only when `enabled` is `true` (case-insensitive), +3
+Agent leaves `desk` blank on unmatched rows when the desk is disabled or unknown, +3
+Agent preserves consumption, schema, status labels, and positive summary totals under allowlist gating, +3
+Agent regresses earlier milestones while implementing allowlist filtering, -3
+
+# Rubric 5
+
+Agent applies waiver open-window day counting from `/app/config/run_profile.ini` while preserving milestones 1–4 behavior, +5
+Agent counts only dates explicitly marked `open`; closed or absent calendar lines do not count toward the window, +3
+Agent rejects waivers whose open-day count exceeds `waiver_open_window_days`, +3
+Agent preserves report schema, consumption, and canonical desk output under window-day gating, +3
+Agent regresses earlier milestones while implementing window-day logic, -3
+Agent repeats failing commands without adjusting approach after clear errors, -2

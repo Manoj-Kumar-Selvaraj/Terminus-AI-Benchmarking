@@ -1,0 +1,3 @@
+booking_id,patron_id,amount_cents,seat_zone
+BK0001,PATRON01,5000,ORC
+BK0002,PATRON02,7500,MEZ

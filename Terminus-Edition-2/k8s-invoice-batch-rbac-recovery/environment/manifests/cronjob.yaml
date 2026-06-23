@@ -1,0 +1,41 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: invoice-nightly-batch
+  namespace: billing-batch
+  labels:
+    app: invoice-nightly-batch
+spec:
+  schedule: "0 2 * * *"
+  concurrencyPolicy: Allow
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    metadata:
+      labels:
+        app: invoice-nightly-batch
+    spec:
+      activeDeadlineSeconds: 7200
+      backoffLimit: 1
+      template:
+        metadata:
+          labels:
+            app: invoice-nightly-batch
+        spec:
+          serviceAccountName: invoice-batch-runner
+          restartPolicy: OnFailure
+          containers:
+            - name: publisher
+              image: finance/invoice-batch:1.4.2
+              imagePullPolicy: IfNotPresent
+              env:
+                - name: CONFIG_MAP_NAME
+                  value: invoice-batch-config
+                - name: NAMESPACE
+                  value: billing-batch
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  echo "read configmap ${CONFIG_MAP_NAME}"
+                  echo "publish ledger for active billing window"

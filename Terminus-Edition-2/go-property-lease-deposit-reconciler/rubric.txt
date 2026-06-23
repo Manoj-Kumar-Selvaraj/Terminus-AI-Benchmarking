@@ -1,0 +1,38 @@
+# Rubric 1
+Agent inspects `/app/cmd/reconcile/main.go` and both runtime CSV inputs before changing reconciliation behavior, +2
+Agent requires full lease identifier, customer identifier, integer amount, `POSTED` source status, and an eligible canonical channel, +5
+Agent consumes each lease input row at most once while preserving deposit input order, +3
+Agent writes the documented CSV and JSON schemas with canonical matched channels, blank unmatched channels, exact statuses, and positive cent totals, +5
+Agent trims input fields and compares channel and status values case-insensitively, +3
+Agent hardcodes final output artifacts instead of deriving them from runtime inputs, -5
+Agent changes runtime input fixtures or scaffolding to force expected output, -5
+Agent matches identifier prefixes, unknown channels, or previously consumed lease rows, -5
+# Rubric 2
+Agent preserves full-key matching, row consumption, output order, schemas, and totals while extending channel normalization, +5
+Agent trims and case-folds both lease and deposit channels before mapping `CC` to `CARD` and `WIR` to `WIRE`, +5
+Agent emits only `ACH`, `CARD`, or `WIRE` for matched rows and leaves unmatched channels blank, +3
+Agent leaves unknown or cross-channel values unmatched after normalization, +3
+Agent recognizes aliases only on deposit rows or only without surrounding whitespace, -5
+Agent emits raw aliases or regresses full-key and one-time-consumption behavior, -5
+# Rubric 3
+Agent activates dated processing when either input declares its date column and preserves undated behavior when both columns are absent, +5
+Agent requires valid `YYYY-MM-DD` values, an open deposit date, and a deposit date no later than the lease due date, +5
+Agent rejects blank, malformed, closed, unlisted, or non-comparable date scenarios without crashing, +3
+Agent chooses the latest eligible due date, then the earliest lease input row, and tracks consumption by row position, +5
+Agent preserves alias normalization, canonical output channels, report order, and positive summary totals under dated processing, +3
+Agent uses file order instead of latest due date and earliest-row tie breaking, -5
+Agent treats absent or invalid date values as eligible after dated processing has activated, -5
+# Rubric 4
+Agent reads methods, customer limits, blackouts, and the open-date calendar before implementing policy decisions, +2
+Agent enables only recognized channels with trimmed case-insensitive `enabled=true` values, +5
+Agent keeps enabled channels with missing or non-numeric priorities active and ranks them after numeric priorities, +3
+Agent activates dated processing when either input alone declares its date column and rejects incomplete dated pairs, +3
+Agent supports deposit channel `ANY`, emits a blank channel when unmatched, and filters ineligible candidates before ranking, +5
+Agent ranks dated wildcard candidates by latest due date, numeric method priority, then lease input row, +5
+Agent ranks undated wildcard candidates by method priority, then lease input row, +3
+Agent selects the latest applicable active customer limit and enforces per-customer, per-channel, per-date budgets in deposit order, +5
+Agent applies valid active blackout ranges and skips disabled, blacked-out, over-budget, or otherwise ineligible wildcard candidates, +5
+Agent preserves identity, aliases, date gates, source consumption, output schemas, and summary totals under policy matching, +3
+Agent disables a valid method solely because its optional priority is missing or malformed, -5
+Agent lets `ANY` bypass method, date, limit, blackout, identity, or consumption gates, -5
+Agent consumes a lease row or customer budget for an unmatched deposit, -5

@@ -1,0 +1,35 @@
+# Rubric 1
+Agent inspects fixed-width update layouts, DB2 simulator contract, and control trailers before changing validation, +2
+Agent validates account, currency, check digit, duplicate sequence, and trailer totals before applying updates, +5
+Agent rejects invalid records with stable reason codes and fail-closed batch control, +4
+Agent preserves streaming behavior without relying on static fixture rows, +3
+Agent hardcodes batch IDs, record positions, or expected output files, -5
+Agent applies invalid records or ignores control-total mismatches, -5
+# Rubric 2
+Agent makes reruns checkpoint-safe by recording only committed business positions and transaction epochs, +5
+Agent prevents duplicate master updates, audit rows, and ledger effects after ABEND or completed rerun, +5
+Agent preserves milestone 1 validation semantics, +3
+Agent validates duplicate sequence handling within the same batch, +3
+Agent advances checkpoint past uncommitted work, -5
+Agent clears state or skips valid records to mask duplicate side effects, -5
+# Rubric 3
+Agent handles DB2-style lock contention using retryable SQLCODE semantics without business rejects, +5
+Agent leaves checkpoints at the retry point and replays locked plus later records once the lock clears, +4
+Agent preserves committed work and prior milestone behavior, +3
+Agent validates lock, retry, and continuation paths independently, +3
+Agent writes retryable locks to business reject files, -5
+Agent drops locked records or advances past them, -5
+# Rubric 4
+Agent preserves atomic master and risk-table updates for credit-limit changes, +5
+Agent rolls back both tables and audit effects on referential or limit validation failures, +5
+Agent emits one coherent audit marker for valid atomic updates, +3
+Agent validates missing risk rows and below-balance limits, +3
+Agent partially updates master without risk or audit consistency, -5
+Agent treats SQL referential failures as successful updates, -5
+# Rubric 5
+Agent enforces settlement manifests, input hashes, and duplicate-batch provenance before accepting settled work, +5
+Agent distinguishes safe replay from changed-input duplicate batches, +5
+Agent preserves prior checkpoint, lock, validation, and atomicity behavior, +3
+Agent validates manifest mismatch and settled-batch replay with generated inputs, +3
+Agent accepts changed input under an existing settled batch ID, -5
+Agent bypasses manifest checks or deletes settlement provenance, -5

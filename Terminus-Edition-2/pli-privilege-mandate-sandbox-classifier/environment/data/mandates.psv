@@ -1,0 +1,2 @@
+mandate_id|service_id|cap_token|payload_hash|sandbox_class|recv_ts|state|kind_code
+MND-10001|SVC-PAYMENTS|50000|FED|NYC|20260612120000|POSTED|TM

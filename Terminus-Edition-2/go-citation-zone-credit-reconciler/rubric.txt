@@ -1,0 +1,40 @@
+# Rubric 1
+Agent inspects `/app/cmd/reconcile/main.go`, `/app/data/citations.csv`, and `/app/data/credits.csv` before changing the citation zone credit reconciliation logic, +2
+Agent enforces full `citation_id`, `plate_id`, exact amount, citation status `PAID`, and allowed zone matching gates, +5
+Agent rejects credits whose zone differs from the matching citation zone even when both zones are allowed values, +3
+Agent consumes each citation row at most once so duplicate credits leave only the earliest eligible credit matched, +5
+Agent preserves credit input order, report schema, `MATCHED` and `UNMATCHED` labels, blank zone on unmatched rows, and positive summary totals, +5
+Agent hardcodes `/app/out/credit_report.csv` or `/app/out/credit_summary.json` instead of fixing the Go reconciler, -5
+Agent uses partial citation identifiers or allows consumed citation rows to be reused, -5
+Agent treats `POSTED`, `DRAFT`, or other non-`PAID` citation statuses as eligible for milestone 1 matching, -5
+# Rubric 2
+Agent normalizes legacy zone aliases `ST`, `GRG`, and `LT` to canonical `STREET`, `GARAGE`, and `LOT` before matching, +5
+Agent applies alias normalization case-insensitively and after trimming without accepting unknown zone strings, +3
+Agent routes aliased values through full citation, plate, amount, `PAID` status, zone, and consumption gates, +5
+Agent emits canonical matched zone values while keeping unmatched zone fields blank, +3
+Agent preserves milestone 1 row consumption, report ordering, schemas, status names, and positive totals after alias support, +5
+Agent ignores a documented alias, emits raw aliases, or bypasses core matching gates for aliases, -5
+Agent regresses milestone 1 behavior while implementing alias support, -5
+Agent treats `POSTED` as equivalent to `PAID` or skips status validation while adding alias support, -5
+# Rubric 3
+Agent supports dated milestone input columns while reading older undated schemas without crashing, +3
+Agent reads `/app/config/cutoff_calendar.txt` and treats only listed open credit dates as eligible, +5
+Agent treats missing, closed, blank, or unlisted relevant dates as ineligible, +3
+Agent enforces the credit-date not-later-than due-date rule before allowing a match, +5
+Agent selects the correct candidate by latest `due_date` when multiple unused rows qualify, +5
+Agent keeps milestone 2 aliases working under dated matching with canonical zone output, +3
+Agent preserves prior report and summary schemas, exact status strings, blank unmatched zone fields, and positive totals, +3
+Agent ignores calendar/date eligibility or treats missing and closed dates as open, -5
+Agent chooses candidates by file order alone or by identifier key instead of the documented latest-date rule, -5
+Agent regresses earlier milestone behavior while implementing dated matching, -5
+# Rubric 4
+Agent inspects `/app/config/methods.csv` and the milestone 4 `credit_method` input contract before adding policy gating, +2
+Agent parses method policy rows as CSV with `method,enabled` columns and compares methods after trimming and case folding, +3
+Agent treats only config rows whose enabled value is `true` as eligible while rejecting false, missing, blank, malformed, or non-true method settings, +5
+Agent applies method gating only when the credit input includes `credit_method`, preserving milestone 3 behavior when that column is absent, +3
+Agent composes method eligibility with all prior identity, amount, `PAID` status, `POSTED` rejection, zone alias, calendar, date ordering, candidate selection, and consumption rules, +5
+Agent preserves the existing report schema without adding a method column, emits canonical matched zones, and keeps unmatched zones blank, +3
+Agent validates enabled, disabled, missing, blank, malformed, and case/whitespace method scenarios with overwritten inputs, +3
+Agent treats disabled, missing, blank, malformed, or non-true method policy rows as eligible, -5
+Agent lets an enabled method bypass prior identity, amount, status, zone, date, or consumption gates, -5
+Agent changes the output schema or emits method values in the report while implementing milestone 4, -3

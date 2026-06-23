@@ -1,0 +1,2 @@
+region,sku_type,billing_cycle,expected_committed_amount
+LOC-1,CPU,2026-05,100

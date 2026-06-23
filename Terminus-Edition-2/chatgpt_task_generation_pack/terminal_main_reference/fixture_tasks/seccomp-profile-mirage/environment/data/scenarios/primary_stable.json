@@ -1,0 +1,12 @@
+{
+  "scenario": "primary_stable",
+  "primary_tag": "tag_lock",
+  "fallback_tag": "tag_open",
+  "declared_tag": "tag_lock",
+  "retry_count": 0,
+  "prefer_alt": false,
+  "op_name": "ptrace",
+  "declared_allows_op": false,
+  "runtime_denies_primary": true,
+  "runtime_denies_fallback": false
+}

@@ -1,0 +1,4 @@
+reason,pass_tiers
+VOID,DAY|SEASON|VIP
+COMP,DAY|SEASON
+GUEST,VIP

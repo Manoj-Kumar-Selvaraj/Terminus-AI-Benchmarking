@@ -1,0 +1,8 @@
+{
+  "observed": [
+    "terminate-old-capacity",
+    "canary-unhealthy",
+    "capacity-below-minimum"
+  ],
+  "expected": "canary failure keeps old instances"
+}

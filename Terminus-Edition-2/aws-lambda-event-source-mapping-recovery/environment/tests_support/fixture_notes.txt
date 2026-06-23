@@ -1,0 +1,1 @@
+Verifier tests create temporary state paths and dynamic batches. Do not depend on fixture-only output snapshots.

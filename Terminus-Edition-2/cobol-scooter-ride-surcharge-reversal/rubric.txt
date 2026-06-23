@@ -1,0 +1,39 @@
+# Rubric 1
+Agent inspects `/app/src/scooter_surcharge_reconcile.cbl`, `/app/docs/record_layouts.md`, and output contracts before editing, +2
+Agent keeps the reconciler valid for free-format compilation with `cobc -x -free -O2`, +3
+Agent parses `record_id` after the one-byte record-type prefix without including the prefix in comparisons or CSV output, +5
+Agent enforces milestone 1 identity gates: full 12-character record id, account, amount, branch, status `Z`, eligible reasons, canonical `zone_code`, and action date on or after source date, +5
+Agent preserves action input order, report schema, exact `MATCHED`/`UNMATCHED` labels, blank unmatched `zone_code`, and positive summary totals, +3
+Agent consumes each source row at most once by physical row position, +5
+Agent hardcodes output files instead of fixing the COBOL reconciler, -5
+Agent tampers with platform files, task metadata, or runtime input fixtures to force a pass, -5
+Agent uses partial record-id matching or allows consumed source rows to be reused, -5
+# Rubric 2
+Agent normalizes `CB` to `CBD`, `RE` to `RES`, and `UN` to `UNI` before matching while preserving milestone 1 gates, +5
+Agent rejects cross-category alias mismatches and emits canonical `zone_code` on matched rows, +3
+Agent prevents duplicate actions from reusing one source row, +3
+Agent regresses milestone 1 behavior while adding alias normalization, -3
+Agent treats aliases as wildcard zone matches instead of exact canonical equality after normalization, -5
+Agent emits raw alias codes in matched report rows where canonical `zone_code` is required, -5
+# Rubric 3
+Agent applies `/app/config/fleet_calendar.txt` so only numeric `OPEN` source dates are eligible, with case-insensitive open-state handling, +5
+Agent selects the unused source row with the latest eligible date, breaking same-date ties by earliest input row, +5
+Agent tracks consumption by source row position so duplicate record ids with identical fields consume independently, +3
+Agent preserves alias normalization and milestone 1 gates under calendar constraints, +3
+Agent treats closed or unlisted calendar dates as open, -5
+Agent chooses candidates by file order alone instead of latest-date and earliest-row tie-break rules, -5
+Agent regresses prior milestone behavior while implementing calendar and tie-break logic, -3
+# Rubric 4
+Agent reads `/app/config/reasons.csv` at runtime and enables only reasons whose last well-formed row has `eligible=Y`, +5
+Agent treats missing, blank, malformed, or non-`Y` reason rows as ineligible without crashing, +3
+Agent preserves calendar gating, latest-date selection, alias normalization, and row-position consumption under reason policy, +3
+Agent regresses milestone 1-3 behavior while implementing reason eligibility, -3
+Agent hardcodes the milestone 1 reason allowlist instead of reading runtime reason config, -5
+Agent lets ineligible reasons match by bypassing identity, calendar, or consumption gates, -5
+# Rubric 5
+Agent reads `/app/config/categories.csv` at runtime, trims and case-normalizes `zone_code` policy keys (`CBD`, `RES`, `UNI`), and enforces `surcharge_enabled=true` with `max_reversal_cents` at or above action amount, +5
+Agent applies category policy after alias normalization using canonical keys `CBD`, `RES`, and `UNI` with last-row authority, +3
+Agent preserves reason, calendar, tie-break, and consumption gates while enforcing category limits per zone, +3
+Agent regresses milestone 1-4 behavior while implementing category policy, -3
+Agent treats missing, malformed, or disabled category rows as unlimited approval, -5
+Agent lets over-limit or disabled categories match by bypassing earlier gates, -5

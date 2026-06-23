@@ -1,0 +1,12 @@
+{
+  "scenario": "primary_declared_lax",
+  "primary_tag": "tag_lock",
+  "fallback_tag": "tag_open",
+  "declared_tag": "tag_open",
+  "retry_count": 0,
+  "prefer_alt": false,
+  "op_name": "clone3",
+  "declared_allows_op": true,
+  "runtime_denies_primary": true,
+  "runtime_denies_fallback": false
+}

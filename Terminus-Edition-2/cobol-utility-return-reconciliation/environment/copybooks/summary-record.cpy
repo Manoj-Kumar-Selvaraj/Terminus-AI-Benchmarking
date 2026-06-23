@@ -1,0 +1,1 @@
+      * Summary record copybook placeholder.

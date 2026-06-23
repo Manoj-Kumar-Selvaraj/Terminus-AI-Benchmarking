@@ -1,0 +1,20 @@
+{
+  "schema_version": "env-map/v1",
+  "environments": [
+    {
+      "name": "dev",
+      "cluster": "ci-dev",
+      "namespace": "orders-dev"
+    },
+    {
+      "name": "staging",
+      "cluster": "ci-stg",
+      "namespace": "orders-stg"
+    },
+    {
+      "name": "prod",
+      "cluster": "ci-prod",
+      "namespace": "orders-prod"
+    }
+  ]
+}

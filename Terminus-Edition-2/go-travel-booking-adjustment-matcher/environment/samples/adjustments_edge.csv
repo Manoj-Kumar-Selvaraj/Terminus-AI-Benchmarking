@@ -1,0 +1,3 @@
+booking_id,customer_id,amount_cents,channel
+BOOKEDGE000001,CUST9001,100,ACH
+BOOKEDGE000002,CUST9002,200,CARD

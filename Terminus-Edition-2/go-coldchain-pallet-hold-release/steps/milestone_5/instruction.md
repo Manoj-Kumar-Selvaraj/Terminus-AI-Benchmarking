@@ -1,0 +1,7 @@
+Finish the Go coldchain pallet hold release reconciler in `/app/cmd/reconcile/main.go` by adding release-calendar controls. Keep every rule from milestones 1 through 4, including full identifiers, aliases, canonical band validation, enabled-band policy, `ANY` priority selection, open realtime windows, row-position consumption, deterministic report ordering, and positive summary totals.
+
+Milestone 5 adds `/app/config/release_calendar.txt`. Each nonblank row contains a date token and a status token. Only dates explicitly marked `OPEN`, case-insensitively, are open coldchain release days; closed, missing, malformed, or unlisted dates are not open. The hold date is the first 8 digits of `hold_ts`, and the release date is the first 8 digits of `release_ts`. Both timestamps must already be valid numeric 14-digit timestamps from earlier milestones.
+
+A match is eligible only when both the hold date and release date are open release days. Count open release days after the hold date through the release date, including the release date if open and excluding the hold date. Same-day release counts zero open days and is eligible. One or two open release days are eligible. Three or more open release days are ineligible. Missing dates, release dates before hold dates, and dates absent from `/app/config/release_calendar.txt` must remain unmatched.
+
+Preserve `/app/out/pallet_release_report.csv` and `/app/out/pallet_release_summary.txt` exactly as documented by prior milestones.

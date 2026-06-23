@@ -1,0 +1,4 @@
+service_type,enabled,priority
+CLEAN,true,2
+XRAY,true,1
+SURG,true,3

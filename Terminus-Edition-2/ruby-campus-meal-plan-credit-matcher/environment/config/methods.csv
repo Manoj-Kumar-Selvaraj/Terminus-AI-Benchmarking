@@ -1,0 +1,5 @@
+location,enabled
+DINING,true
+CAFE,true
+MARKET,true
+CHECK,false

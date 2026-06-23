@@ -1,0 +1,2 @@
+workorder_id,rider_id,amount_cents,repair_type
+SRC1001,CUST1001,1200,TUNEUP

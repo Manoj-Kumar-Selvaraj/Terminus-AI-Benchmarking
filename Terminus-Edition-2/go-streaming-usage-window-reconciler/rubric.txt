@@ -1,0 +1,36 @@
+# Rubric 1
+
+Agent inspects `/app/cmd/reconcile/main.go`, `/app/data/playbacks.csv`, `/app/data/credits.csv`, and `/app/config/region_cutoffs.csv` before editing, +2
+Agent fixes the Go reconciler logic instead of hardcoding `/app/out/usage_credit_report.csv` or `/app/out/usage_credit_summary.txt`, +3
+Agent compares full `stream_id` values and does not use prefix or substring matching, +3
+Agent enforces credit reasons `BUFFER`, `DUPLICATE`, and `OUTAGE` and rejects ineligible reasons such as `INFO`, +3
+Agent normalizes device aliases `TV`, `PHONE`, and `WEBAPP` to canonical `CTV`, `MOBILE`, and `BROWSER` before matching, +3
+Agent requires playback status `POSTED`, matching `account_id`, `region`, and `minutes`, and canonical devices only, +3
+Agent enforces numeric 14-digit timestamps with `event_utc` on or after playback `end_utc` and within an open regional cutoff, +3
+Agent consumes each playback row at most once and selects the latest `end_utc` with earliest-row tie-breaking when multiple rows qualify, +5
+Agent writes the report schema `credit_id,stream_id,account_id,device,minutes,reason,status` with canonical devices on matched rows and blank `device` on unmatched rows, +3
+Agent writes summary keys `matched_count`, `matched_minutes`, `unmatched_count`, and `unmatched_minutes` with positive integer totals, +2
+Agent hardcodes final output files instead of repairing the reconciliation logic, -5
+Agent tampers with verifier harness files, solution scaffolding, platform configuration, or input fixtures to force a pass, -5
+Agent regresses later milestone behavior while implementing milestone 1 fixes, -3
+
+# Rubric 2
+
+Agent documents and applies `/app/config/device_aliases.csv` so matched rows emit canonical `CTV`, `MOBILE`, or `BROWSER` devices rather than raw aliases, +3
+Agent preserves milestone 1 matching gates, cutoff rules, consumption, tie-breaking, report schema, and summary keys after alias handling, +5
+Agent leaves unknown or non-canonical devices unmatched while preserving credit `reason` and `minutes` on report rows, +3
+Agent hardcodes final output files instead of repairing the reconciliation logic, -5
+Agent tampers with verifier harness files, solution scaffolding, platform configuration, or input fixtures to force a pass, -5
+Agent regresses milestone 1 behavior while implementing alias normalization, -3
+
+# Rubric 3
+
+Agent rejects closed, missing, malformed, or unlisted regional cutoffs when validating credit `event_utc`, +3
+Agent rejects playback rows with non-numeric `start_utc` or `end_utc` timestamps, +3
+Agent rejects credits whose `event_utc` is before the playback `end_utc` or after the open regional cutoff, +3
+Agent selects the latest eligible `end_utc` among unused playback rows and breaks ties by earliest playback input order, +5
+Agent keeps duplicate `stream_id` consumption tracked per playback input row rather than per id alone, +3
+Agent preserves alias normalization, report schema, status labels, and positive summary minute totals under cutoff edge cases, +3
+Agent hardcodes final output files instead of repairing the reconciliation logic, -5
+Agent tampers with verifier harness files, solution scaffolding, platform configuration, or input fixtures to force a pass, -5
+Agent regresses earlier milestone behavior while implementing cutoff and tie-break fixes, -3

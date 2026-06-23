@@ -1,0 +1,1 @@
+      * Report record copybook placeholder.

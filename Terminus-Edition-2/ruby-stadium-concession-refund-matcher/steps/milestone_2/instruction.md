@@ -1,0 +1,9 @@
+The realtime stadium concession refund reconciler is matching correction rows to the wrong source records. Continue fixing the Ruby entrypoint `/app/app/reconcile.rb` so `/app/data/refunds.csv` reconciles against `/app/data/folios.csv`, using `/app/config/windows.csv` for the active realtime window rules. The verifier runs `ruby /app/app/reconcile.rb`, so keep the solution in that Ruby file rather than adding a separate script in another language.
+
+A correction can match only when the full `folio_id`, `fan_id`, `property_id`, `stand`, and integer `amount` all match, the source status is the literal `SOLD`, the correction reason is `SPOIL`, `DUP`, or `VOID`, the normalized `item_type` field is one of the canonical values `FOOD`, `DRINK`, or `MERCH`, both timestamps are numeric, the correction timestamp `refund_ts` is on or after the source timestamp `sale_ts`, and the source row has not already been consumed.
+
+Write `/app/out/concession_refund_report.csv` with columns `refund_id,folio_id,fan_id,property_id,item_type,amount,reason,status`, preserving correction input order. Matched rows report the canonical source `item_type`; unmatched rows leave `item_type` blank. Write `/app/out/concession_refund_summary.txt` as `key=value` lines for `matched_count`, `matched_amount`, `unmatched_count`, and `unmatched_amount`, with amounts counted as positive integers.
+
+Milestone 2 keeps every milestone 1 rule and adds the documented legacy item_type aliases. Normalize aliases after trimming and case folding before matching, validate the normalized value through the same matching gates, and emit only the canonical item_type values in matched report rows. Unknown item_types stay unmatched without changing the output schema or status labels.
+
+The report `status` column must use only the exact strings `MATCHED` and `UNMATCHED`.

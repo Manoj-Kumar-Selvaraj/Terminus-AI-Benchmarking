@@ -1,0 +1,5 @@
+diagnosis_code|catastrophic|requires_auth|expedited_allowed
+DX-CATA|Y|Y|Y
+DX-EMERG|Y|N|Y
+DX-CHRONIC|Y|N|N
+DX-ROUTINE|N|N|N

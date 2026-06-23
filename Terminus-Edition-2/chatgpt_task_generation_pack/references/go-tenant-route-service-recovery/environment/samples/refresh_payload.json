@@ -1,0 +1,8 @@
+{
+  "revision": 441,
+  "routes": {
+    "tenant-a": "http://127.0.0.1:19091/a",
+    "tenant-b": "http://127.0.0.1:19091/b",
+    "tenant-c": "http://127.0.0.1:19091/c"
+  }
+}

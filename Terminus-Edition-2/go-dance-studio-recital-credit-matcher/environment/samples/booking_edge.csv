@@ -1,0 +1,3 @@
+booking_id,dancer_id,amount_cents,status,recital_type
+INVEDGE000001,CUST9001,100,ACTIVE,SOLO
+INVEDGE000002,CUST9002,200,ACTIVE,GROUP

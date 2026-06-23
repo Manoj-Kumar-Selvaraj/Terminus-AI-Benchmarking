@@ -1,0 +1,2 @@
+trip_id|rider_id|station_id|fare_type|credit_cents|tap_ts|status|platform
+SRC-1|PARTY-1|S-A|LOCAL|100|20260528120000|DELAYED|L1

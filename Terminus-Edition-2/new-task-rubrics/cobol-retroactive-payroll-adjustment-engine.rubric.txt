@@ -1,0 +1,38 @@
+# Rubric 1
+Agent preserves `/app/data/prior_payroll.psv` and `/app/data/compensation_history.psv` as immutable inputs while writing outputs only under `/app/out`, +3
+Agent selects the latest compensation history row whose `effective_from` is less than or equal to each closed payroll period, +5
+Agent prevents newer compensation rows from creating false historical adjustments for older periods, +5
+Agent writes `adjustment_ledger.psv` and `period_delta_report.psv` with the documented PSV schemas, `ADJ-<employee_id>-<period>` adjustment ids, and positive overtime-inclusive corrections for valid rows, +5
+Agent writes `reject_ledger.psv` with reason code `COMPENSATION_RULE_MISSING` when no effective compensation row applies and does not fabricate adjustments, +3
+Agent keeps `/app/scripts/run_batch.sh` as the operator entry point and processes runtime data rather than seed employee constants, +3
+Agent mutates input evidence files, hardcodes output rows, or bypasses the batch entry point, -5
+Agent applies the newest compensation row regardless of payroll period or creates false adjustments for prior periods, -5
+Agent fabricates adjustments when compensation rules are missing or omits the required reject ledger, -5
+# Rubric 2
+Agent preserves milestone 1 effective-dating, reject-ledger, output-schema, and input-immutability behavior while changing gross calculation, +5
+Agent computes corrected gross as base plus allowance plus overtime in the documented component order, +5
+Agent computes overtime from the base component only using `base_cents * overtime_hours * overtime_rate_bp / 10000`, +5
+Agent keeps valid historical corrections in input order with consistent adjustment ids and report rows after gross recalculation, +3
+Agent continues to process verifier-supplied PSV data through `/app/scripts/run_batch.sh` without hardcoded employee fixtures, +2
+Agent multiplies overtime over allowance or full gross subtotal instead of the base component, -5
+Agent regresses effective dating, missing-compensation rejection, input immutability, or PSV schemas while fixing overtime, -5
+# Rubric 3
+Agent preserves milestones 1 and 2 behavior while adding statutory tax and deduction deltas, +5
+Agent computes `tax_delta_cents` from the retroactive `gross_delta_cents` using `/app/config/tax_rules.psv`, +5
+Agent computes `deduction_delta_cents` as the lesser of five percent of positive gross delta and remaining employee deduction cap, +5
+Agent computes `net_delta_cents` consistently from gross, tax, and deduction deltas in adjustment and tax reports, +3
+Agent writes `tax_delta_report.psv` and `control_totals.psv` with documented metric totals consistent with `adjustment_ledger.psv`, +3
+Agent subtracts taxes on full corrected totals or ignores remaining deduction caps, -5
+Agent regresses effective dating, component order, reject handling, input immutability, or output schemas while adding statutory deltas, -5
+# Rubric 4
+Agent preserves all prior effective-dating, component-order, tax, deduction, reject, and control-total behavior while adding restart handling, +5
+Agent commits work at employee boundaries and writes `restart_checkpoint.txt` as `LAST_COMMITTED_EMPLOYEE|<employee_id>` after each committed employee, +5
+Agent honors `ABEND_AFTER_EMPLOYEES=N` by exiting non-zero after employee `N` while leaving only fully committed employee adjustments, +5
+Agent resumes clean reruns after the checkpoint and skips employees at or before the checkpoint without losing valid prior committed rows, +5
+Agent handles `YYYYMMDD` mid-period compensation changes by prorating corrected gross with `/app/config/pay_period_workdays.psv`, +5
+Agent prevents duplicate `adjustment_id` values across interrupted reruns and clean repeated reruns, +5
+Agent preserves all documented PSV output schemas and recomputes final reports and totals consistently after restart, +3
+Agent appends duplicate adjustments or reprocesses checkpointed employees during rerun, -5
+Agent picks one whole-period compensation row for mid-period effective changes instead of prorating by configured workdays, -5
+Agent loses committed adjustments, writes malformed checkpoints, or exits successfully after a requested ABEND, -5
+Agent regresses tax, deduction, reject, component-order, effective-dating, or input-immutability behavior while implementing restart, -5

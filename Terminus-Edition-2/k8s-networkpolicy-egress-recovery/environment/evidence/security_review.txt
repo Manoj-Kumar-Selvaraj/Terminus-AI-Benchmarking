@@ -1,0 +1,1 @@
+Rejected previous emergency policy because it used 0.0.0.0/0 and allowed the proxy namespace unintentionally.

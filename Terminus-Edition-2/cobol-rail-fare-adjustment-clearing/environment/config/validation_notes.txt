@@ -1,0 +1,3 @@
+Verifier scenarios rewrite rides.dat, adjustments.dat, and service_calendar.txt at runtime.
+Historical batches matched record ids by leading prefix; current clearing requires the full 12-character identifier.
+Eligible reasons and fare classes are documented under /app/config/.

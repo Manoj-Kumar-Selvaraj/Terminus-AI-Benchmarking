@@ -1,0 +1,26 @@
+# Rubric 1
+Agent inspects `/app/src/hangar_adjust_reconcile.cbl`, `/app/docs/record_layouts.md`, and the documented output paths before editing, +2
+Agent keeps rewritten COBOL valid for free-format compilation with `cobc -x -free -O2`, +3
+Agent enforces full `record_id`, account, amount, branch, source status `H`, eligible reason, canonical hangar class, date ordering, and one-time source consumption, +5
+Agent writes the required report and summary artifacts with exact schemas, action input order, zero-padded amount text, reason values, and positive totals, +5
+Agent leaves `hangar_class` blank for every `UNMATCHED` row and emits the matched canonical source class for every `MATCHED` row, +3
+Agent hardcodes final output files instead of repairing the COBOL reconciliation logic, -5
+Agent edits or deletes runtime input fixtures or task scaffolding to force a pass instead of fixing the reconciler, -5
+Agent accepts invalid class, status, reason, branch, date, or reused-source matches in the base reconciliation flow, -5
+# Rubric 2
+Agent preserves the base matching gates, report schema, reason output, blank unmatched class, summary totals, and row consumption while adding aliases, +5
+Agent normalizes legacy action hangar class aliases `PM`, `ST`, and `EC` before matching and report output, +5
+Agent emits canonical `PRM`, `STD`, or `ECO` on matched alias rows rather than raw aliases, +3
+Agent keeps duplicate actions from reusing the same invoice row after alias normalization, +3
+Agent changes required filenames, schemas, status labels, output order, or summary keys while implementing aliases, -3
+Agent regresses full-key matching, branch checks, reason checks, or source consumption while adding aliases, -5
+Agent writes raw aliases or space-padded values into report fields where canonical or blank values are required, -3
+# Rubric 3
+Agent preserves full-key matching, aliases, reason output, report schema, summary totals, and source consumption while adding calendar gates, +5
+Agent applies `/app/config/hangar_calendar.txt` using case-insensitive `OPEN` state and rejects closed, missing, unlisted, or malformed source dates, +5
+Agent chooses the eligible unused source row with the latest open source date when multiple rows qualify, +5
+Agent breaks same-date ties by earliest source input row and tracks consumption by source row position, +3
+Agent keeps duplicate and later actions deterministic after calendar-gated source selection, +3
+Agent treats closed, missing, malformed, unlisted, or mixed-case non-open calendar dates as eligible, -5
+Agent ignores latest-date ordering, source-row consumption, or same-date tie order under calendar-gated matching, -5
+Agent regresses base matching, alias normalization, reason output, blank unmatched class, or positive summary totals while adding calendar selection, -3

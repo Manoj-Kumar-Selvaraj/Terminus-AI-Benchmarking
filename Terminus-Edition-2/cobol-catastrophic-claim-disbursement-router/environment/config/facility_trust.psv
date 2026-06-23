@@ -1,0 +1,5 @@
+facility_id|trust_tier|sanctioned|emergency_override
+FAC-TRUST|TRUSTED|N|N
+FAC-STD|STANDARD|N|N
+FAC-ER|STANDARD|N|Y
+FAC-BLOCK|UNTRUSTED|Y|N

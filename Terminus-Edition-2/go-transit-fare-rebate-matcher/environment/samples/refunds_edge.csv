@@ -1,0 +1,3 @@
+trip_id,rider_id,route_id,amount_cents,mode
+INVEDGE000001,CUST9001,RT-01,100,BUS
+INVEDGE000002,CUST9002,RT-02,200,RAIL

@@ -1,0 +1,4 @@
+[batch]
+entrypoint = "/app/lib/reconcile.rb"
+tickets = "/app/data/tickets.csv"
+credits = "/app/data/credits.csv"

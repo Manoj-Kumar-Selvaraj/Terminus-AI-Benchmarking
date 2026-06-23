@@ -1,0 +1,2 @@
+release_id,hold_id,shipment_id,dock_id,load_type,amount,release_ts,reason,door
+ACT-SAMPLE-1,SRC-SAMPLE-1,PARTY-1,SAMPLE,HR,100,20260528121100,SHIP,LOC-1

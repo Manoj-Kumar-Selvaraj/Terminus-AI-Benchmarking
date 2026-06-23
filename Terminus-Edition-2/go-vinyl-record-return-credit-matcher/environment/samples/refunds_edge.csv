@@ -1,0 +1,3 @@
+sale_id,buyer_id,amount_cents,format
+INVEDGE000001,CUST9001,100,LP
+INVEDGE000002,CUST9002,200,EP

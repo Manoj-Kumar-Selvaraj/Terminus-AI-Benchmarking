@@ -1,0 +1,62 @@
+# Rubric 1
+Agent investigates the Go reconciler behavior, `/app/cmd/reconcile/main.go`, `/app/data/bids.csv`, `/app/data/reversals.csv`, `/app/out/reversal_report.csv`, and `/app/out/reversal_summary.txt` before changing logic, +2
+Agent compiles the Go CLI with `/usr/local/go/bin/go` and runs it against fresh synthetic bid and reversal inputs before finalizing the fix, +3
+Agent repairs the reconciliation algorithm directly instead of hardcoding `/app/out/reversal_report.csv` or `/app/out/reversal_summary.txt`, +5
+Agent enforces exact matching for cleaned `bid_id`, cleaned `bidder_id`, cleaned `session_id`, cleaned `lot_id`, and zero-padded `amount_cents` text between bid and reversal rows, +5
+Agent requires bid status `ACCEPTED`, eligible reversal reasons `CANCEL`/`FRAUD`/`VOID`, and matching canonical channels `ONLINE`/`MOBILE`/`ONSITE` without legacy aliases in milestone 1, +3
+Agent reads `/app/config/session_windows.csv` at runtime and requires bid `event_ts` inside an `OPEN` window for the same `session_id` with case-insensitive trimmed state comparison, +3
+Agent requires 14-digit numeric `event_ts` values, reversal timestamps on or after the bid timestamp, and reversal timestamps not after the selected window close timestamp, +3
+Agent treats closed, missing, malformed, or unlisted session windows as ineligible rather than matching outside window bounds, +2
+Agent consumes each eligible physical bid row at most once and chooses the first qualifying unused bid row in file order when multiple candidates match, +5
+Agent preserves reversal input order and writes exactly one report row per reversal with schema `reversal_id,bid_id,bidder_id,session_id,channel,amount_cents,reason,status`, +3
+Agent emits exact `MATCHED` or `UNMATCHED` labels, canonical bid `channel` on matched rows, blank `channel` on unmatched rows, and preserves reversal `amount_cents` text on every report row, +3
+Agent writes `/app/out/reversal_summary.txt` with non-negative integer `matched_count`, `matched_amount_cents`, `unmatched_count`, and `unmatched_amount_cents`, summing positive integer cents only from eligible `MATCHED` rows in `matched_amount_cents` and only from eligible positive `UNMATCHED` rows in `unmatched_amount_cents`, +3
+Agent rejects legacy channel aliases `WEB`, `APP`, and `FLOOR` as ineligible in milestone 1 before alias normalization is introduced, +3
+Agent hardcodes visible output rows instead of implementing general bid and reversal matching behavior, -5
+Agent tampers with platform files or runtime input fixtures to force a pass instead of repairing reconciliation behavior, -5
+Agent uses prefix, substring, partial, fuzzy, or lossy normalized matching for `bid_id`, `bidder_id`, `session_id`, or `lot_id`, allowing unrelated records to collide, -3
+Agent allows one physical bid row to satisfy multiple reversals or treats non-`ACCEPTED`, ineligible reason, alias, or out-of-window timestamps as eligible, -3
+Agent emits nonblank unmatched `channel` values, negative summary cents, or noncanonical matched channels in milestone 1, -3
+# Rubric 2
+Agent preserves all milestone 1 matching, session-window, consumption, report, and summary behavior before adding legacy channel aliases, +3
+Agent normalizes static legacy aliases `WEB` to `ONLINE`, `APP` to `MOBILE`, and `FLOOR` to `ONSITE` after trimming and case folding before matching, +5
+Agent still requires exact canonical channel equality between bid and reversal after alias normalization rather than treating aliases as wildcard allowed channels, +5
+Agent rejects cross-channel alias mismatches such as a reversal that normalizes to one canonical channel against a bid in another canonical channel, +3
+Agent treats unknown normalized channels as ineligible even when bid and reversal share the same unknown value, +3
+Agent emits canonical channel values `ONLINE`, `MOBILE`, or `ONSITE` on matched alias rows rather than raw legacy aliases, +3
+Agent preserves blank unmatched `channel` output, reversal input order, exact report columns, exact status labels, reversal amount text, and summary key names while adding aliases, +3
+Agent preserves one-time bid-row consumption and milestone 1 first-qualifying-bid selection before the latest-timestamp rule is introduced, +3
+Agent keeps the implementation general without fixture-specific conditionals for known bid IDs, aliases, or reversal rows, +2
+Agent hardcodes final output rows or fixture-specific alias results instead of implementing reusable alias-aware matching, -5
+Agent regresses milestone 1 identifier, amount, status, reason, window, consumption, blank unmatched channels, or positive summary totals while adding aliases, -5
+Agent emits raw alias values such as `WEB`, `APP`, or `FLOOR` in matched report rows when canonical values are required, -3
+Agent allows alias normalization to bypass amount, identifier, status, reason, window, or consumption checks, -3
+Agent tampers with platform files or runtime input fixtures to force a pass, -5
+# Rubric 3
+Agent preserves milestone 1 and milestone 2 behavior before changing bid-row selection to latest eligible timestamp, +3
+Agent chooses the unused matching bid row with the latest eligible bid `event_ts` when multiple rows satisfy all matching and window rules for one reversal, +5
+Agent breaks tied latest bid timestamps by choosing the earliest bid input row and tracks consumption by physical bid row position rather than by `bid_id` alone, +5
+Agent continues to read `/app/config/session_windows.csv` at runtime with case-insensitive trimmed `OPEN` state, in-window bid timestamps, and reversal timestamps on or after the bid and not after window close, +5
+Agent preserves alias normalization, canonical matched channel output, blank unmatched channel output, exact identifier and amount gates, positive amount accounting, and report and summary schemas under latest-timestamp selection, +3
+Agent validates the final report and summary artifacts after latest-timestamp and tie-break scenarios to confirm counts and amount totals reconcile, +2
+Agent regresses milestone 1 or milestone 2 matching, alias handling, window gating, blank unmatched channels, or summary totals while implementing latest-timestamp selection, -5
+Agent chooses the first matching bid row instead of the latest eligible bid `event_ts` when multiple unused candidates qualify, -5
+Agent fails the earliest-row tie-break when multiple candidate bids share the same latest eligible timestamp, -3
+Agent tracks consumption only by `bid_id` and incorrectly merges duplicate bid IDs that appear on separate input rows, -3
+Agent tampers with platform files or runtime input fixtures to force a pass, -5
+# Rubric 4
+Agent preserves milestone 1 through milestone 3 behavior before replacing hardcoded alias and reason lists with runtime configuration, +3
+Agent loads `/app/config/channel_aliases.csv` at runtime using trimmed, case-folded `alias` and `canonical` columns that resolve only to `ONLINE`, `MOBILE`, or `ONSITE`, +5
+Agent maps canonical channel names to themselves even when omitted from the alias file and applies last valid duplicate alias row wins, +5
+Agent loads `/app/config/reversal_reasons.csv` at runtime using trimmed, case-folded `reason` and `eligible` columns with `Y`/`YES`/`TRUE`/`1` meaning eligible and last duplicate reason row authoritative, +5
+Agent applies last-row-wins semantics when the same reason appears more than once in `/app/config/reversal_reasons.csv`, +3
+Agent treats missing, unknown, or ineligible configured reasons as unmatched rather than relying on the hardcoded `CANCEL`/`FRAUD`/`VOID` list, +3
+Agent writes `/app/out/reversal_audit.csv` grouped by cleaned reversal `session_id` and normalized reversal channel with exact required columns and `UNKNOWN` for unresolved reversal channels, +5
+Agent sorts audit rows by `session_id` then `channel` and keeps audit counts and amount totals reconciled with `/app/out/reversal_report.csv` and `/app/out/reversal_summary.txt`, +5
+Agent preserves report and summary schemas, canonical matched channel output, blank unmatched channel output, latest-timestamp selection, tie-breaking, and one-time bid-row consumption under dynamic configuration, +3
+Agent validates final report, summary, and audit artifacts after dynamic alias and reason scenarios to confirm grouped totals reconcile, +2
+Agent hardcodes alias, reason, or audit outputs instead of reading runtime configuration and deriving audit rows from report data, -5
+Agent regresses milestone 1 through milestone 3 matching, alias normalization, window gating, latest-timestamp selection, or summary totals while adding dynamic configuration or audit output, -5
+Agent ignores runtime alias or reason files and continues using hardcoded milestone 1 through milestone 3 lists in milestone 4, -5
+Agent emits audit rows with incorrect grouping, sort order, `UNKNOWN` handling, or totals that do not reconcile with the report and summary, -3
+Agent tampers with platform files or runtime input fixtures to force a pass, -5

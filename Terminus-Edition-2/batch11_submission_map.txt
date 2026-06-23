@@ -1,0 +1,22 @@
+# Platform submission ID → local folder (where names differ)
+342c074d-9870-49fc-974b-b5ab8149a3f7	go-carwash-subscription-rebate-matcher
+b8294c8e-24d3-4599-af82-7faddc2de361	go-lab-sample-chain-reassignment
+6bf2639b-67a5-488b-bb07-b58418183299	cobol-telehealth-session-credit-clearing
+ff495811-7b4a-4021-883f-137894ae6a76	ruby-music-royalty-live-settlement-router
+a6e6c9e7-43c7-4409-bff2-ddd358bbc492	ruby-parking-garage-session-adjustment-clearing
+5757965d-dc2a-441f-9656-5563bfd6d14b	go-waterpark-pass-refund-matcher
+0ce68f84-80d0-42d5-8844-b190faed2581	go-live-auction-bid-reversal-ledger
+016a6fe0-145e-47f3-aa17-a60ec540b97b	pl1-cobol-atm-risk-release-router
+614060df-358c-4b96-90cc-df886c4b7626	cobol-bowling-league-fee-reversal
+2f7859e8-3f19-41e8-a8ee-ccab57078449	ruby-cooking-class-voucher-matcher
+ded8127e-956c-4ff9-bfca-204878d5e85b	ruby-go-bash-vineyard-club-shipment-credit-router
+7fb1a57c-eab9-4eca-aa80-2431ba4a189c	go-bike-share-trip-credit-matcher
+e3d6e72f-a4f5-4711-abf2-c6017be93d8b	cobol-healthcare-return-reversal
+fe568c5d-0754-41d3-84e8-6b96a833f360	cobol-escrow-return-reconciliation
+69bfcc57-1663-4bd1-9e50-e70710641ed7	go-aquarium-pass-credit-matcher
+182bded9-a7c1-4d04-b7ed-5c6c68438086	cobol-municipal-return-clearing
+62929cbb-2a32-42e2-90be-47c347296a09	go-catering-order-adjustment-matcher
+d1e88ac6-156b-4394-b5b2-40ae5ea971ab	go-marketplace-payout-matcher
+24b7ce75-a875-48c4-8809-844a084b22d4	go-device-warranty-claim-matcher
+a8dc31b4-f77c-4eaa-b549-6a485a0b08df	go-utility-refund-reconciler
+2e8e149d-bb9c-445e-bd9b-25c207364268	cobol-wire-return-settlement

@@ -1,0 +1,9 @@
+The warehouse pickwave shortage reconciler in `/app/cmd/reconcile/main.go` is matching correction rows to the wrong pick records. Fix that Go source file so `/app/data/shortages.csv` reconciles against `/app/data/picks.csv`. Milestone 1 is about the exact reconciliation contract without legacy aliases or realtime window rules. A correction can match only when the full `pick_id`, `sku`, `wave_id`, `location`, and `amount` all match, the source status is the literal `FULFILLED`, the correction reason is `DAMAGE`, `MISSING`, or `MISROUTE`, the `kind` field is one of the canonical values `EACH` or `CASE` on both sides after trimming and case folding, both timestamps are numeric 14-digit UTC values, the correction timestamp `action_ts` is on or after the source timestamp `source_ts`, and the source row has not already been consumed. Source or correction rows whose `kind` is anything else, including `PALLET`, are ineligible. When more than one unused source row qualifies for the same correction, milestone 1 accepts any eligible unused row; deterministic latest-`source_ts` and earliest-input tie-breaking begins in milestone 3.
+
+Preserve correction input order, use `MATCHED` or `UNMATCHED` only, leave `kind` blank for unmatched rows, and write positive matched and unmatched summary totals.
+
+Input schemas:
+- `/app/data/picks.csv`: `pick_id,sku,wave_id,kind,amount,source_ts,status,location`
+- `/app/data/shortages.csv`: `action_id,pick_id,sku,wave_id,kind,amount,action_ts,reason,location`
+
+Write `/app/out/shortage_report.csv` with columns `action_id,pick_id,sku,wave_id,kind,amount,reason,status`, preserving correction input order. Matched rows report the canonical source `kind`; unmatched rows leave `kind` blank. Write `/app/out/shortage_summary.txt` as `key=value` lines for `matched_count`, `matched_amount`, `unmatched_count`, and `unmatched_amount`, with amounts counted as positive integers.

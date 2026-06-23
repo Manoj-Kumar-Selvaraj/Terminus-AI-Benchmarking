@@ -1,0 +1,2 @@
+credit_id,stream_id,account_id,device,minutes,event_utc,reason,region
+CR-EDGE-001,STR-EDGE-001,ACCT-9,PHONE,22,20260528132300,OUTAGE,NA

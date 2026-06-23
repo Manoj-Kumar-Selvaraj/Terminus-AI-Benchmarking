@@ -1,0 +1,18 @@
+# Rubric 1
+Agent reads batch contract and manifest rollout docs before changing PL/I decks, +2
+Agent sets KEY_COMPARE FULL and CONSUME ON in manifest_batch.pli for strict manifest consistency, +5
+Agent honors ELIGIBLE_STATE and check_code gates from manifest_rules.pli, +3
+Agent preserves rollout check order and blanks port_name on DRIFTED rows in manifest_report.csv, +3
+Agent writes consistent/drifted selector_label totals in manifest_summary.txt, +2
+Agent patches pli_manifest.awk instead of fixing .pli control decks, -5
+Agent matches workloads on prefix workload_id match only or without consumption, -5
+# Rubric 2
+Agent keeps milestone 1 matching while enabling ALIAS_MODE for port/probe labels, +3
+Agent normalizes 8080/http/app aliases case-insensitively from manifest_rules.pli, +5
+Agent emits canonical port_name on CONSISTENT rows only, +3
+Agent hard-codes port strings or disables alias deck, -5
+# Rubric 3
+Agent keeps milestones 1–2 while enabling WINDOW_MODE, +3
+Agent enforces rollout_windows.psv per namespace with OPEN_ROLLOUT_STATE bounds, +5
+Agent tie-breaks on latest applied_ts then earliest manifest row, +3
+Agent accepts rollout checks outside rollout window timestamps, -5

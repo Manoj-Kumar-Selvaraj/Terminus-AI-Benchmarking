@@ -1,0 +1,4 @@
+credit_report.csv columns (in order):
+sample_id,patient_id,payer,amount_cents,status
+
+One output row per credit input row. status is MATCHED or UNMATCHED. payer is blank for unmatched rows and the canonical payer for matched rows.

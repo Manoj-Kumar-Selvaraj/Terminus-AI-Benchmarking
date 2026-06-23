@@ -1,0 +1,11 @@
+{
+  "state_keys": [
+    "lineage",
+    "serial",
+    "workspaces"
+  ],
+  "workspaces": [
+    "prod",
+    "stage"
+  ]
+}

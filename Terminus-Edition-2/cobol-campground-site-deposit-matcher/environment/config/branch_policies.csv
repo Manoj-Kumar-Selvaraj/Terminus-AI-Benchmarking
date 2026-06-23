@@ -1,0 +1,4 @@
+branch,site_class,max_deposit_cents,enabled,allow_any
+BR01,TNT,5000,true,true
+BR02,RV,8000,true,false
+BR03,CBN,9000,true,true

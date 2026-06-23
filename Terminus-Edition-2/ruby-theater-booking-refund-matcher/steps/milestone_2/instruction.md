@@ -1,0 +1,3 @@
+Extend the Ruby reconciler for legacy `seat_zone` aliases while keeping all milestone 1 behavior, including exact `seat_zone` equality between booking and refund (two different allowed zones still do not match).
+
+Normalize aliases before matching: `ORC` means `ORCH`, `MEZ` means `MEZZ`, `BAL` means `BALC`. Alias matching is case-insensitive and trimmed. Matched report rows must emit the canonical `seat_zone` value, not the raw alias. Unmatched rows still leave `seat_zone` blank. All other milestone 1 rules (full `booking_id` match, row consumption, positive summary cents, refund input order) still apply.

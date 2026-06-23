@@ -1,0 +1,12 @@
+{
+  "report_file": "refund_report.csv",
+  "summary_file": "refund_summary.json",
+  "columns": ["booking_id", "patron_id", "seat_zone", "amount_cents", "status"],
+  "status_values": ["MATCHED", "UNMATCHED"],
+  "summary_fields": [
+    "matched_count",
+    "matched_amount_cents",
+    "unmatched_count",
+    "unmatched_amount_cents"
+  ]
+}

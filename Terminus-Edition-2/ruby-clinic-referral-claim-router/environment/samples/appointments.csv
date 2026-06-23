@@ -1,0 +1,2 @@
+referral_id,member_id,site_id,kind,amount,source_ts,status,location
+SRC-SAMPLE-1,PARTY-1,SAMPLE,PCP,100,20260528121000,COMPLETE,LOC-1

@@ -1,0 +1,30 @@
+# Rubric 1
+Agent inspects upgrade evidence and version contract before changing deployment runtime, +2
+Agent pins target Jenkins version 2.462.3 with Java 17 and jdk17 controller image, +5
+Agent preserves cluster identity fields without bypassing simulator output, +3
+Agent progresses beyond RUNTIME_INCOMPATIBLE while leaving later phases failing, +3
+Agent writes controller_status.json directly instead of fixing deployment runtime, -5
+# Rubric 2
+Agent preserves M1 runtime fixes while restoring Jenkins home from backup, +3
+Agent restores valid config.xml credentials.xml queue.xml and removes UPGRADE.lock, +5
+Agent records recovered-target controller_state.json with restore snapshot evidence, +5
+Agent restores required jobs including platform-smoke on disk and in jobs.json, +5
+Agent replaces home with minimal fake jobs or deletes credential IDs, -5
+# Rubric 3
+Agent preserves restored home while fixing essential plugin baseline, +3
+Agent enables all essential plugins at or above target_plugin_baseline min_version, +5
+Agent keeps version_contract.json essential_plugins and required_agent_java intact, +3
+Agent retains monitoring-theme optional plugin without weakening contract, +2
+Agent deletes essential plugin requirements from version_contract.json, -5
+# Rubric 4
+Agent preserves prior recovery while hardening auto_upgrade_policy.json, +3
+Agent disables auto upgrade pins pinned-lts channel and requires backup snapshot, +5
+Agent sets lock_strategy clear-after-verified-restore and keeps evidence files, +3
+Agent re-enables unsafe automation or deletes upgrade audit evidence, -5
+# Rubric 5
+Agent preserves M1-M4 state while restoring cluster fencing and queue safety, +3
+Agent elects exactly one active RW controller on jenkins-home-rwo ReadWriteOnce claim, +5
+Agent routes jenkins-web service to elected active controller not restore pod, +5
+Agent deduplicates queue IDs preserving q-1001/q-1002 with original job associations, +5
+Agent reaches READY via simulator start writing controller_status.json, +3
+Agent leaves multiple RW controllers or routes service to restore pod, -5

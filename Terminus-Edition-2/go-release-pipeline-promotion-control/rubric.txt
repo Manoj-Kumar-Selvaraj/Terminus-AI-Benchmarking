@@ -1,0 +1,55 @@
+# Rubric 1
+Agent produces rebuilt artifact, unit, release, and release-history manifests from runtime scenario data using the simulator binary, +2
+Agent preserves the checked-out commit identity from Build through downstream manifests even when the branch tip changes, +5
+Agent derives the artifact hash from the immutable commit and build number while preserving manifest fields and stage names, +5
+Agent keeps downstream stages consuming the generated artifact manifest instead of current branch state, +3
+Agent preserves the exact Jenkins-visible release stage order and documented output paths for artifact and release manifests, +3
+Agent hardcodes manifests or expected hashes instead of repairing artifact provenance, -5
+Agent changes runtime scenarios, contracts, or task scaffolding to force expected output, -5
+Agent allows branch-tip movement to alter the artifact selected for testing or promotion, -5
+# Rubric 2
+Agent preserves immutable artifact identity while isolating Integration Test and Package workspace state, +5
+Agent gives each parallel stage a distinct workspace path under the documented workspace root, +5
+Agent emits `stage_name` exactly `"Integration Test"` and `"Package"` in the integration report and package manifest respectively, +3
+Agent uses the documented `integration` and `package` workspace subdirectories with separate `state.json` files and no shared mutable state, +3
+Agent derives package provenance and package hashes from the immutable artifact manifest, +5
+Agent emits the clean `packageDigest` only for an uncontaminated package workspace and the distinct `contaminatedPackageDigest` with `workspace_contaminated=true` when foreign stage state is detected, +5
+Agent preserves compatible artifact and package manifest schemas and existing stage names, +3
+Agent leaves parallel stages sharing mutable state or a common cache file, -5
+Agent derives package output from transient workspace contents instead of artifact provenance, -5
+Agent hardcodes `workspace_contaminated`, removes contamination detection, or emits the clean package digest after detecting foreign stage state, -5
+# Rubric 3
+Agent preserves artifact identity and workspace isolation while enforcing the quality gate, +5
+Agent blocks promotion unless gate status explicitly passes for the exact artifact commit and hash, +5
+Agent writes the documented blocked-promotion schema version with both provenance objects and an actionable reason while omitting a successful release manifest, +5
+Agent records matching gate provenance and promoted artifact identity for successful promotion, +3
+Agent validates commit and artifact provenance independently so either mismatch, including empty submitted provenance, blocks promotion, +3
+Agent preserves the submitted blocked quality gate values without borrowing or autofilling provenance from the artifact manifest, +3
+Agent accepts a failed, missing, mismatched, or incomplete quality gate, -5
+Agent writes a successful release manifest after promotion has been blocked, -5
+Agent omits blocked-promotion provenance fields or fabricates quality-gate values that were not submitted, -5
+# Rubric 4
+Agent preserves all release-safety behavior while restoring rollback from immutable release history, +5
+Agent excludes the most recent promoted record and selects the latest remaining promoted release for the requested environment during default rollback, +5
+Agent selects only a promoted target build from the requested environment for explicit rollback, +5
+Agent enforces the environment-specific rollback compatibility floor from `/app/config/pipeline_policy.json` using well-formed `release_contract_version` values on promoted records only before selecting default or explicit targets, +5
+Agent ignores non-promoted history records during rollback selection without rejecting the file when those records omit or malform `release_contract_version`, +3
+Agent preserves the rollback command interface and writes rollback_source as the exact release_history literal, +3
+Agent copies the selected history record's artifact hash and promoted artifact hash into their distinct manifest fields, +3
+Agent fails closed on malformed, missing, incomplete, absent-target, incompatible, or ineligible release history without a success manifest, +3
+Agent rebuilds from current branch state or uses HEAD during rollback, -5
+Agent selects history from the wrong environment or a non-promoted release, -5
+Agent rolls back to a release whose contract version is missing, malformed, or below the requested environment's compatibility floor, -5
+# Rubric 5
+Agent preserves all milestone 1-4 release-safety, rollback-selection, compatibility-floor, manifest, and command-interface behavior while adding signed release-history verification, +5
+Agent loads `/app/config/release_history_keys.json` at runtime and selects the HMAC key by requested rollback environment and exact key id, +5
+Agent requires the sibling `PATH.sig` signature file with schema `release-history-signature/v1`, algorithm `HMAC-SHA256`, matching environment, matching key id, matching history digest, and valid hex signature before rollback selection, +5
+Agent computes both the plain history digest and HMAC over the full release history in original file order using the documented length-delimited canonical field sequence, including non-promoted records, unselected records, and deployment-unit bundle fields, +5
+Agent fails closed without writing `rollback_manifest.json` when the signature file, key config, schema, algorithm, environment, key id, or signature is missing or mismatched, +5
+Agent applies signed-history verification before default or explicit target selection, then preserves environment compatibility floors and promoted-only rollback eligibility, +3
+Agent clears any stale rollback success manifest from the requested output directory when signed rollback validation fails, +3
+Agent keeps `artifact_hash`, `promoted_artifact_hash`, copied `deployment_units`, `rollback_source`, and command-interface manifest fields stable after signature verification succeeds, +3
+Agent signs only the selected rollback record or ignores tampering in other history records, -5
+Agent omits deployment-unit fields from signature verification, compatibility checks, or rollback manifests when selected history records include a bundle, -5
+Agent accepts unsigned history, wrong-environment signatures, retired key ids, unsupported algorithms, or malformed signature metadata, -5
+Agent regresses artifact provenance, workspace isolation, quality-gate, or rollback behavior while adding signature checks, -5

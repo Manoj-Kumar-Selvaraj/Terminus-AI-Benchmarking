@@ -1,0 +1,5 @@
+program,enabled,priority
+GENERAL,true,2
+TOUR,true,3
+MEMBER,true,1
+CHECK,false,9

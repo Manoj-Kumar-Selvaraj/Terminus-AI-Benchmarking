@@ -1,0 +1,2 @@
+bag_id,member_id,site_id,bag_type,amount,scan_ts,status,station
+SRC-SAMPLE-1,PARTY-1,SAMPLE,CHECKED,100,20260528121000,TAGGED,LOC-1

@@ -1,0 +1,5 @@
+# Workspace contract
+
+The workspace root is `<out>/workspace`. Integration Test uses `<out>/workspace/integration` and Package uses `<out>/workspace/package`. Parallel stages must not share mutable state that can alter package provenance. Integration Test writes `integration_report.json` with `stage_name: "Integration Test"`; Package writes `package_manifest.json` with `stage_name: "Package"`.
+
+For a clean package workspace, `workspace_contaminated` is `false` and `package_hash` is `packageDigest(manifest.ArtifactHash)`. If Package observes another stage's state, `workspace_contaminated` is `true` and `package_hash` is the distinct deterministic value `contaminatedPackageDigest(prior.Stage, manifest.ArtifactHash)`. The contaminated path must not emit the clean package digest. Both hashes remain bound to immutable artifact provenance; mutable state is only the contamination signal. The root path, stage subdirectory names, hash behavior, and package manifest format are compatibility contracts.

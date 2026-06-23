@@ -1,0 +1,3 @@
+tour_id,passenger_id,amount_cents,cabin_tier
+HELEDGE000001,CUST9001,100,STD
+HELEDGE000002,CUST9002,200,PREM

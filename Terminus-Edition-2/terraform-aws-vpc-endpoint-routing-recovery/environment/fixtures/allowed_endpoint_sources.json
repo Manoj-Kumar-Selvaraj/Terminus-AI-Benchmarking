@@ -1,0 +1,22 @@
+{
+  "allowed_security_group_ids": [
+    "sg-app-staging",
+    "sg-batch-staging"
+  ],
+  "allowed_cidr_blocks": [
+    "10.42.16.0/20",
+    "10.42.32.0/20"
+  ],
+  "allowed_ports": [
+    443
+  ],
+  "required_interface_endpoints": [
+    "ssm",
+    "ssmmessages",
+    "ec2messages"
+  ],
+  "required_gateway_endpoints": [
+    "s3",
+    "dynamodb"
+  ]
+}

@@ -1,0 +1,2 @@
+claim_id|record_id|volume_id|length_hash|block_no|audit_ts|verdict_code|reel_id
+AUD-1|REC-10001|VOL01|50000|BLK01|20260612120500|SCAN|RL-9

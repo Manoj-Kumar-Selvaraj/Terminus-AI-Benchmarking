@@ -1,0 +1,5 @@
+Extend the courier COD remittance reconciler in `/app/app/reconcile.rb` while preserving every milestone 1 rule: full-key identity matching (`parcel_id`, `courier_id`, `station_id`, `location`, `amount`), `DELIVERED` status, allowed reasons, numeric timestamps, `OPEN` window eligibility with `action_ts` on or after `source_ts` and not after window close, latest-`source_ts` then earliest-row tie-breaking, single-use delivery consumption, report schema, and positive summary totals.
+
+Milestone 2 adds legacy `kind` aliases after trim and case folding: `CSH` means `CASH`, `QR` means `UPI`, and `CC` means `CARD`. Only canonical values `CASH`, `UPI`, and `CARD` are match-eligible after normalization. Unknown normalized kinds stay unmatched even when both sides share the same alias. Matched rows must emit canonical kind values, not raw aliases.
+
+Keep the milestone 1 output schemas, correction input order, exact status labels, blank unmatched `kind` behavior, and positive summary totals unchanged.

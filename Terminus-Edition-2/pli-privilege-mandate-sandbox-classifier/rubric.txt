@@ -1,0 +1,26 @@
+# Rubric 1
+Agent inspects the PL/I control decks, matching contract, PSV schemas, and batch runner before editing, +2
+Agent enables full five-key matching with trimmed case-insensitive comparisons and positive integer capability tokens, +5
+Agent enforces configured mandate state, allowed verdict codes, numeric receive timestamps, and one-time row consumption, +5
+Agent preserves audit order and chooses the latest receive timestamp before mandate input order, +3
+Agent regenerates the exact report and summary schemas with canonical authorized classes, blank denied classes, and audit-side totals, +5
+Agent hardcodes report or summary artifacts instead of repairing runtime classification, -5
+Agent matches mandate identifiers by prefix or reuses a consumed mandate row, -5
+Agent changes runtime fixtures, platform metadata, or execution scaffolding to force expected results, -5
+# Rubric 2
+Agent preserves strict keys, eligibility, ordering, consumption, schemas, and totals while adding rule-driven aliases, +5
+Agent parses trimmed case-insensitive raw-to-canonical mappings from the PL/I `ALIAS_*` declarations, +5
+Agent canonicalizes both mandate and audit values across every textual compare key before matching, +5
+Agent emits the selected mandate's canonical sandbox class only for authorized rows, +3
+Agent hardcodes known aliases instead of reading the PL/I rule declarations, -5
+Agent lets unknown values fuzzy-match or cross-match unrelated canonical values, -3
+Agent regresses full-key matching, verdict gates, candidate ordering, or one-time consumption while adding aliases, -5
+# Rubric 3
+Agent preserves strict matching, aliases, outputs, ordering, and consumption while enabling sandbox windows, +5
+Agent validates all mandate, audit, open, and close timestamps as numeric 14-digit values, +3
+Agent applies only the configured open state for the same case-insensitive service identifier, +5
+Agent requires both timestamps inside one inclusive non-reversed window with receive time no later than audit time, +5
+Agent consumes the latest eligible receive-time candidate so later audits observe deterministic row availability, +5
+Agent treats wrong-service, closed, malformed, missing, reversed, or non-covering windows as eligible, -5
+Agent validates only the audit timestamp and ignores mandate receive-time eligibility, -5
+Agent regresses aliases, full-key matching, row consumption, report schema, or summary totals while adding windows, -3

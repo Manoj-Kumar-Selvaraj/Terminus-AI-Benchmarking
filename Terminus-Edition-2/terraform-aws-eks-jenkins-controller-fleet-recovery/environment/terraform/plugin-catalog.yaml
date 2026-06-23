@@ -1,0 +1,18 @@
+pluginSource: internal-mirror
+plugins:
+  - id: configuration-as-code
+    version: latest
+  - id: kubernetes
+    version: latest
+  - id: workflow-aggregator
+    version: latest
+  - id: job-dsl
+    version: latest
+  - id: git
+    version: latest
+  - id: credentials
+    version: latest
+  - id: matrix-auth
+    version: latest
+  - id: cloudbees-casc-client
+    version: latest

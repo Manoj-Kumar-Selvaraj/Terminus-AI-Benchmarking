@@ -1,0 +1,19 @@
+# Build-context hygiene for environment/ (src, copybooks, data, config, docs, samples, scripts)
+Dockerfile
+docker-compose.yml
+docker-compose.yaml
+.git
+.gitignore
+tests
+solution
+steps
+*.zip
+*.tar
+*.tar.gz
+__pycache__
+*.pyc
+.pytest_cache
+/out
+/build
+*.log
+.terminus_logs

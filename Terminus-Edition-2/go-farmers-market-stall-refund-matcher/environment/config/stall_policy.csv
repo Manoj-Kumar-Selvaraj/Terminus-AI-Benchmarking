@@ -1,0 +1,4 @@
+stall_type,enabled,priority
+PRODUCE,Y,2
+CRAFT,Y,1
+FOOD,Y,3

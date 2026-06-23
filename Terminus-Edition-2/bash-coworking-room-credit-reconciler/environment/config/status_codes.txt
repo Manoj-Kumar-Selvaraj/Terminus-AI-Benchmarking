@@ -1,0 +1,4 @@
+# Booking status values used by the reconciler
+FINAL=eligible for credit matching after trim and case folding
+PENDING=not eligible
+CANCELLED=not eligible

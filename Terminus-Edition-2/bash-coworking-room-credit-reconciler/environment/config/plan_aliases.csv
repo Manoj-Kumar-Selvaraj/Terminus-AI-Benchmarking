@@ -1,0 +1,5 @@
+alias,canonical,enabled
+CC,PRIVATE,true
+INS,TEAM,true
+CA,HOTDESK,true
+FLEX,HOTDESK,false

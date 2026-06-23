@@ -1,0 +1,1 @@
+      * Remittance record copybook placeholder.

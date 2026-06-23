@@ -1,0 +1,3 @@
+environment=production
+region=primary
+batch=stmt-merge-nightly

@@ -1,0 +1,7 @@
+Extend `/app/lib/reconcile.rb` with dated couple credit budget rules from `/app/config/couple_limits.csv` while preserving every milestone 1 through milestone 4 rule.
+
+`couple_limits.csv` is a CSV with columns `couple_id,arrangement,effective_date,max_daily_amount,status`. Normalize `arrangement` after trimming and case folding with the same aliases as credits and methods. A dated credit can match only if all prior gates pass and an `ACTIVE` limit row matches the credit's `couple_id` and canonical `arrangement`, has a numeric `max_daily_amount`, and has `effective_date` on or before the credit's `credit_date`. Missing, malformed, inactive, unknown-arrangement, future-effective, or nonnumeric limit rows are ignored. If multiple limit rows match, choose the one with the latest `effective_date`; if dates tie, choose the earliest limit input row.
+
+The chosen limit is a daily cap for matched credits with the same `couple_id`, canonical `arrangement`, and `credit_date`. Matched credits consume that cap in credit input order. A credit that would make the consumed total exceed the chosen `max_daily_amount` must remain `UNMATCHED` and must not consume an order row or budget. This budget gate is applied only in dated mode when `credit_date` exists; undated inputs continue to follow milestone 4 behavior.
+
+Continue to use `/app/config/methods.csv` as the authoritative enabled-arrangement file, `/app/config/cutoff_calendar.txt` as the open-date file, and `/app/out/credit_report.csv` plus `/app/out/credit_summary.json` with the same schemas and status labels.

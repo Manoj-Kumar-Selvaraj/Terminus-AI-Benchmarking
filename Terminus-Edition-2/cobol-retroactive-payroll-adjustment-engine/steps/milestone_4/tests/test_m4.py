@@ -1,0 +1,195 @@
+import csv
+import os
+import subprocess
+from pathlib import Path
+
+APP = Path("/app")
+DATA = APP / "data"
+CFG = APP / "config"
+OUT = APP / "out"
+
+
+def write_psv(path, header, rows):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", newline="") as h:
+        w = csv.writer(h, delimiter="|", lineterminator="\n")
+        w.writerow(header)
+        w.writerows(rows)
+
+
+def read_psv(path):
+    if not path.exists():
+        return []
+    with path.open(newline="") as h:
+        return list(csv.DictReader(h, delimiter="|"))
+
+
+def reset():
+    OUT.mkdir(exist_ok=True)
+    for p in OUT.glob("*"):
+        p.unlink()
+
+
+def run(env=None, ok=True):
+    e = os.environ.copy()
+    if env:
+        e.update(env)
+    r = subprocess.run(
+        ["/app/scripts/run_batch.sh"],
+        cwd=APP,
+        env=e,
+        text=True,
+        capture_output=True,
+        timeout=60,
+    )
+    if ok and r.returncode != 0:
+        raise AssertionError(r.stdout + r.stderr)
+    if not ok and r.returncode == 0:
+        raise AssertionError("expected non-zero")
+    return r
+
+
+def fixture():
+    reset()
+    write_psv(
+        CFG / "tax_rules.psv",
+        ["from_cents", "to_cents", "rate_bp"],
+        [["0", "50000", "1000"], ["50000", "999999999", "2000"]],
+    )
+    write_psv(
+        CFG / "deduction_caps.psv",
+        ["employee_id", "cap_cents"],
+        [["EMP-A", "2500"], ["EMP-B", "5000"], ["EMP-C", "1000"], ["EMP-D", "5000"]],
+    )
+    write_psv(
+        DATA / "employees.psv",
+        ["employee_id", "name", "status"],
+        [
+            ["EMP-A", "Asha", "ACTIVE"],
+            ["EMP-B", "Ben", "ACTIVE"],
+            ["EMP-C", "Cory", "ACTIVE"],
+            ["EMP-D", "Dina", "ACTIVE"],
+        ],
+    )
+    write_psv(
+        DATA / "compensation_history.psv",
+        [
+            "employee_id",
+            "effective_from",
+            "base_cents",
+            "allowance_cents",
+            "overtime_rate_bp",
+        ],
+        [
+            ["EMP-A", "202601", "40000", "5000", "1500"],
+            ["EMP-A", "202604", "45000", "7000", "1500"],
+            ["EMP-B", "202601", "60000", "6000", "1250"],
+            ["EMP-C", "202602", "55000", "5000", "1000"],
+        ],
+    )
+    write_psv(
+        DATA / "prior_payroll.psv",
+        [
+            "employee_id",
+            "period",
+            "gross_cents",
+            "tax_cents",
+            "deduction_cents",
+            "overtime_hours",
+        ],
+        [
+            ["EMP-A", "202602", "45000", "4500", "2000", "0"],
+            ["EMP-A", "202604", "52000", "5400", "2300", "0"],
+            ["EMP-B", "202603", "67500", "8500", "3000", "2"],
+            ["EMP-D", "202602", "10000", "1000", "500", "0"],
+        ],
+    )
+    write_psv(
+        DATA / "prior_adjustment_ledger.psv",
+        [
+            "adjustment_id",
+            "employee_id",
+            "period",
+            "gross_delta_cents",
+            "tax_delta_cents",
+            "deduction_delta_cents",
+            "net_delta_cents",
+            "status",
+        ],
+        [],
+    )
+
+
+class TestMilestone4:
+    """ABEND restart must be idempotent at employee boundaries."""
+
+    def test_restart_does_not_duplicate_employee_adjustments(self):
+        fixture()
+        run({"ABEND_AFTER_EMPLOYEES": "2"}, ok=False)
+        first = read_psv(OUT / "adjustment_ledger.psv")
+        assert [r["employee_id"] for r in first] == ["EMP-B"]
+        assert (
+            OUT / "restart_checkpoint.txt"
+        ).read_text().strip() == "LAST_COMMITTED_EMPLOYEE|EMP-B"
+        run()
+        ledger = read_psv(OUT / "adjustment_ledger.psv")
+        assert [r["adjustment_id"] for r in ledger] == ["ADJ-EMP-B-202603"]
+
+    def test_clean_rerun_preserves_prior_committed_adjustments_once(self):
+        fixture()
+        run()
+        run()
+        ledger = read_psv(OUT / "adjustment_ledger.psv")
+        ids = [r["adjustment_id"] for r in ledger]
+        assert ids.count("ADJ-EMP-B-202603") == 1
+
+    def test_mid_period_effective_change_is_prorated_by_workday_calendar(self):
+        """A mid-period compensation change must be split by configured workdays, not picked wholesale."""
+        fixture()
+        write_psv(
+            CFG / "pay_period_workdays.psv",
+            ["period", "total_workdays", "post_change_workdays"],
+            [["202603", "20", "10"]],
+        )
+        write_psv(
+            DATA / "employees.psv",
+            ["employee_id", "name", "status"],
+            [["EMP-E", "Eli", "ACTIVE"]],
+        )
+        write_psv(
+            DATA / "compensation_history.psv",
+            [
+                "employee_id",
+                "effective_from",
+                "base_cents",
+                "allowance_cents",
+                "overtime_rate_bp",
+            ],
+            [
+                ["EMP-E", "202601", "40000", "0", "0"],
+                ["EMP-E", "20260315", "60000", "0", "0"],
+            ],
+        )
+        write_psv(
+            DATA / "prior_payroll.psv",
+            [
+                "employee_id",
+                "period",
+                "gross_cents",
+                "tax_cents",
+                "deduction_cents",
+                "overtime_hours",
+            ],
+            [["EMP-E", "202603", "45000", "4500", "0", "0"]],
+        )
+        run()
+        ledger = {
+            (r["employee_id"], r["period"]): r
+            for r in read_psv(OUT / "adjustment_ledger.psv")
+        }
+        report = {
+            (r["employee_id"], r["period"]): r
+            for r in read_psv(OUT / "period_delta_report.psv")
+        }
+        assert ledger[("EMP-E", "202603")]["gross_delta_cents"] == "5000"
+        assert report[("EMP-E", "202603")]["corrected_gross_cents"] == "50000"

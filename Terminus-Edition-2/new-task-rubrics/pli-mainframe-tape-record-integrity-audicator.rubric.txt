@@ -1,0 +1,26 @@
+# Rubric 1
+Agent inspects the PL/I control decks, tape contracts, PSV schemas, and batch runner before editing, +2
+Agent enables complete five-key comparison with trimmed case-insensitive text and positive integer length hashes, +5
+Agent reads catalog-state and verdict eligibility from the PL/I rule declarations, +3
+Agent preserves audit order and consumes each catalog input row at most once, +5
+Agent regenerates the exact pipe-separated report and four-line summary with canonical verified blocks and blank corrupt blocks, +5
+Agent hardcodes report or summary artifacts instead of repairing runtime tape reconciliation, -5
+Agent verifies records through prefix identifiers or reuses a consumed catalog row, -5
+Agent changes runtime fixtures, task metadata, or execution scaffolding to force expected output, -5
+# Rubric 2
+Agent preserves strict keys, eligibility, consumption, schemas, statuses, and totals while adding aliases, +5
+Agent parses trimmed case-insensitive raw-to-canonical mappings from the PL/I `ALIAS_*` declarations, +5
+Agent canonicalizes both catalog and audit values for block and reel comparisons, +5
+Agent emits the selected catalog's canonical block value only for verified rows, +3
+Agent hardcodes known aliases instead of reading the PL/I rule declarations, -5
+Agent normalizes block aliases but skips reel aliases or one side of the comparison, -5
+Agent lets unknown values fuzzy-match or regresses strict matching and consumption, -3
+# Rubric 3
+Agent preserves all earlier reconciliation and output behavior while enabling mount windows, +5
+Agent validates receive, audit, open, and close timestamps as numeric 14-digit values, +3
+Agent applies the configured open state only to a case-insensitive matching volume window, +5
+Agent requires receive and audit timestamps inside one inclusive non-reversed window with receive no later than audit, +5
+Agent selects the latest eligible receive timestamp and carries row-position consumption across audit order, +5
+Agent treats closed, malformed, missing, reversed, wrong-volume, or non-covering windows as eligible, -5
+Agent conflates catalog eligibility state with mount-window state, -3
+Agent regresses aliases, strict keys, row consumption, report schema, or summary totals while adding windows, -5

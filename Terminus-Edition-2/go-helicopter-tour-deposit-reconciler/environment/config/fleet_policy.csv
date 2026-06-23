@@ -1,0 +1,4 @@
+cabin_tier,enabled,priority
+STD,true,30
+PREM,true,20
+LUX,true,10

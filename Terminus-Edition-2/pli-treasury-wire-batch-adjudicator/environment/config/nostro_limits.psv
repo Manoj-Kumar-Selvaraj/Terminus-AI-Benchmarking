@@ -1,0 +1,4 @@
+account|rail_code|limit_cents
+991100|FED|100000
+991100|ACH|50000
+991300|SWIFT|75000

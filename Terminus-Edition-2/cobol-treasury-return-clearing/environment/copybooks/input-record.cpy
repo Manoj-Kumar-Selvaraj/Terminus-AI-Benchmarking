@@ -1,0 +1,1 @@
+      * Input record layout notes for the training fixture.

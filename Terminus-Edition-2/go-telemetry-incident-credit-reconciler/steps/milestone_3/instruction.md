@@ -1,0 +1,3 @@
+Keep every milestone 1 and milestone 2 rule. Extend the window check so that only windows explicitly marked `OPEN` in `/app/config/region_windows.csv` are eligible; `CLOSED`, missing, malformed, or unlisted windows are not eligible. Both the playback `start_utc` and `end_utc` and the credit `event_utc` must be numeric 14-digit strings; non-numeric timestamps are ineligible.
+
+If more than one unused playback row satisfies all matching, severity-alias, and window rules for a credit, use the row with the latest `end_utc`; when `end_utc` values tie, use the earliest playback input row. Keep all prior output schemas and summary keys.

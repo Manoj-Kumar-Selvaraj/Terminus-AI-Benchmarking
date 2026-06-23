@@ -1,0 +1,4 @@
+method,enabled,max_lag_days
+ACH,true,3
+CARD,true,1
+CASH,false,0

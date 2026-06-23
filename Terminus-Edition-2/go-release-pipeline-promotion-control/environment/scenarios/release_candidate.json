@@ -1,0 +1,29 @@
+{
+  "branch": "release/2026.06",
+  "branch_tip_sha": "9ff1ba771230",
+  "commit_sha": "6a0f5d3c8b21",
+  "build_number": "4187",
+  "environment": "staging",
+  "parallel_stages": true,
+  "quality_gate": {
+    "status": "pass",
+    "commit_sha": "6a0f5d3c8b21",
+    "artifact_hash": "bde42e26d37c3ec2956c0e6e32e3ef190c1dad241ad3f8599f8758af81bd1cc7",
+    "coverage": 87.2,
+    "report_id": "qg-4187"
+  },
+  "previous_releases": [
+    {
+      "environment": "prod",
+      "build_number": "4185",
+      "commit_sha": "0ldc0ffee",
+      "artifact_hash": "old-artifact",
+      "promoted_artifact_hash": "old-artifact",
+      "package_hash": "old-package",
+      "promotion_status": "promoted"
+    }
+  ],
+  "notes": [
+    "branch tip advanced after checkout"
+  ]
+}

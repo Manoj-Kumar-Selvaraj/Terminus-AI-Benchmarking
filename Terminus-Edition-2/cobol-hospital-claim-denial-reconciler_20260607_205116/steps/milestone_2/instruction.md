@@ -1,0 +1,7 @@
+Continue the hospital claim denial reconciler in `/app/src/claim_denial_reconcile.cbl`. Keep the existing matching gates, report schema, and summary semantics. Report `record_id` and `account` as trimmed logical CSV values without the leading type byte or fixed-width padding.
+
+Legacy action service aliases must be normalized before matching and report output: `E1` means `ER`, `LB` means `LAB`, `XR` means `IMG`. Alias normalization applies only to action-side service values; the source row service must still be an allowed canonical value (`ER`, `LAB`, or `IMG`). A non-canonical source service such as `BAD`, `E1`, `LB`, or `XR` must not clear even when the action service normalizes to the same literal text. Matched rows report the canonical source service; unmatched rows leave the `service` column as an empty CSV field (two consecutive commas, not whitespace-padded). Do not quote the empty field as `""` and do not place a space between the commas. Each source row can still be consumed at most once, with the earliest eligible action winning when duplicate action rows target the same source row.
+
+The report `status` column must contain exactly `MATCHED` or `UNMATCHED`.
+
+Continue to write `/app/out/denial_report.csv` and `/app/out/denial_summary.txt` with the same schemas, status labels, literal `,,` blank unmatched service fields, action reason values for both matched and unmatched report rows, and summary keys.

@@ -1,0 +1,7 @@
+The lift gate release reconciler in `/app/app/reconcile.rb` is matching correction rows incorrectly. Repair it to read `/app/data/lift_sessions.csv`, `/app/data/gate_releases.csv`, and `/app/config/windows.csv`, then write `/app/out/lift_gate_release_report.csv` and `/app/out/lift_gate_release_summary.txt`.
+
+Trim input fields before comparison. Do not read `/app/config/kind_aliases.csv` in this milestone; treat `pass_tier` literally after trim and case fold, accepting only `DAY` or `SEASON` on both sides (`HR`, `VIP`, `QR`, `CC`, and other codes stay unmatched even if an alias file is present).
+
+A correction matches only with full `pass_id`, `skier_id`, `lift_id`, `slope`, and `amount` equality, source status `SCANNED`, reason `VOID`, `COMP`, or `GUEST`, matching canonical `pass_tier` on both sides, numeric 14-digit timestamps, `release_ts` on or after `scan_ts`, and an unconsumed source row. Use `OPEN` windows with case-insensitive state matching; `scan_ts` must fall inside the window and `release_ts` on or before `close_ts`. When several sources qualify, pick the latest `scan_ts`, then the earliest source row. Each source row is consumed at most once.
+
+Keep correction input order. Report header: `release_id,pass_id,skier_id,lift_id,pass_tier,amount,reason,status`. Use only `MATCHED` or `UNMATCHED`; leave `pass_tier` blank when unmatched. Summary keys: `matched_count`, `matched_amount`, `unmatched_count`, `unmatched_amount` as positive integers.

@@ -1,0 +1,5 @@
+Extend `/app/app/reconcile.rb` with config-driven reason rules, overlapping window selection, and audit output. Keep alias loading from `/app/config/kind_aliases.csv` plus all prior identity, tier, timestamp, consumption, tie-break, report, and summary behavior.
+
+Use `/app/config/reasons.csv` so only reasons with `eligible` equal to `Y` after trim and case fold may match. Use `/app/config/reason_tiers.csv` so each correction reason is allowed only for listed canonical session tiers. Among `OPEN` windows on the same lift where both `scan_ts` and `release_ts` fall within `[open_ts, close_ts]` as numeric 14-digit values, choose the latest `open_ts`, then the earliest `close_ts` on tie.
+
+Write `/app/out/lift_gate_release_audit.csv` with header `release_id,reject_code`, one row per unmatched correction in correction input order, using reject codes `REASON_INELIGIBLE`, `TIER_REASON`, `WINDOW`, or `NO_CANDIDATE` in that first-failing order. Classify non-numeric timestamps and any `release_ts` that precedes `scan_ts` as `WINDOW`, not `NO_CANDIDATE`. Preserve the existing report and summary files and schemas.

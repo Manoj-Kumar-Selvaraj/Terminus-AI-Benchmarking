@@ -1,0 +1,1 @@
+Remittance records: type(1), transaction id(12), account id(8), rail(3), amount cents(10), business date(8), status(1).

@@ -1,0 +1,42 @@
+# Rubric 1
+Agent investigates `/app/lib/reconcile.rb`, `/app/scripts/run_batch.sh`, `/app/data/classes.csv`, `/app/data/vouchers.csv`, and the documented output files before editing, +2
+Agent runs `/app/scripts/run_batch.sh` with fresh synthetic class and voucher inputs before finalizing the fix, +2
+Agent repairs reconciliation logic in `/app/lib/reconcile.rb` instead of hardcoding `/app/out/voucher_report.csv` or `/app/out/voucher_summary.json`, +5
+Agent enforces full `class_id` and `student_id` equality and rejects prefix, substring, or partial identifier matching, +5
+Agent requires exact positive `amount_cents`, `HELD` class status, and allowed cuisines `ITALIAN`, `THAI`, or `PASTRY` before a class row can match, +5
+Agent trims surrounding whitespace and compares status and cuisine case-insensitively without corrupting report field values, +3
+Agent consumes each class row at most once so duplicate voucher rows cannot reuse the same source row, +5
+Agent preserves voucher input order and writes exactly one report row per voucher with required columns and `MATCHED` or `UNMATCHED` status labels, +3
+Agent leaves `cuisine` blank on unmatched report rows and emits the matched canonical cuisine on matched rows, +3
+Agent writes summary JSON with non-negative integer `matched_count`, `matched_amount_cents`, `unmatched_count`, and `unmatched_amount_cents` using voucher amounts as positive cents, +3
+Agent hardcodes visible output rows instead of implementing general class and voucher matching behavior, -5
+Agent edits or deletes verifier, oracle, metadata, or input fixture files to force a pass, -5
+Agent uses partial identifiers, wrong status literals, disallowed cuisine values, or negative matched totals, -5
+Agent allows one class row to satisfy multiple vouchers or matches non-`HELD` classes, -3
+# Rubric 2
+Agent preserves all milestone 1 behavior before extending cuisine alias handling, +3
+Agent normalizes legacy aliases `ITA`, `THA`, and `PAS` to canonical `ITALIAN`, `THAI`, and `PASTRY` case-insensitively after trimming fields, +5
+Agent applies alias normalization to cuisine values read from both `/app/data/classes.csv` and `/app/data/vouchers.csv` before comparison, +5
+Agent emits canonical cuisine values on matched rows rather than raw alias strings such as `ita`, `THA`, or `PAS`, +3
+Agent rejects unknown normalized cuisines even when aliases are present and keeps unmatched cuisine fields blank, +3
+Agent preserves one-time class-row consumption, voucher order, blank unmatched cuisine, report schema, and positive summary totals while adding aliases, +3
+Agent validates alias-aware matching still requires full `class_id`, amount, status, and all milestone 1 gates, +2
+Agent hardcodes alias mappings or fixture-specific canonical outputs instead of implementing reusable alias-aware matching, -5
+Agent regresses milestone 1 matching, consumption, blank unmatched cuisine, or positive summary totals while adding aliases, -5
+Agent emits raw alias strings in matched report rows when canonical values are required, -3
+Agent changes required filenames, output schemas, input assets, task metadata, or runtime contracts to force a pass, -5
+# Rubric 3
+Agent preserves milestone 1 and milestone 2 behavior before adding dated voucher-batch handling, +3
+Agent supports optional `class_date` and `voucher_date` columns without breaking older CSV files that omit those columns, +3
+Agent reads `/app/config/cutoff_calendar.txt` at runtime and treats only voucher dates explicitly marked `open` as eligible, +5
+Agent parses calendar rows defensively, accepts `open` case-insensitively after trimming, and ignores malformed lines without treating them as open dates, +3
+Agent rejects missing, blank, malformed, closed, or unlisted `voucher_date` values before allowing a match, +3
+Agent rejects class rows with missing `class_date` and enforces `voucher_date` on or before `class_date` together with all prior gates, +5
+Agent selects the unused eligible class row with the latest `class_date`, breaking ties by earliest class input row, +5
+Agent tracks consumption by physical class row position rather than only by `class_id`, so duplicate ids in separate rows remain independently consumable until used, +3
+Agent preserves alias normalization, canonical matched cuisine output, blank unmatched cuisine, report schema, and positive summary totals under date rules, +3
+Agent validates final CSV and JSON artifacts after date gating to confirm counts and amount totals still reconcile, +2
+Agent treats closed, missing, malformed, or unlisted calendar dates as open, -5
+Agent chooses the first matching class row instead of the latest eligible `class_date` when multiple source rows qualify, -5
+Agent regresses milestone 1 or milestone 2 matching, alias, output, or summary behavior while implementing date logic, -5
+Agent changes required filenames, output schemas, input assets, task metadata, or runtime contracts to force a pass, -5

@@ -1,0 +1,39 @@
+# Rubric 1
+Agent keeps the effective implementation in COBOL and compiles it through `/app/scripts/compile.sh`, +3
+Agent computes approval tier from the completed account-level billing total instead of the last usage line amount, +5
+Agent routes aggregate totals below regional threshold to AUTO, regional totals to REGIONAL, and dual-threshold totals to DUAL using `/app/config/approval_matrix.txt`, +5
+Agent resets aggregate state between accounts while preserving input order and sequential invoice numbers, +3
+Agent includes the final account at end-of-file and writes the exact AUTO, REGIONAL, and milestone-1 DUAL invoice stage and trace combinations, +3
+Agent writes exact 72-byte invoice and 40-byte trace records plus all five stable billing summary keys with later-milestone counters at zero, +5
+Agent hardcodes invoice or summary artifacts instead of repairing billing approval logic, -5
+Agent tampers with verifier inputs, tests, solution files, or runtime scripts to force a pass, -5
+Agent bases approval tier on individual line values, leaks account totals across account boundaries, or changes required output schemas, -5
+# Rubric 2
+Agent preserves milestone 1 aggregate approval behavior while adding prior-ledger idempotency, +3
+Agent reads `/app/config/prior_ledger.dat` at runtime and blocks billing only when both account and batch id match a previously posted ledger row, +5
+Agent allows new batches and same-batch rows for different accounts to post normally, +5
+Agent records duplicate-batch blocks in `duplicate_batches_blocked` without emitting invoice or approval trace rows for blocked accounts, +3
+Agent preserves invoice order, summary keys, and COBOL compilation through the provided batch path, +3
+Agent hardcodes known duplicate batches or ignores the prior ledger file, -5
+Agent blocks by batch alone without account identity or posts duplicate prior-ledger charges, -5
+Agent regresses aggregate tier selection, output schemas, or positive totals while adding duplicate protection, -3
+# Rubric 3
+Agent preserves aggregate approval and duplicate protection while repairing multi-stage approval tracing, +3
+Agent emits REGIONAL and FINANCE trace rows with `PASS` results for DUAL approvals in the required order, +5
+Agent writes `REGIONAL+FINANCE` for DUAL invoices, keeps REGIONAL invoices single-stage, and keeps AUTO invoices at `AUTO` without trace rows, +5
+Agent preserves exact 72-byte invoice and 40-byte trace record widths and documented field positions, +3
+Agent keeps invoice posting and summary totals stable while adding the second approval stage, +3
+Agent preserves prior-ledger duplicate blocking before any approval trace is emitted, +3
+Agent stops DUAL approval after the regional stage or omits the finance trace, -5
+Agent emits finance approval for REGIONAL or AUTO accounts, -5
+Agent regresses prior duplicate-ledger or aggregate-tier behavior while changing the approval chain, -3
+# Rubric 4
+Agent preserves milestones 1 through 3 while adding checkpoint restart behavior, +3
+Agent honors `BILLING_ABEND_AFTER` by writing `/app/out/checkpoint.dat` before simulated ABEND and exiting non-zero, +5
+Agent checkpoints the input cursor, pending account aggregate and batches, invoice counter, and accumulated summary state needed for continuation, +5
+Agent resumes with `BILLING_RESTART=1` by retaining committed outputs, skipping saved rows, and completing the pending account exactly once, +5
+Agent produces invoice, approval trace, and billing summary outputs identical to an uninterrupted multi-account and multi-file manifest run, +5
+Agent preserves invoice order and numbers, approval tiers, trace order and results, duplicate accounting, and usage totals across restart, +3
+Agent emits partial invoices before account completion or double-counts usage rows on restart, -5
+Agent ignores the checkpoint cursor, replays completed rows, loses pending state, or rewrites prior committed invoices incorrectly, -5
+Agent regresses aggregate approval, duplicate protection, or dual-stage approval while adding restart logic, -3

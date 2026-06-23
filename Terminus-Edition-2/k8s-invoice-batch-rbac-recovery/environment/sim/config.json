@@ -1,0 +1,13 @@
+{
+  "namespace": "billing-batch",
+  "service_account": "invoice-batch-runner",
+  "configmap": "invoice-batch-config",
+  "cronjob": "invoice-nightly-batch",
+  "batch_run_ts": "20260610000000",
+  "overlap": {
+    "first_start_minute": 0,
+    "second_start_minute": 45,
+    "job_duration_minutes": 90,
+    "billing_window_id": "WIN-20260612"
+  }
+}

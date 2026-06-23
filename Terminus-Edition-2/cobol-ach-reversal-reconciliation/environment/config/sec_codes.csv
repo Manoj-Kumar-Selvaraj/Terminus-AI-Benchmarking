@@ -1,0 +1,7 @@
+sec_code,description,allowed_for_reversal
+PPD,Prearranged Payment and Deposit,true
+CCD,Corporate Credit or Debit,true
+WEB,Internet-Initiated Entry,true
+TEL,Telephone-Initiated Entry,true
+CTX,Corporate Trade Exchange,false
+IAT,International ACH Transaction,false

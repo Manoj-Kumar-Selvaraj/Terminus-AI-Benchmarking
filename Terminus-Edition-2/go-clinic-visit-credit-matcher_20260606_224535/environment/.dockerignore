@@ -1,0 +1,16 @@
+Dockerfile
+docker-compose.yml
+docker-compose.yaml
+.git
+.gitignore
+tests
+solution
+steps
+*.zip
+*.tar
+*.tar.gz
+__pycache__
+*.pyc
+.pytest_cache
+/out
+/build

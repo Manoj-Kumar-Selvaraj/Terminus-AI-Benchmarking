@@ -1,0 +1,2 @@
+hold_id,car_id,yard_id,cargo_class,amount,hold_ts,status,track
+SRC-SAMSEE-1,PARTY-1,SAMSEE,HAZ,100,20260528121000,HELD,LOC-1

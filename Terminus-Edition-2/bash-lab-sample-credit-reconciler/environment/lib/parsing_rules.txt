@@ -1,0 +1,6 @@
+CSV parsing notes:
+- Skip blank lines after the header.
+- Trim leading and trailing whitespace on every field before comparison.
+- Compare sample_id and patient_id as exact strings after trimming.
+- Compare amount_cents as exact strings after trimming.
+- Uppercase status and payer tokens before gate checks; emit canonical payer names in the report.

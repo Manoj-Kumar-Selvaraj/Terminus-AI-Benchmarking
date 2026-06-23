@@ -1,0 +1,28 @@
+Agent inspects and updates the Ruby entrypoint `/app/app/reconcile.rb` rather than creating an unwired Python or shell replacement, +3
+Agent runs the shipped Ruby batch path `/app/scripts/run_batch.sh` or `ruby /app/app/reconcile.rb` while validating changes, +2
+Agent matches milestone 1 corrections only when full `parcel_id`, `meter_id`, `station_id`, `feeder`, integer `amount`, source status `CONFIRMED`, eligible reason, and timestamp ordering all pass, +5
+Agent treats only canonical `LOAD` and `SOLAR` resource types as match-eligible in milestone 1 and leaves unknown resource types unmatched, +3
+Agent consumes each source row at most once while preserving correction input order, +3
+Agent writes `/app/out/cod_demand_response_report.csv` with columns `settlement_id,parcel_id,meter_id,station_id,resource_type,amount,reason,status`, +3
+Agent writes `MATCHED` or `UNMATCHED` exactly, emits canonical `resource_type` on matched rows, and leaves `resource_type` blank on unmatched rows, +3
+Agent writes `/app/out/cod_demand_response_summary.txt` with positive integer `matched_count`, `matched_amount`, `unmatched_count`, and `unmatched_amount` key-value lines, +3
+Agent normalizes milestone 2 alias `LD` to canonical `LOAD` before matching and output, +2
+Agent normalizes milestone 2 alias `QR` to canonical `SOLAR` before matching and output, +2
+Agent normalizes milestone 2 alias `CC` to canonical `BATTERY` before matching and output, +3
+Agent explicitly treats `BATTERY` as a canonical match-eligible resource type from milestone 2 onward alongside `LOAD` and `SOLAR`, +5
+Agent applies alias normalization after trimming and case folding while preserving all full-key, feeder, status, reason, timestamp, and consumption gates, +3
+Agent keeps unknown normalized resource types such as `BAD` unmatched even if source and correction both contain the same unknown value, +3
+Agent emits only canonical `LOAD`, `SOLAR`, or `BATTERY` values for matched milestone 2 report rows and never emits raw aliases, +3
+Agent reads `/app/config/windows.csv` in milestone 3 and treats only numeric timestamps inside explicitly `OPEN` windows for the same `station_id` as eligible, +5
+Agent rejects closed, missing, malformed, or unlisted windows and nonnumeric source or correction timestamps in milestone 3, +3
+Agent requires correction `settle_ts` to be on or after source `event_ts` and not after the matching window close, +3
+Agent chooses the eligible unused source with the latest `event_ts` when multiple candidates qualify, and breaks ties by earliest source input row, +5
+Agent preserves milestone 2 alias behavior and the canonical resource-type gate under milestone 3 window logic, +3
+Agent validates output schema, deterministic ordering, blank unmatched fields, and positive totals before finalizing, +3
+Agent hardcodes final output files instead of repairing the Ruby reconciliation logic, -5
+Agent edits tests, oracle scripts, task metadata, or verifier harness files to force a pass rather than solving the implementation task, -5
+Agent leaves the Ruby program unable to run after changes, -5
+Agent implements the solution in an unwired language or wrapper that bypasses `/app/app/reconcile.rb`, -5
+Agent regresses an earlier milestone while implementing aliases or window logic, -3
+Agent removes the canonical resource-type validity gate and allows unknown resource types to match, -3
+Agent omits `feeder` from the matching predicate despite the instruction requiring full feeder equality, -3

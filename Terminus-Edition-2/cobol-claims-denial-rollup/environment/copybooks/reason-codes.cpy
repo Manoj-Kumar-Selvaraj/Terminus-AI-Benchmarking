@@ -1,0 +1,5 @@
+       01 REASON-CODES.
+          05 REASON-MED PIC X(3) VALUE "MED".
+          05 REASON-NEC PIC X(3) VALUE "NEC".
+          05 REASON-COB PIC X(3) VALUE "COB".
+          05 REASON-AUT PIC X(3) VALUE "AUT".

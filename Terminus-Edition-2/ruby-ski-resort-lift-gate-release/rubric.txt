@@ -1,0 +1,30 @@
+# Rubric 1
+Agent inspects `/app/app/reconcile.rb` and the lift session, gate release, and window CSV inputs before editing, +2
+Agent fixes full `pass_id` matching, row consumption, positive summary totals, and ignored identity or window gates, +5
+Agent enforces full identity equality, `SCANNED` status, allowed reasons, literal `DAY`/`SEASON` tiers without reading `kind_aliases.csv`, and 14-digit timestamp rules, +5
+Agent applies `OPEN` window gating with trim and case folding and selects latest `scan_ts` then earliest source row on ties, +3
+Agent writes the required report header, `MATCHED`/`UNMATCHED` statuses, blank unmatched `pass_tier`, and positive summary keys, +3
+Agent hardcodes output files instead of fixing the Ruby reconciler, -5
+Agent treats prefix `pass_id` overlap, closed windows, or non-`SCANNED` rows as match-eligible, -5
+# Rubric 2
+Agent normalizes legacy aliases `HR`, `QR`, and `CC` to canonical `DAY`, `SEASON`, and `VIP` on both session and correction rows, +5
+Agent expands eligible canonical tiers to `DAY`, `SEASON`, and `VIP` while rejecting unknown normalized values, +3
+Agent emits canonical session `pass_tier` on matched rows and preserves prior identity, window, consumption, and tie-break behavior, +3
+Agent preserves latest-`scan_ts` selection and sequential consumption when multiple alias-normalized rows compete, +3
+Agent emits raw alias codes on matched rows or skips inherited window and consumption rules while adding aliases, -5
+Agent regresses full-id equality, window gating, timestamp checks, or positive summary totals while adding alias normalization, -5
+# Rubric 3
+Agent loads pass tier aliases from `/app/config/kind_aliases.csv` with trim, uppercase, and first-row-wins duplicate handling, +5
+Agent leaves unlisted alias codes as trimmed uppercase literals that stay unmatched unless canonical, +3
+Agent requires session and correction canonical tiers to match after alias lookup, +3
+Agent preserves full-id, slope, window, timestamp, consumption, tie-break, and output-schema behavior under CSV alias loading, +5
+Agent honors runtime alias overrides and whitespace in CSV cells during representative reruns, +3
+Agent hardcodes `HR`/`QR`/`CC` mappings instead of reading `/app/config/kind_aliases.csv`, -5
+Agent regresses matching, window, consumption, or output-schema behavior while switching to CSV-driven aliases, -5
+# Rubric 4
+Agent loads reason eligibility from `/app/config/reasons.csv` and tier constraints from `/app/config/reason_tiers.csv`, +5
+Agent selects overlapping `OPEN` windows by latest `open_ts` then earliest `close_ts` with in-window `scan_ts` and `release_ts`, +5
+Agent writes `/app/out/lift_gate_release_audit.csv` with required header, unmatched-only rows, and ordered reject codes including `WINDOW` for `release_ts` before `scan_ts`, +5
+Agent preserves CSV alias loading, consumption by row position, tie-break rules, and exact report and summary schemas, +3
+Agent treats disabled reasons, wrong tier-reason pairs, or arbitrary overlapping windows as eligible without applying config rules, -5
+Agent regresses prior matching behavior, omits audit output, or changes report or summary schemas while adding reason and window logic, -5

@@ -1,0 +1,5 @@
+clinic,enabled,priority
+MAIN,true,2
+MOBILE,true,1
+ER,true,3
+CHECK,false,9

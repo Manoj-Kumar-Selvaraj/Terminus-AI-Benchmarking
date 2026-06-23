@@ -1,0 +1,37 @@
+# Rubric 1
+Agent inspects the incident evidence, rule decks, data contracts, and state/spool artifacts before changing implementation, +3
+Agent preserves the public `/app/scripts/run_batch.sh` command path and documented input/output schemas across all milestones, +5
+Agent implements runtime rule loading for eligible state, verdicts, open pass state, and aliases instead of hardcoding sample values, +5
+Agent preserves full-key matching, consume-once semantics, latest receive timestamp selection, and equal-timestamp tie-breaking, +5
+Agent adds targeted fixes in the batch code path rather than replacing dynamic behavior with static output fixtures, +3
+Agent hardcodes verifier fixture rows, sample IDs, or expected output files instead of implementing the documented contracts, -5
+Agent ignores the rule deck and assumes the shipped sample values are permanent, -5
+Agent opens the solution by chasing unrelated evidence warnings while leaving the documented contract failures unresolved, -2
+Agent introduces nondeterministic ordering, time-of-day dependence, network calls, external services, or live telemetry dependencies, -5
+# Rubric 2
+Agent correctly compresses the original matching, alias, and pass-window behavior into the first two milestones without removing existing regression coverage, +3
+Agent enforces pass-window eligibility using canonical craft/channel values and rejects malformed or missing windows safely, +5
+Agent runs focused local validation for each milestone and inspects generated report, ledger, quarantine, anomaly, and conflict outputs, +3
+Agent changes `/app/out/audit_report.csv`, `/app/out/audit_summary.txt`, ledger, quarantine, anomaly, or station conflict schemas incompatibly, -5
+Agent regresses full-key matching, alias normalization, consume-once semantics, or receive-timestamp selection while adding pass windows, -3
+# Rubric 3
+Agent uses the committed ledger and checkpoint as state evidence for replay recovery, including stale, missing, and ahead-of-ledger checkpoints, +5
+Agent suppresses replay duplicates without deleting committed state or creating duplicate ledger rows, +5
+Agent quarantines partial, malformed, bad-CRC, incomplete, and pass-closed replay records while continuing later valid processing, +5
+Agent deletes or rewrites input/state files to hide replay, sequence, or station conflicts, -5
+Agent stops processing the full batch after the first malformed replay or segment record, -3
+Agent treats station handoff suppression as replay duplicate suppression or treats replay duplicates as station conflicts, -3
+# Rubric 4
+Agent evaluates sequence continuity independently per pass/craft/channel/VCID stream, +5
+Agent detects sequence gaps, duplicate sequence claims, malformed sequence values, out-of-range values, and unexpected wraps without confusing replay duplicates with sequence duplicates, +5
+Agent applies alias normalization before sequence contract and station-priority lookup, +3
+Agent treats replay duplicate suppression as sequence duplicate detection or skips per-stream sequence evaluation, -3
+Agent regresses replay recovery, ledger updates, or quarantine handling while adding sequence continuity, -3
+# Rubric 5
+Agent validates station handoff authority and chooses the highest-priority eligible station copy, +5
+Agent reports lower-priority duplicates and payload conflicts without committing multiple conflicting payloads, +5
+Agent validates structured segment headers, trailers, frame counts, hash totals, segment IDs, and frame-after-trailer cases, +5
+Agent keeps valid later segments processing after an earlier segment integrity failure, +3
+Agent hardcodes verifier fixture rows, sample IDs, or expected output files instead of implementing the documented contracts, -5
+Agent changes `/app/out/audit_report.csv`, `/app/out/audit_summary.txt`, ledger, quarantine, anomaly, or station conflict schemas incompatibly, -5
+Agent regresses sequence continuity, replay recovery, pass-window gates, or full-key matching while adding station and segment integrity, -3

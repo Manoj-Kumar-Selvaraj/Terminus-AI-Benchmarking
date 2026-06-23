@@ -1,0 +1,18 @@
+# Rubric 1
+Agent reads batch contract and posting operations docs before editing PL/I decks, +2
+Agent sets KEY_COMPARE FULL and CONSUME ON in posting_batch.pli, +5
+Agent honors ELIGIBLE_STATE and ENTRY_1/2/3 from posting_rules.pli, +3
+Agent preserves entry order and blanks ledger_class on REJECTED rows, +3
+Agent writes posted/rejected cent totals in posting_summary.txt, +2
+Agent patches pli_posting.awk instead of .pli control decks, -5
+Agent posts on posting_id prefix only or without journal consumption, -5
+# Rubric 2
+Agent keeps milestone 1 matching while enabling ALIAS_MODE for ledger classes, +3
+Agent normalizes GENERAL/PAYABLE/RECEIVABLE aliases case-insensitively, +5
+Agent emits canonical ledger_class on POSTED rows only, +3
+Agent hard-codes ledger class strings in harness, -5
+# Rubric 3
+Agent keeps milestones 1–2 while enabling WINDOW_MODE, +3
+Agent enforces book_windows.psv per account with OPEN_BOOK_STATE bounds, +5
+Agent tie-breaks on latest book_ts then earliest journal row, +3
+Agent accepts postings outside book window timestamps, -5

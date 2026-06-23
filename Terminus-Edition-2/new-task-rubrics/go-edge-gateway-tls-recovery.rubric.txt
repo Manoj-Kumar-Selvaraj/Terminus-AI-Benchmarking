@@ -1,0 +1,46 @@
+# Rubric 1
+Agent inspects the handshake evidence, rotation timeline, gateway contract, and `/app/internal/tlsmaterial/manager.go` before editing, +2
+Agent loads the deployment-provided trust file from `tlsmaterial.Config.RootCAFile` into the active manager trust pool instead of only validating the file or relying on the host trust store, +5
+Agent populates the trust pool from every certificate block in a multi-certificate PEM bundle regardless of PEM order, +5
+Agent restores successful verified HTTPS handshakes for the rotated ledger issuer while preserving the public gateway and TLS-material interfaces, +5
+Agent uses the disclosed `tlsmaterial.Config` fields `RootCAFile`, `ServerName`, `ClientCertFile`, and `ClientKeyFile` without renaming or dropping them, +3
+Agent keeps certificate verification enabled and preserves the documented minimum TLS version, +3
+Agent validates the milestone fix with `go test -race` under `/app/internal/tlsmaterial`, +2
+Agent hardcodes repository certificate paths, disables verification, or accepts arbitrary certificates to force success, -5
+Agent breaks the documented gateway or TLS-material API while fixing trust loading, -5
+Agent trusts only the first PEM certificate block when `RootCAFile` contains multiple certificates, -5
+# Rubric 2
+Agent preserves milestone 1 trust loading, multi-cert bundle handling, and verification behavior while repairing routed service identity, +5
+Agent inspects the hostname failure evidence, hostname contract, gateway configuration flow, and `/app/internal/tlsmaterial/manager.go` before editing, +2
+Agent configures handshakes to verify the routed service identity from `tlsmaterial.Config.ServerName` even when service discovery connects to an IP address, +5
+Agent completes verified handshakes against DNS-named certificates while connecting to an IP-backed upstream target, +5
+Agent keeps hostname verification strict and limited to the configured route identity instead of accepting arbitrary DNS names or IP addresses, +3
+Agent preserves the configured private trust material and public gateway interfaces while applying hostname behavior, +3
+Agent validates cumulative milestone behavior with `go test -race` under `/app/internal/tlsmaterial`, +2
+Agent disables hostname verification, accepts all server names, or replaces private trust with host trust, -5
+Agent regresses rotated-issuer trust behavior or multi-certificate bundle loading from milestone 1, -5
+Agent omits or overwrites the configured `ServerName` field from `tlsmaterial.Config`, -3
+# Rubric 3
+Agent preserves prior trust-path and routed-identity guarantees while supporting issuer overlap, +5
+Agent inspects the overlap validation evidence, overlap contract, and `/app/internal/tlsmaterial/manager.go` before editing, +2
+Agent builds the server trust pool from every certificate in the configured PEM bundle regardless of certificate order, +5
+Agent authenticates both retiring and replacement ledger issuer populations during the supported overlap window, +5
+Agent makes `Manager.Reload()` re-read `RootCAFile` so expanded trust bundles become active without restarting the gateway, +5
+Agent rejects failed trust-bundle reloads while keeping the prior trust anchors active, +3
+Agent avoids hard-coding the repository bundle, depending on host trust, weakening TLS version, or weakening hostname verification, +3
+Agent validates cumulative milestone behavior with `go test -race` under `/app/internal/tlsmaterial`, +2
+Agent trusts only one issuer from the bundle or makes verification dependent on PEM certificate order, -5
+Agent regresses configured route identity verification or private trust path behavior from earlier milestones, -5
+Agent weakens certificate verification or minimum TLS enforcement while adding overlap support, -5
+# Rubric 4
+Agent preserves all server verification, routed identity, issuer overlap, and public API behavior while adding mTLS reload support, +5
+Agent inspects the mTLS reload evidence, credential reload contract, `Manager.Reload()`, `/app/internal/tlsmaterial/manager.go`, and `/app/internal/upstream/client.go` before editing, +2
+Agent repairs `/app/internal/upstream/client.go` so it installs the full `tls.Config` from `Manager.ClientTLSConfig()` including dynamic client-certificate hooks, +5
+Agent makes configured client certificates available to new mutual-TLS handshakes and keeps endpoints without configured client certificates working, +5
+Agent makes successful credential and trust reloads visible to already-created upstream clients without requiring a process restart, +5
+Agent implements transactional reload so unreadable, corrupted, or mismatched trust or client replacements return an error and leave the last known-good state active, +5
+Agent rejects corrupted replacement client-certificate PEM during reload while keeping the prior active credential usable, +3
+Agent validates all four milestones cumulatively with `go test -race` under `/app/internal/tlsmaterial`, +2
+Agent disables server verification, weakens hostname checks, or drops issuer-overlap support while adding client credentials, -5
+Agent copies only static TLS fields into the upstream transport and drops dynamic reload hooks, -5
+Agent applies failed or corrupted reload material, crashes on missing optional client credentials, or requires rebuilding clients to observe a successful reload, -5

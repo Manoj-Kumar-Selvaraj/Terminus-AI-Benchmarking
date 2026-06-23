@@ -1,0 +1,2 @@
+plan_id,student_id,amount_cents,status,location
+SRC1001,CUST1001,1200,ACTIVE,DINING

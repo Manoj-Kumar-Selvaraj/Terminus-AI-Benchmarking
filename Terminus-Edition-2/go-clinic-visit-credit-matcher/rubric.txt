@@ -1,0 +1,27 @@
+# Rubric 1
+Agent updates `/app/cmd/reconcile/main.go` and compiles with `/usr/local/go/bin/go`, +2
+Agent enforces full `visit_id`, `customer_id`, amount, `POSTED` status, and allowed channel gates for matching, +5
+Agent preserves credit input order, exact report columns, exact `MATCHED`/`UNMATCHED` labels, blank unmatched `channel`, and positive JSON summary totals, +3
+Agent consumes each visit row at most once and rejects non-numeric amounts without crashing, +5
+Agent hardcodes output files instead of fixing the Go reconciler, -5
+Agent tampers with verifier harness or fixtures to force a pass, -5
+Agent uses partial visit-id matching or allows consumed visit rows to be reused, -5
+# Rubric 2
+Agent reads `/app/config/channel_aliases.csv` and normalizes legacy aliases to canonical `ACH`, `CARD`, or `WIRE` before matching, +5
+Agent rejects unsupported aliases and keeps `ANY` unmatched in milestone 2, +3
+Agent emits canonical `channel` on matched rows while preserving milestone 1 gates and consumption, +3
+Agent regresses milestone 1 behavior while adding alias normalization, -3
+Agent treats `ANY` as a wildcard or enables cross-channel alias matching in milestone 2, -5
+# Rubric 3
+Agent applies `/app/config/cutoff_calendar.txt` so only open credit dates are eligible, with case-insensitive open-state handling, +5
+Agent selects the unused visit row with the latest eligible `due_date`, breaking same-date ties by earliest input row, +5
+Agent tracks consumption by visit row position and enforces credit date on or before `due_date`, +3
+Agent preserves alias normalization and milestone 1 gates under calendar constraints, +3
+Agent treats closed or unlisted calendar dates as open, -5
+Agent chooses visits by file order alone instead of latest `due_date` and earliest-row tie-break rules, -5
+# Rubric 4
+Agent reads `/app/config/methods.csv` and enables only channels whose enabled flag is true after trim and case folding, +3
+Agent ranks `ANY` credits by latest `due_date`, then lower configured priority, then earliest visit input row, +5
+Agent never emits `ANY` in matched report rows and preserves prior schemas, output order, and consumption rules, +3
+Agent regresses milestone 1-3 behavior while implementing channel policy or `ANY` wildcard logic, -3
+Agent emits `ANY` in matched report rows or bypasses calendar, consumption, or identity gates for wildcard credits, -5

@@ -1,0 +1,1 @@
+Verifier scenarios rewrite claims.dat, denials.dat, and adjudication_calendar.txt.

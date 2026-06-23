@@ -1,0 +1,37 @@
+# Rubric 1
+Agent inspects the PL/I control decks, rule declarations, AWK batch harness, and treasury data contracts before changing behavior, +3
+Agent enforces full wire, account, amount, canonical rail, and branch matching without prefix or substring shortcuts, +5
+Agent loads eligible state, reason codes, rail aliases, and negative-reason direction rules from the PL/I rule deck at runtime, +5
+Agent preserves one-time clearing-row consumption, claim order, latest-posted candidate selection, and equal-timestamp tie-breaking, +5
+Agent regenerates the exact wire report and summary schemas with canonical cleared rails, blank returned rails, and absolute amount totals, +5
+Agent hardcodes report or summary outputs instead of repairing the adjudication pipeline, -5
+Agent ignores the rule deck and assumes shipped sample state, reason, alias, or direction values are permanent, -5
+Agent clears claims using prefix, substring, wrong-sign, or reused clearing-row matches, -5
+# Rubric 2
+Agent preserves milestone 1 matching, alias, direction, consumption, report, and summary behavior while adding settlement windows, +3
+Agent enforces account-scoped OPEN clearing windows with valid numeric posted and claim timestamps, +5
+Agent enforces settlement-calendar business date, OPEN state, and valid cutoff timestamp before clearing, +5
+Agent chooses the latest posted_ts candidate, breaks equal timestamps by clearing input order, and consumes the selected row before later claims, +5
+Agent returns malformed, closed, missing, wrong-account, or after-cutoff claims without changing public schemas, +3
+Agent tampers with window/calendar files or claim data instead of implementing eligibility, -5
+Agent ignores cutoff/calendar constraints or implements first-fit selection instead of latest-posted ordering, -5
+# Rubric 3
+Agent preserves milestones 1 and 2 behavior while using committed ledger and checkpoint state as replay evidence, +3
+Agent suppresses already committed replay wires without creating duplicate ledger rows or deleting committed state, +5
+Agent appends only newly cleared rows to the ledger output while preserving existing committed rows first, +5
+Agent reports missing, stale, ahead-of-ledger, and OK checkpoint states while continuing deterministic processing, +5
+Agent enables LEDGER_MODE in wire_batch.pli so ledger and restart outputs are emitted during milestone 3, +3
+Agent keeps replay duplicate returns separate from normal matching failures and does not consume clearing rows for duplicate claims, +3
+Agent deletes or rewrites input/state files to hide replay failures, -5
+Agent duplicates ledger rows, skips valid non-replay claims, or makes restart behavior depend on clock time, -5
+# Rubric 4
+Agent preserves prior matching, windows, cutoff, ledger, and restart behavior while adding liquidity and sanctions controls, +3
+Agent enforces per-account/per-canonical-rail nostro limits in deterministic claim order, +5
+Agent returns over-limit claims without consuming clearing rows and records LIQUIDITY_HOLD exceptions, +5
+Agent returns sanctions watchlist hits without consuming clearing rows and records SANCTIONS_HIT exceptions, +5
+Agent records SANCTIONS_HIT exception detail with the matched watchlist counterparty_id, +3
+Agent writes exact wire_exceptions.csv and liquidity_position.txt schemas with deterministic rows and totals, +5
+Agent allows independent later claims in other liquidity buckets to continue after a hold or sanctions hit, +3
+Agent treats liquidity holds as replay duplicates or sanctions hits, -3
+Agent changes report, summary, ledger, restart, exception, or liquidity schemas incompatibly, -5
+Agent introduces network calls, live telemetry, nondeterministic ordering, or time-of-day dependencies, -5

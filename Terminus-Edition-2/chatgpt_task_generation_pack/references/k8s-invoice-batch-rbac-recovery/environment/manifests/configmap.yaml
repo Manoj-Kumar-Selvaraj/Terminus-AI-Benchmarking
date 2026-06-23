@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: invoice-batch-config
+  namespace: billing-batch
+  labels:
+    app: invoice-nightly-batch
+data:
+  ledger_namespace: billing-batch
+  ledger_prefix: ledger-
+  active_window_key: current_window
+  windows.yaml: |
+    - window_id: WIN-20260612
+      open_ts: "20260612000000"
+      close_ts: "20260612235959"
+      currency: USD
+    - window_id: WIN-20260613
+      open_ts: "20260613000000"
+      close_ts: "20260613235959"
+      currency: USD

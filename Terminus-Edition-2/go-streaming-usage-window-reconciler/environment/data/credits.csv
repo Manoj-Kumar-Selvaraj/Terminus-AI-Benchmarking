@@ -1,0 +1,2 @@
+credit_id,stream_id,account_id,device,minutes,event_utc,reason,region
+CR-SAMPLE-001,STR-SAMPLE-001,ACCT-1,TV,45,20260528124600,BUFFER,NA

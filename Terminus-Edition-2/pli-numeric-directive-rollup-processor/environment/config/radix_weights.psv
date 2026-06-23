@@ -1,0 +1,4 @@
+base_radix|weight_numerator|weight_denominator|state
+FED|2|1|ACTIVE
+ACH|3|2|ACTIVE
+SWIFT|1|1|INACTIVE

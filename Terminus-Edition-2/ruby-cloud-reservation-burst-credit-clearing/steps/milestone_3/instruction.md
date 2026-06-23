@@ -1,0 +1,7 @@
+The reservation-cycle report exposes groups that are individually clearable, but operations found that regional capacity and control totals are being ignored. Add capacity-pool and control-total enforcement while preserving the milestone 1 and milestone 2 outputs.
+
+Use `/app/data/capacity_pools.csv` to load available regional capacity by canonical SKU and `/app/config/control_totals.csv` to load expected committed totals by region, SKU, and billing cycle. Apply SKU policy from `/app/config/sku_policy.csv` before group settlement: exact-region enabled rows override wildcard rows; wildcard rows are used only when no exact-region row exists for that SKU; amount bounds are inclusive; malformed policy rows are ignored; and a credit SKU of `ANY` may select any policy-allowed canonical source SKU.
+
+Only groups already `CLEARABLE` from milestone 2 may consume capacity. A group becomes `HELD` with `CAPACITY_EXCEEDED` when its primary SKU/region pool cannot fund it, or with `CONTROL_TOTAL_MISMATCH` when its key's clearable group total differs from the configured control total. Held groups must not reduce remaining capacity.
+
+Write `/app/out/capacity_pool_after.csv` with header `region,sku_type,starting_capacity,committed_amount,remaining_capacity,status`. Continue writing row and group outputs. The verifier inspects state across all three outputs, so do not shortcut by writing one file independently.

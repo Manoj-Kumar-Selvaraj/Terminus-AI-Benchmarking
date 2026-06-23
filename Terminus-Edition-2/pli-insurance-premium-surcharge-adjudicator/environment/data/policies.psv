@@ -1,0 +1,2 @@
+policy_id|account_no|premium_cents|risk_code|branch_id|ingest_ts|state|kind_code
+POL-10001|991100|50000|HIGH|NYC|20260612120000|POSTED|TM

@@ -1,0 +1,18 @@
+{
+  "required_event_source_function_response_type": "ReportBatchItemFailures",
+  "required_sqs_actions": [
+    "sqs:ReceiveMessage",
+    "sqs:DeleteMessage",
+    "sqs:ChangeMessageVisibility",
+    "sqs:GetQueueAttributes"
+  ],
+  "protected_fixture_files": [
+    "/app/data/sqs_batch_01.json",
+    "/app/data/sqs_batch_with_poison.json",
+    "/app/data/duplicate_delivery_replay.json"
+  ],
+  "ledger_idempotency_keys": [
+    "business_event_id",
+    "message_id"
+  ]
+}

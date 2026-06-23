@@ -1,0 +1,5 @@
+service_area,enabled,priority
+MASSAGE,true,1
+FACIAL,true,2
+SAUNA,true,3
+CHECK,false,4

@@ -1,0 +1,228 @@
+================================================================================
+TERMINUS EDITION 2 — REVISION TASK PROMPT (copy into a new Agent chat)
+================================================================================
+
+Use ONE new Agent-mode chat per task. Fill in {placeholders} before sending.
+
+--------------------------------------------------------------------------------
+MODE
+--------------------------------------------------------------------------------
+
+Agent mode (must run commands, edit files, and zip — not advice only).
+
+--------------------------------------------------------------------------------
+TASK IDENTIFIERS (fill in)
+--------------------------------------------------------------------------------
+
+Task ID:        {SUBMISSION_UUID}
+Task folder:    {task-folder-name}
+Zip name:       {task-folder-name}.zip
+Repo root:      Terminus-Edition-2/
+
+--------------------------------------------------------------------------------
+HUMAN REVIEWER FEEDBACK (paste verbatim)
+--------------------------------------------------------------------------------
+
+{paste portal revision notes here}
+
+--------------------------------------------------------------------------------
+MANDATORY WORKFLOW — complete every step; do not say "ready" until done
+--------------------------------------------------------------------------------
+
+STEP 0 — Pull fresh STB feedback FIRST (before editing)
+
+  /root/.local/bin/stb submissions feedback {SUBMISSION_UUID}
+
+  Read both files under /tmp/feedback_{SUBMISSION_UUID}_*/:
+    - notes.txt        → difficulty, quality check, instruction sufficiency, behavior_in_tests
+    - agent_review.txt → warnings, suggestions, critical issues (including test-quality section)
+
+  Archive copies to:
+    Revision-ChatGpt/portal_feedback/audit_{SUBMISSION_UUID}/
+
+  If credentials allow, also run:
+    cd Terminus-Edition-2/{task-folder-name}
+    /root/.local/bin/stb harbor tasks check -m openai/@openai/gpt-5.2 -o /tmp/{task-folder-name}-check.json .
+
+  If stb keys refresh is needed and fails, report it — do not silently skip.
+
+STEP 1 — Fix ALL issue sources (not only the human reviewer paragraph)
+
+  1. Human reviewer notes (above)
+  2. STB agent_review.txt — every warning and suggestion
+  3. STB notes.txt — every quality-check fail
+  4. Test Quality review — see STEP 1b below (mandatory; do not skip)
+  5. Repo standards:
+     - documentation/REVISION_AVOIDANCE_PLAYBOOK.md
+     - Language template if applicable (RUBY_TASK_TEMPLATE.md, GO_TASK_TEMPLATE.md, etc.)
+
+  Prime directive: instruction ↔ tests ↔ solution stay in sync for every milestone.
+
+STEP 1b — Test Quality review (mandatory)
+
+  Review every steps/milestone_N/tests/test_mN.py and fix ALL test-quality issues from STB
+  and agent_review.txt, including warnings and suggestions (not only hard fails).
+
+  Check each test:
+    [ ] Docstring matches what assertions actually verify (informative_test_structure)
+    [ ] Tie-break / selection rules use discriminating fixtures (e.g. distinct amounts for
+        latest-date wins — same-amount tests can pass with wrong first-fit logic)
+    [ ] Consumption tests prove which row was consumed, not only MATCHED/UNMATCHED counts
+    [ ] Milestone-scoped tests do not falsely require later-milestone behavior (add helper
+        comments when shared fixtures write files ignored in early milestones)
+    [ ] Every instruction requirement for that milestone has at least one focused test
+    [ ] No test references verifier/harness wording in user-facing docstrings
+
+  Add or tighten tests where agent_review or behavior_in_tests flags a gap. Re-run oracle
+  after any test change.
+
+STEP 1c — Rubric review (mandatory; paste into Snorkel UI only — never inside zip)
+
+  Files (same content in both):
+    - revision-custom-rubrics/{task-folder-name}.rubric.txt   ← user paste copy
+    - {task-folder-name}/rubric.txt                           ← task authoring copy
+
+  Reference: documentation/RUBRICS_GUIDE.md, documentation/GPT_AGENT_PLAYBOOK.md §6
+
+  Milestone segregation (required in local files):
+    [ ] One clearly separated block per milestone, headed exactly `# Rubric 1`, `# Rubric 2`, …
+    [ ] Only `Agent ...` lines are criteria — header lines are section labels, not criteria
+    [ ] Match repo examples: revision-custom-rubrics/go-food-truck-rally-voucher-matcher.rubric.txt
+
+  Example shape (4-milestone task):
+
+    # Rubric 1
+    Agent inspects source before editing, +2
+    Agent enforces core matching gates for milestone 1, +5
+    Agent hardcodes outputs instead of fixing logic, -5
+    Agent regresses milestone 1 behavior, -3
+    # Rubric 2
+    Agent maps legacy aliases to canonical values, +5
+    ...
+
+  Platform paste rules:
+    [ ] If Snorkel has ONE combined rubric textbox: paste the full file including `# Rubric N`
+        headers (repo standard for readability).
+    [ ] If Snorkel has SEPARATE fields per milestone: paste only the `Agent ...` lines for that
+        milestone — omit the `# Rubric N` header line in each field (some UIs store headers as
+        spurious criteria).
+    [ ] If a human reviewer asks to remove heading lines, keep headers in the local `.rubric.txt`
+        for authoring but strip them when pasting into the affected UI field.
+
+  Line format:
+    [ ] Each criterion: `Agent <observable trace behavior>, +N` or `Agent <bad behavior>, -N`
+    [ ] Every criterion line starts with `Agent` and ends with `, <score>`
+    [ ] No blank lines required between blocks; `# Rubric N` provides segregation
+
+  Score values (platform rejects anything else):
+    Allowed: +1, +2, +3, +5 and -1, -2, -3, -5 only
+    Forbidden: +4, -4, or any other magnitude
+
+  Negative criteria counts:
+    [ ] Whole rubric: at least 3 negative lines total (platform validation minimum)
+    [ ] Per `# Rubric N` block: at least 1 negative line (Edition 2 / reviewer expectation)
+    [ ] Typical matcher tasks: 2 negatives per milestone block is the repo norm
+
+  Required negative themes (adapt paths to task language):
+    [ ] Hardcoding outputs instead of fixing the reconciler / CLI / COBOL program, -5
+    [ ] Tampering with platform files, task metadata, or runtime input fixtures, -5
+    [ ] Core regression for that milestone (partial-id match, wrong schema, bypassing
+        a gate introduced in that milestone, etc.), -3 or -5
+
+  Positive point budget (sum of + scores only, per block):
+    [ ] Each `# Rubric N` block: roughly 10–40 positive points
+    [ ] N milestones: roughly (N × 10)–(N × 40) total positives across all blocks
+
+  Forbidden rubric wording:
+    [ ] No references to pytest, /tests/, oracle, NOP, task.toml, instruction.md, verifier,
+        harness, or reward files
+    [ ] No vague lines like "handles edge cases" — must be binary and trace-verifiable
+    [ ] Criteria judge process from terminal trace, not final unit-test pass/fail
+
+  Sync check:
+    [ ] Both rubric paths updated after any instruction, test, or solution change
+    [ ] Every instruction "must" for a milestone has a matching positive in that block
+    [ ] Negatives penalize realistic agent mistakes (hardcode, regression, wrong tie-break,
+        schema drift, missing config normalization)
+
+STEP 2 — Standard hygiene (always verify)
+
+  [ ] task.toml: version = "2.0"; per-milestone [[steps]]; no root instruction.md/tests/solution
+  [ ] Instructions: short; M2+ only new behavior + carry-forward note; no verifier wording
+  [ ] environment/Dockerfile: digest-pinned canonical base; pytest in Dockerfile; WORKDIR /app last
+  [ ] environment/.dockerignore: exclude steps, **/tests/, **/solution/
+  [ ] All test.sh: WORKDIR guard, exit_code=$?, reward-pattern comment, no set -e before reward
+  [ ] Solution dirs: only solve.sh + solveN.sh per milestone; self-contained for fresh containers
+  [ ] Rubric: revision-custom-rubrics/{task-folder-name}.rubric.txt AND {task-folder-name}/rubric.txt
+        kept in sync — segregated `# Rubric N` blocks (see STEP 1c); never inside zip
+  [ ] Keep root-level [agent] and [verifier] in task.toml even if some reviewers flag it
+
+STEP 3 — Local validation
+
+  cd Terminus-Edition-2
+  bash scripts/terminus2_cli.sh preflight ./{task-folder-name}
+  bash scripts/terminus2_cli.sh oracle ./{task-folder-name}
+
+  If oracle fails: check common issues (CRLF in *.sh, non-self-contained solveN.sh, Dockerfile,
+  test.sh reward pattern) before declaring ready.
+
+STEP 4 — Pack zip
+
+  rm -f revision-custom-upload/{task-folder-name}.zip
+  cd Terminus-Edition-2
+  sed 's/\r$//' scripts/zip_task.sh | bash -s -- \
+    --task {task-folder-name} \
+    --out revision-custom-upload \
+    --zip-name {task-folder-name}.zip
+
+STEP 5 — Final report (required before "ready")
+
+  | Source              | Issue | Fixed? | How verified |
+  |---------------------|-------|--------|--------------|
+  | Human reviewer      |       |        |              |
+  | Agent review warn   |       |        |              |
+  | Agent review sugg   |       |        |              |
+  | Quality check fail  |       |        |              |
+  | Test quality issue  |       |        |              |
+  | Oracle all miles    |       |        | M1 / M2 / …  |
+
+  Upload notes:
+    - Canonical base image: Yes / No (+ digest)
+    - Difficulty: medium or hard
+    - Rubric paste path: revision-custom-rubrics/{task-folder-name}.rubric.txt
+      (segregated `# Rubric N` blocks; strip headers only if pasting per-milestone UI fields)
+    - Zip path: revision-custom-upload/{task-folder-name}.zip
+
+--------------------------------------------------------------------------------
+ACCEPTANCE GATES (must hold)
+--------------------------------------------------------------------------------
+
+  - Difficulty: medium or hard (not easy/trivial)
+  - Solvable: all tests passed by at least one agent run (per STB notes)
+  - Instruction sufficiency: pass
+  - Oracle: all milestones pass locally
+  - Fix every STB agent-review issue, warning, and suggestion — not only human reviewer text
+  - Test Quality review complete: all STB/agent test-quality warnings and suggestions addressed
+  - Rubric review complete (STEP 1c): segregated `# Rubric N` blocks, >=3 negatives total,
+    >=1 negative per block, valid scores only, both rubric paths synced, paste file ready
+
+--------------------------------------------------------------------------------
+SHORT VERSION (minimal paste)
+--------------------------------------------------------------------------------
+
+Agent mode. Task {task-folder-name} / ID {SUBMISSION_UUID}.
+
+1. /root/.local/bin/stb submissions feedback {SUBMISSION_UUID} — fix human notes + ALL
+   agent_review + quality fails + Test Quality review (STEP 1b) + Rubric review (STEP 1c)
+2. Repo hygiene per documentation/REVISION_AVOIDANCE_PLAYBOOK.md
+3. terminus2_cli.sh preflight + oracle
+4. Rubric → revision-custom-rubrics/{task-folder-name}.rubric.txt (sync {task-folder-name}/rubric.txt;
+   `# Rubric N` blocks per milestone)
+   Zip → revision-custom-upload/{task-folder-name}.zip
+5. Final table: every issue → fixed? — only then say ready.
+
+
+Work through all mandatory steps. Do not say ready until STB feedback is pulled, oracle passes, zip is built, and the final issue table is complete.
+
+
+================================================================================

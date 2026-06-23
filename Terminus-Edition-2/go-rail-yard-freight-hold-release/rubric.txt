@@ -1,0 +1,31 @@
+# Rubric 1
+
+Agent investigates `/app/cmd/reconcile/main.go`, `/app/data/holds.csv`, and `/app/data/releases.csv` instead of unrelated files, +2
+Agent satisfies milestone 1 core requirement: full source identifier and identity fields match, integer amount match, `HELD` source status, allowed correction reasons, and numeric timestamps where `release_ts` is on or after `hold_ts`, +5
+Agent restricts milestone 1 match-eligible `cargo_class` values to `HAZ`, `DRY` only and leaves unknown values unmatched, +3
+Agent consumes each source row at most once while preserving correction input order, +3
+Agent writes `/app/out/freight_release_report.csv` and `/app/out/freight_release_summary.txt` with required schema, `MATCHED`/`UNMATCHED` only, blank unmatched `cargo_class`, and positive summary totals, +3
+Agent hardcodes final output files instead of fixing reconciliation logic, -5
+Agent tampers with verifier harness files, oracle scripts, or input fixtures to force a pass, -5
+
+# Rubric 2
+
+Agent normalizes legacy `cargo_class` aliases (`IN` means `HAZ`, `CU` means `DRY`, `SE` means `REF`) on both source and correction rows after trim and case folding, +5
+Agent expands milestone 2 canonical match-eligible `cargo_class` values to `HAZ`, `DRY`, `REF`, +3
+Agent emits canonical `cargo_class` values in matched report rows rather than raw alias codes, +3
+Agent preserves milestone 1 full-id, identity, consumption, schema, and positive-total behavior while adding aliases, +3
+Agent leaves `cargo_class` blank on unmatched rows after alias-aware matching, +3
+Agent applies `/app/config/windows.csv` filtering in milestone 2 before window rules belong in scope, -3
+Agent regresses milestone 1 behavior while implementing alias normalization, -3
+
+# Rubric 3
+
+Agent applies open window gates from `/app/config/windows.csv` while preserving all earlier matching rules, +5
+Agent requires source `hold_ts` inside an `OPEN` window for the same `yard_id` and rejects closed, missing, malformed, or unlisted windows, +5
+Agent rejects releases whose `release_ts` is before `hold_ts` or after the window close, +3
+Agent chooses the eligible source with the latest `hold_ts` when multiple unused rows qualify for one correction, +5
+Agent preserves latest timestamp candidate selection and tracks duplicate source rows by row position, +3
+Agent preserves alias normalization and canonical report output under window-gated matching, +3
+Agent validates final CSV and summary artifacts before finishing milestone 3, +2
+Agent treats closed or unlisted windows as eligible open windows, -5
+Agent regresses milestone 1 or 2 matching behavior while adding window or latest-candidate logic, -3

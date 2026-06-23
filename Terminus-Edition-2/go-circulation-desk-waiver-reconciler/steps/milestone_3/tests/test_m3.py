@@ -1,0 +1,271 @@
+"""Milestone 3 tests for dated library loan waiver matching CLI."""
+
+import csv
+import json
+import subprocess
+from pathlib import Path
+
+import pytest
+
+APP = Path("/app")
+LOANS = APP / "data" / "loans.csv"
+WAIVERS = APP / "data" / "waivers.csv"
+CALENDAR = APP / "config" / "cutoff_calendar.txt"
+REPORT = APP / "out" / "waiver_report.csv"
+SUMMARY = APP / "out" / "waiver_summary.json"
+BIN = APP / "build" / "reconcile"
+GO = Path("/usr/local/go/bin/go")
+
+
+def build_program():
+    """Compile the Go waiver reconciliation CLI."""
+    BIN.parent.mkdir(parents=True, exist_ok=True)
+    go_cmd = str(GO) if GO.exists() else "go"
+    subprocess.run([go_cmd, "build", "-o", str(BIN), "/app/cmd/reconcile"], check=True, cwd=APP)
+
+
+@pytest.fixture(scope="session", autouse=True)
+def compiled_binary():
+    """Compile the Go reconciliation CLI once for all milestone 3 tests."""
+    build_program()
+
+
+def write_inputs(loan_rows, waiver_rows, calendar_rows):
+    """Replace CSV inputs and calendar with a dated waiver scenario."""
+    REPORT.parent.mkdir(parents=True, exist_ok=True)
+    LOANS.write_text("loan_id,customer_id,amount_cents,status,channel,due_date\n" + "\n".join(loan_rows) + "\n")
+    WAIVERS.write_text("loan_id,customer_id,amount_cents,channel,waiver_date\n" + "\n".join(waiver_rows) + "\n")
+    CALENDAR.write_text("\n".join(calendar_rows) + "\n")
+    REPORT.unlink(missing_ok=True)
+    SUMMARY.unlink(missing_ok=True)
+
+
+def run_program():
+    """Run the compiled program and parse its CSV/JSON outputs."""
+    subprocess.run([str(BIN)], check=True, cwd=APP)
+    report_text = REPORT.read_text()
+    assert report_text.splitlines()[0] == "loan_id,customer_id,channel,amount_cents,status"
+    with REPORT.open(newline="") as f:
+        rows = list(csv.DictReader(f))
+    summary = json.loads(SUMMARY.read_text())
+    assert set(summary.keys()) == {
+        "matched_count",
+        "matched_amount_cents",
+        "unmatched_count",
+        "unmatched_amount_cents",
+    }
+    return rows, summary
+
+
+class TestMilestone3:
+    """Date gates and latest eligible loan selection for waivers."""
+
+    def test_date_ordering_and_channel_gate_reject_ineligible_rows(self):
+        """Late, closed, and cross-channel rows must remain unmatched even when related rows share identifiers."""
+        write_inputs(
+            [
+                "LOAN9301,CUST9301,1000,POSTED,ACH,2026-04-03",
+                "LOAN9301,CUST9301,1000,POSTED,WIRE,2026-04-10",
+                "LOAN9301,CUST9301,1000,POSTED,CARD,2026-04-04",
+                "LOAN9302,CUST9302,2000,POSTED,CARD,2026-04-02",
+                "LOAN9303,CUST9303,3000,POSTED,WIRE,2026-04-05",
+                "LOAN9304,CUST9304,4000,POSTED,WIRE,2026-04-05",
+            ],
+            [
+                "LOAN9301,CUST9301,1000,CC,2026-04-02",
+                "LOAN9302,CUST9302,2000,CC,2026-04-04",
+                "LOAN9303,CUST9303,3000,WIR,2026-04-06",
+                "LOAN9304,CUST9304,4000,WIRE,2026-04-07",
+            ],
+            [
+                "2026-04-02 open",
+                "2026-04-04 open",
+                "2026-04-05 open",
+                "2026-04-06 open",
+                "2026-04-07 open",
+                "2026-04-10 open",
+            ],
+        )
+        rows, summary = run_program()
+
+        assert [row["status"] for row in rows] == ["MATCHED", "UNMATCHED", "UNMATCHED", "UNMATCHED"]
+        assert rows[0]["channel"] == "CARD"
+        assert [row["channel"] for row in rows[1:]] == ["", "", ""]
+        assert summary == {
+            "matched_count": 1,
+            "matched_amount_cents": 1000,
+            "unmatched_count": 3,
+            "unmatched_amount_cents": 9000,
+        }
+
+    def test_same_due_date_tie_uses_loan_order_and_consumption(self):
+        """Same due_date with CARD before ACH should route CC to the first row and enforce row-level consumption."""
+        write_inputs(
+            [
+                "LOAN9401,CUST9401,500,POSTED,CARD,2026-04-05",
+                "LOAN9401,CUST9401,500,POSTED,ACH,2026-04-05",
+                "LOAN9402,CUST9402,700,POSTED,ACH,2026-04-05",
+            ],
+            [
+                "LOAN9401,CUST9401,500,CC,2026-04-04",
+                "LOAN9401,CUST9401,500,ACH,2026-04-04",
+                "LOAN9401,CUST9401,500,CC,2026-04-04",
+                "LOAN9402,CUST9402,700,ACH,2026-04-05",
+            ],
+            [
+                "2026-04-04 open",
+                "2026-04-05 open",
+            ],
+        )
+        rows, summary = run_program()
+
+        assert [row["status"] for row in rows] == ["MATCHED", "MATCHED", "UNMATCHED", "MATCHED"]
+        assert [row["channel"] for row in rows] == ["CARD", "ACH", "", "ACH"]
+        assert summary["matched_count"] == 3
+        assert summary["matched_amount_cents"] == 1700
+        assert summary["unmatched_count"] == 1
+        assert summary["unmatched_amount_cents"] == 500
+
+    def test_latest_due_date_wins_before_older_loan_is_used(self):
+        """The later eligible due_date row should be consumed before an older eligible loan."""
+        write_inputs(
+            [
+                "LOAN9501,CUST9501,800,POSTED,CARD,2026-04-03",
+                "LOAN9501,CUST9501,900,POSTED,CARD,2026-04-06",
+            ],
+            [
+                "LOAN9501,CUST9501,900,CC,2026-04-02",
+                "LOAN9501,CUST9501,800,CC,2026-04-04",
+            ],
+            [
+                "2026-04-02 open",
+                "2026-04-04 open",
+            ],
+        )
+        rows, summary = run_program()
+
+        assert [row["status"] for row in rows] == ["MATCHED", "UNMATCHED"]
+        assert rows[0]["amount_cents"] == "900"
+        assert rows[0]["channel"] == "CARD"
+        assert rows[1]["channel"] == ""
+        assert summary == {
+            "matched_count": 1,
+            "matched_amount_cents": 900,
+            "unmatched_count": 1,
+            "unmatched_amount_cents": 800,
+        }
+
+    def test_closed_waiver_date_is_not_eligible(self):
+        """A waiver whose date is listed as closed must not match."""
+        write_inputs(
+            ["LOAN9601,CUST9601,1000,POSTED,CARD,2026-04-10"],
+            ["LOAN9601,CUST9601,1000,CC,2026-04-05"],
+            ["2026-04-05 closed"],
+        )
+        rows, summary = run_program()
+
+        assert rows[0]["status"] == "UNMATCHED"
+        assert rows[0]["channel"] == ""
+        assert summary["unmatched_count"] == 1
+        assert summary["unmatched_amount_cents"] == 1000
+
+    def test_unlisted_waiver_date_is_not_eligible(self):
+        """A waiver date absent from the calendar must not be treated as open."""
+        write_inputs(
+            ["LOAN9651,CUST9651,500,POSTED,CARD,2026-04-30"],
+            ["LOAN9651,CUST9651,500,CC,2026-04-15"],
+            ["2026-04-10 open"],
+        )
+        rows, summary = run_program()
+
+        assert rows[0]["status"] == "UNMATCHED"
+        assert rows[0]["channel"] == ""
+        assert summary == {
+            "matched_count": 0,
+            "matched_amount_cents": 0,
+            "unmatched_count": 1,
+            "unmatched_amount_cents": 500,
+        }
+
+    def test_missing_waiver_date_is_not_eligible(self):
+        """A waiver with an empty waiver_date must not match any loan."""
+        write_inputs(
+            ["LOAN9701,CUST9701,900,POSTED,ACH,2026-04-05"],
+            ["LOAN9701,CUST9701,900,ACH,"],
+            ["2026-04-05 open"],
+        )
+        rows, summary = run_program()
+
+        assert rows[0]["status"] == "UNMATCHED"
+        assert rows[0]["channel"] == ""
+        assert summary["matched_count"] == 0
+        assert summary["unmatched_amount_cents"] == 900
+
+    def test_loan_without_due_date_is_not_eligible(self):
+        """A loan with an empty due_date cannot be consumed."""
+        write_inputs(
+            ["LOAN9801,CUST9801,700,POSTED,WIRE,"],
+            ["LOAN9801,CUST9801,700,WIR,2026-04-04"],
+            ["2026-04-04 open"],
+        )
+        rows, summary = run_program()
+
+        assert rows[0]["status"] == "UNMATCHED"
+        assert rows[0]["channel"] == ""
+        assert summary["matched_count"] == 0
+        assert summary["unmatched_count"] == 1
+        assert summary["unmatched_amount_cents"] == 700
+
+    def test_case_insensitive_posted_status_with_date_gates(self):
+        """Lowercase posted status must still be eligible when date and alias gates pass."""
+        write_inputs(
+            ["LOAN9999,CUST9999,500,posted,CARD,2026-04-10"],
+            ["LOAN9999,CUST9999,500,CC,2026-04-05"],
+            ["2026-04-05 open"],
+        )
+        rows, summary = run_program()
+
+        assert rows[0]["status"] == "MATCHED"
+        assert rows[0]["channel"] == "CARD"
+        assert summary == {
+            "matched_count": 1,
+            "matched_amount_cents": 500,
+            "unmatched_count": 0,
+            "unmatched_amount_cents": 0,
+        }
+
+    def test_calendar_status_case_insensitive(self):
+        """Uppercase OPEN calendar status must be treated as an open waiver date."""
+        write_inputs(
+            ["LOANCI01,CUSTCI01,500,POSTED,CARD,2026-04-10"],
+            ["LOANCI01,CUSTCI01,500,CC,2026-04-05"],
+            ["2026-04-05 OPEN"],
+        )
+        rows, summary = run_program()
+
+        assert rows[0]["status"] == "MATCHED"
+        assert rows[0]["channel"] == "CARD"
+        assert summary == {
+            "matched_count": 1,
+            "matched_amount_cents": 500,
+            "unmatched_count": 0,
+            "unmatched_amount_cents": 0,
+        }
+
+    def test_wir_alias_matches_wire_loan_and_emits_canonical_channel(self):
+        """A WIR waiver should match a WIRE loan and report the canonical channel."""
+        write_inputs(
+            ["LOAN9901,CUST9901,600,POSTED,WIRE,2026-04-10"],
+            ["LOAN9901,CUST9901,600,WIR,2026-04-05"],
+            ["2026-04-05 open"],
+        )
+        rows, summary = run_program()
+
+        assert rows[0]["status"] == "MATCHED"
+        assert rows[0]["channel"] == "WIRE"
+        assert summary == {
+            "matched_count": 1,
+            "matched_amount_cents": 600,
+            "unmatched_count": 0,
+            "unmatched_amount_cents": 0,
+        }

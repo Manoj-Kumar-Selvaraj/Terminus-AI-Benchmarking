@@ -1,0 +1,1 @@
+The router has two stages: a COBOL export and a Java payload adapter. The adapter reads the rules-service URL from `RULES_URL` and should fall back to local rail configuration when that service is unavailable.

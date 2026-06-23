@@ -1,0 +1,2 @@
+rider_id,fare_type,effective_date,max_daily_amount,status
+CUST-SAMPLE,ECON,2026-04-01,9999,ACTIVE

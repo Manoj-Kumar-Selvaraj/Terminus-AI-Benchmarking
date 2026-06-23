@@ -1,0 +1,2 @@
+record_id|volume_id|length_hash|block_no|reel_id|recv_ts|state|kind_code
+REC-10001|VOL01|50000|BLK01|RL-9|20260612120000|MOUNTED|TM

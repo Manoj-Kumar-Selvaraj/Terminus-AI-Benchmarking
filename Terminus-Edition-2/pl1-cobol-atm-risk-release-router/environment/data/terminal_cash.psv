@@ -1,0 +1,4 @@
+terminal_id|business_date|available_cash_cents|dispensed_today_cents|release_count_today|state
+TERM-A|20260613|250000|0|0|READY
+TERM-B|20260613|150000|0|0|READY
+TERM-C|20260613|0|0|0|BLOCKED

@@ -1,0 +1,54 @@
+# Rubric 1
+Agent investigates `/app/cmd/reconcile/main.go`, `/app/data/authorizations.csv`, `/app/data/reversals.csv`, and the documented report and summary outputs before editing, +2
+Agent compiles the Go CLI with `/usr/local/go/bin/go` and runs it against fresh synthetic authorization and reversal inputs, +3
+Agent repairs reconciliation logic instead of hardcoding `/app/out/fuel_reversal_report.csv` or `/app/out/fuel_reversal_summary.txt`, +5
+Agent enforces full-key matching for trimmed `auth_id`, `fleet_id`, `batch_id`, `location`, and positive base-10 integer `amount`, +5
+Agent requires `SETTLED` source status, allowed reasons `VOID`/`DUPLICATE`/`LIMIT` after trim and case fold, and numeric 14-digit UTC timestamps with `source_ts <= action_ts`, +5
+Agent parses `/app/config/windows.csv` by header, treats `OPEN` case-insensitively, and enforces inclusive `open_ts <= source_ts <= action_ts <= close_ts`, +3
+Agent accepts only canonical `DIESEL` and `GAS` kinds in milestone 1, rejecting `EV`, `ANY`, unknown kinds, and legacy aliases, +3
+Agent consumes each authorization row at most once, preserves reversal input order, and leaves `kind` blank on unmatched rows, +5
+Agent writes the exact report schema and summary keys with non-negative integer totals and preserved reversal amount strings, +3
+Agent hardcodes final output files instead of repairing the Go reconciliation logic, -5
+Agent tampers with test fixtures, solution scaffolding, platform configuration, or input files to force a pass, -5
+Agent matches identifiers by prefix or substring, allows duplicate source reuse, or treats invalid amounts as match-eligible, -3
+# Rubric 2
+Agent preserves all milestone 1 behavior before adding runtime kind alias normalization, +3
+Agent loads `/app/config/kind_aliases.csv` by header and canonicalizes aliases to `DIESEL`, `GAS`, and `EV` after trimming and case folding, +5
+Agent ignores blank alias rows, blank canonical values, unsupported targets, and applies the first valid duplicate alias row, +3
+Agent normalizes kinds on both authorization and reversal sides before comparison and emits canonical kinds on matched rows, +5
+Agent keeps `ANY` ineligible in milestone 2 and rejects unknown normalized kinds even when both sides match, +3
+Agent preserves window gates, consumption, amount preservation, report schema, and summary totals while adding aliases, +3
+Agent hardcodes alias mappings instead of reading the runtime alias file, -5
+Agent regresses milestone 1 matching, whitespace handling, consumption, or output contracts while adding aliases, -5
+Agent emits raw alias strings in matched report rows when canonical values are required, -3
+# Rubric 3
+Agent preserves milestone 1 and milestone 2 behavior before changing candidate selection for realtime windows, +3
+Agent treats `/app/config/windows.csv` as runtime authoritative, skips blank and comment-like rows, and ignores closed, malformed, or reversed windows, +5
+Agent requires exactly 14-digit numeric source and action timestamps and rejects shorter, longer, or nonnumeric values, +3
+Agent selects the unused eligible authorization with the latest `source_ts`, breaking ties by earliest authorization input row, +5
+Agent preserves alias normalization, full identity gates, one-time consumption, reversal order, and fresh output regeneration, +3
+Agent validates matched and unmatched counts and amount totals after window and latest-timestamp scenarios, +2
+Agent hardcodes final output files instead of repairing the Go reconciliation logic, -5
+Agent chooses candidates by file order alone instead of latest `source_ts` then earliest row, -5
+Agent regresses alias handling or milestone 1 gates while implementing window ranking, -3
+# Rubric 4
+Agent preserves milestone 1 through milestone 3 behavior before adding config-driven reason and kind policy, +3
+Agent loads `/app/config/reasons.csv` and allows only trimmed, case-folded reasons with last well-formed `eligible=Y` rows, +5
+Agent loads `/app/config/kinds.csv`, requires `enabled=true` for canonical kinds, and ranks lower numeric priorities earlier on `ANY` ties, +5
+Agent treats blank or malformed kind priorities as ranking after valid numeric priorities, +3
+Agent supports reversal `ANY` with latest timestamp, kind priority, then earliest row selection without emitting `ANY` in the report, +5
+Agent requires exact canonical kind equality for non-`ANY` reversals and preserves window, alias, consumption, and summary behavior, +3
+Agent hardcodes reason or kind allowlists instead of reading runtime config files, -5
+Agent lets disabled reasons or kinds match, uses first duplicate reason row instead of last, or emits `ANY` in matched rows, -5
+Agent regresses milestone 3 latest-timestamp or window behavior while adding config policy, -3
+# Rubric 5
+Agent preserves milestone 1 through milestone 4 behavior before adding fleet policy controls, +3
+Agent loads `/app/config/fleet_policies.csv` by header and requires an enabled policy keyed by exact `fleet_id`, `batch_id`, and `location`, +5
+Agent ignores blank, comment-like, and malformed policy rows while making the last well-formed duplicate key authoritative, +5
+Agent enforces inclusive `max_reversal_amount`, case-insensitive `allow_any` and `enabled` booleans, and blocks `ANY` when `allow_any=false`, +5
+Agent ensures policy-blocked reversals do not consume authorization rows and preserves all earlier reason, kind, alias, window, and ranking gates, +5
+Agent preserves report schema, reversal order, blank unmatched kinds, and non-negative summary totals under policy filtering, +3
+Agent validates the final report and summary after policy enable, disable, and limit scenarios, +2
+Agent hardcodes final output files instead of repairing the Go reconciliation logic, -5
+Agent lets policy bypass reason, kind, window, or consumption rules, or consumes sources for policy-rejected reversals, -5
+Agent regresses milestone 4 `ANY` ranking or config allowlists while implementing fleet policies, -3

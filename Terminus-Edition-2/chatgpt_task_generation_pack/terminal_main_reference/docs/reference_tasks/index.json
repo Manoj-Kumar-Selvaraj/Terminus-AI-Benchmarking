@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "notes": "No task is promoted to references until every field in reference_task_template.md has current evidence. Ready-looking zips are listed as promotion candidates only. New specs should use reference_pattern.reference_task_id when a promoted reference fits, or justification_if_none when none applies. promotion_candidates is empty until those zips exist in-repo (avoids reference_task_check WARN noise). abi-rebuild-mismatch demoted pending in-repo task_path at approved_task/abi-rebuild-mismatch.",
+  "references": [],
+  "promotion_candidates": []
+}

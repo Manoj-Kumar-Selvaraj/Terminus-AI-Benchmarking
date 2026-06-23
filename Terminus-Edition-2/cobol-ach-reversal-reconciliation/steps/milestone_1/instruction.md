@@ -1,0 +1,5 @@
+The ACH reversal reconciler in `/app/src/ach_reconcile.cbl` is producing bad exception reports for same-day returns. First get the core matching and output right for `/app/data/settlement.dat` and `/app/data/reversals.dat`.
+
+A reversal matches a settlement only when the full 15-character trace, company, amount, posted status `P`, settlement direction `C`, an eligible return reason, and an allowed SEC code all line up. SEC codes `PPD`, `CCD`, `WEB`, and `TEL` are allowed; return reasons `R01`, `R02`, `R03`, and `R10` are eligible.
+
+Write `/app/out/reversal_report.csv` with columns `trace,company,sec,amount_cents,reason,status`, keeping reversals in input order and preserving the 10-character zero-padded amount field. For MATCHED rows, `sec` is the matched settlement SEC code; for UNMATCHED rows, `sec` is blank. Write `/app/out/reversal_summary.txt` as `key=value` lines for `matched_count`, `matched_amount_cents`, `unmatched_count`, and `unmatched_amount_cents`, with matched reversal amounts counted as positive cents.

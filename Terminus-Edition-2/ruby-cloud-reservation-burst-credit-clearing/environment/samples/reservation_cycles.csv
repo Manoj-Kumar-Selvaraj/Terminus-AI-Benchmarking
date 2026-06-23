@@ -1,0 +1,2 @@
+group_id,reservation_id,account_id,region,billing_cycle,required_sku_types,expected_amount,allow_partial
+GRP-SAMPLE,SAMPLE,PARTY-1,LOC-1,2026-05,CPU,100,false

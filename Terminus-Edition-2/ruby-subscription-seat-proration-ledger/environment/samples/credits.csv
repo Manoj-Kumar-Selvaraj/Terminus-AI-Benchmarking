@@ -1,0 +1,2 @@
+action_id,event_id,account_id,subscription_id,kind,amount,action_ts,reason,location
+ACT-SAMPLE-1,SRC-SAMPLE-1,PARTY-1,SAMPLE,BSC,100,20260528121100,DOWNGRADE,LOC-1

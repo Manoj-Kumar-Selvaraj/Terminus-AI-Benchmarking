@@ -1,0 +1,6 @@
+reason_code,description
+R01,Insufficient funds
+R02,Account closed
+R03,No account/unable to locate
+R06,Returned per ODFI request
+R10,Customer advises unauthorized

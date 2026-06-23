@@ -1,0 +1,2 @@
+play_id,payee_id,trust_id,right_type,amount,play_ts,status,market
+SRC-SAMPLE-1,PARTY-1,SAMPLE,SELLER,100,20260528121000,HELD,LOC-1

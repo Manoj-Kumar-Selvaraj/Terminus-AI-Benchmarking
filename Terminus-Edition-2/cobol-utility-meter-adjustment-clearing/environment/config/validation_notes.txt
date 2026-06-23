@@ -1,0 +1,1 @@
+Verifier scenarios rewrite readings.dat, meter_adjustments.dat, and meter_calendar.txt.

@@ -1,0 +1,44 @@
+# Rubric 1
+Agent inspects `/app/cmd/reconcile/main.go`, `/app/data/tabs.csv`, `/app/data/adjustments.csv`, and the documented output paths before editing, +2
+Agent identifies the milestone 1 starter defects involving missing `PITCH` eligibility, partial `tab_id` matching, signed totals, wrong summary path, and row consumption, +3
+Agent repairs milestone 1 matching using full `tab_id`, `patron_id`, amount, `COMPLETED` tab status, and canonical pour tiers `PINT`, `PITCH`, and `KEG`, +5
+Agent trims fields and compares status and pour tier case-insensitively while rejecting non-completed statuses and unknown pour tiers in milestone 1, +3
+Agent consumes each tab row by input position at most once while preserving adjustment input order, +3
+Agent writes `tab_adjustment_report.csv` and `tab_adjustment_summary.json` with exact schemas, exact `MATCHED` and `UNMATCHED` labels, blank unmatched pour tiers, and positive cent totals, +3
+Agent hardcodes `/app/out/tab_adjustment_report.csv` or `/app/out/tab_adjustment_summary.json` instead of repairing reconciliation logic, -5
+Agent tampers with platform files, task metadata, or runtime input fixtures to force a milestone 1 pass, -5
+Agent treats partial `tab_id` prefixes, non-completed statuses, or unknown pour tiers as match-eligible in milestone 1, -5
+# Rubric 2
+Agent inspects the milestone 2 alias requirement and `/app/docs/support_matrix.md` before changing pour tier normalization, +2
+Agent normalizes legacy adjustment pour tier aliases `PT`, `PC`, and `KG` to `PINT`, `PITCH`, and `KEG` before matching, +5
+Agent applies alias normalization after trimming and case folding while still rejecting unknown pour tier strings, +3
+Agent emits canonical pour tier values for matched alias rows and leaves unmatched pour tiers blank in milestone 2 output, +3
+Agent preserves milestone 1 full-id, status, amount, consumption, schema, summary, and positive-total behavior while adding aliases, +3
+Agent verifies alias-aware behavior with representative overwritten inputs or generated artifacts rather than relying only on shipped samples, +2
+Agent emits raw alias values, ignores aliases, or bypasses pour tier validation while attempting milestone 2, -5
+Agent regresses milestone 1 identity, `COMPLETED` status, amount, consumption, output path, schema, or summary behavior while adding aliases, -5
+Agent special-cases known output rows for milestone 2 without fixing the shared matching path, -3
+# Rubric 3
+Agent inspects `/app/config/cutoff_calendar.txt` and the dated milestone 3 CSV schemas before changing date logic, +2
+Agent reads the cutoff calendar and treats only listed `open` adjustment dates as eligible, case-insensitively, +5
+Agent rejects missing, blank, closed, malformed, or unlisted `adjust_date` values and missing `tab_date` values before matching, +3
+Agent enforces that `adjust_date` must not be later than `tab_date` before a dated match can occur, +5
+Agent selects among multiple eligible unused tabs by latest `tab_date`, breaking same-date ties by earliest tab input row, +3
+Agent distinguishes which tied candidate tab row is consumed when multiple rows share the same latest `tab_date`, +2
+Agent tracks consumption by tab input row position so duplicate ids remain independently consumable until their row is used, +3
+Agent preserves milestone 2 aliases, canonical pour tier output, exact schemas, exact status strings, blank unmatched pour tiers, and positive totals under dated matching, +3
+Agent treats closed, absent, blank, malformed, or unlisted dates as eligible in milestone 3, -5
+Agent chooses candidate tabs by file order alone or by `tab_id` key instead of the documented latest-date and row-position rules, -5
+Agent regresses milestone 1 or milestone 2 behavior while implementing milestone 3 date and tie-break logic, -5
+# Rubric 4
+Agent inspects `/app/config/methods.csv`, the milestone 4 dated adjustment schema, and existing date/alias matching behavior before adding method gating, +2
+Agent parses `methods.csv` using `method,enabled` headers and treats only trimmed, case-folded `enabled` values equal to `true` as eligible, +5
+Agent requires a present, nonblank, enabled `adjust_method` when the adjustment column exists while preserving milestone 3 behavior when the column is absent, +5
+Agent preserves milestone 3 behavior unchanged when `adjust_method` is omitted from the adjustment CSV, +3
+Agent compares adjustment methods after trimming and case folding, rejecting disabled, missing, blank, and malformed method rows without crashing, +3
+Agent rejects enabled methods that still fail the underlying pour tier equality gate, +3
+Agent composes method eligibility with all prior full-id, patron, amount, `COMPLETED` status, canonical pour tier, alias, open-date, date-boundary, latest-date, tie-break, and row-consumption rules, +5
+Agent keeps the report and summary schemas unchanged, leaves unmatched pour tiers blank, preserves adjustment input order, and reports positive integer cent totals, +3
+Agent treats non-`true` enabled values such as `yes`, `1`, blanks, or disabled methods as match-eligible in milestone 4, -5
+Agent lets an enabled adjustment method bypass prior identity, status, amount, pour tier, date, tie-break, or consumption requirements, -5
+Agent changes output schemas, emits `adjust_method`, or regresses earlier milestone behavior while adding method gating, -5

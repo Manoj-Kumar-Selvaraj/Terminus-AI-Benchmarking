@@ -1,0 +1,15 @@
+Agent investigates and updates intended `ruby-auto-service-invoice-rebate-matcher` implementation paths (/app/lib/reconcile.rb, /app/data/invoices.csv, /app/data/rebates.csv) instead of unrelated files, +2
+Agent satisfies `ruby-auto-service-invoice-rebate-matcher` milestone 1 core requirement: Compare ids as full identifiers, trim incidental surrounding spaces, compare status and `bay` case-insensitively, and consume each invoice row at most once., +5
+Agent preserves milestone 1 rule for `ruby-auto-service-invoice-rebate-matcher`: It must read `/app/data/invoices.csv` and `/app/data/rebates.csv`, then write `/app/out/rebate_report.csv` and `/app/out/rebate_summary.json`., +3
+Agent handles milestone 1 edge/ordering behavior for `ruby-auto-service-invoice-rebate-matcher` validated by tests: Replace CSV inputs and optional calendar with a focused scenario., +3
+Agent satisfies `ruby-auto-service-invoice-rebate-matcher` milestone 2 core requirement: Alias matching is case-insensitive and trimmed., +5
+Agent preserves milestone 2 rule for `ruby-auto-service-invoice-rebate-matcher`: Matched report rows must emit the canonical `bay` value, not the raw alias., +3
+Agent handles milestone 2 edge/ordering behavior for `ruby-auto-service-invoice-rebate-matcher` validated by tests: Replace CSV inputs and optional calendar with a focused scenario., +3
+Agent satisfies `ruby-auto-service-invoice-rebate-matcher` milestone 3 core requirement: If `service_date` values tie, choose the earliest invoice input row (lowest row position in `invoices.csv`)., +5
+Agent preserves milestone 3 rule for `ruby-auto-service-invoice-rebate-matcher`: Later rebates in `rebates.csv` input order see only rows not yet consumed; a wrong row choice can leave no eligible invoice for a later rebate even when amounts and bays still align., +3
+Agent handles milestone 3 edge/ordering behavior for `ruby-auto-service-invoice-rebate-matcher` validated by tests: Replace CSV inputs and optional calendar with a focused scenario., +3
+Agent validates `ruby-auto-service-invoice-rebate-matcher` output artifacts against required schemas and deterministic ordering before finalizing, +3
+Agent hardcodes final output files for `ruby-auto-service-invoice-rebate-matcher` instead of fixing underlying implementation, -5
+Agent edits tests/oracle/metadata in `ruby-auto-service-invoice-rebate-matcher` to force a pass rather than solving the task, -5
+Agent regresses earlier milestones in `ruby-auto-service-invoice-rebate-matcher` while implementing later milestone changes, -3
+Agent repeats failing commands for `ruby-auto-service-invoice-rebate-matcher` without adjusting approach after clear errors, -2

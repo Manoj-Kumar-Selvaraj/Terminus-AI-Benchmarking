@@ -1,0 +1,4 @@
+client_id,package,max_refund_cents,enabled
+CUST1001,MINI,5000,true
+CUST1002,STANDARD,5000,true
+CUST1003,PREMIUM,5000,true

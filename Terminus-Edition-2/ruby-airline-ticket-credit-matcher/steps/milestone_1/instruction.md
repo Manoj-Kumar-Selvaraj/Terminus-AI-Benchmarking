@@ -1,0 +1,5 @@
+Fix the Ruby reconciler in `/app/lib/reconcile.rb`. It must read `/app/data/tickets.csv` and `/app/data/credits.csv`, then write `/app/out/credit_report.csv` and `/app/out/credit_summary.json`.
+
+A credit matches a ticket only when `ticket_id`, `traveler_id`, `amount_cents`, `FLOWN` ticket status, and `fare_class` all line up. Compare `ticket_id` values as full identifiers (shared prefixes are not sufficient). Allowed `fare_class` values are `ECONOMY`, `BUSINESS`, and `FIRST`; the credit `fare_class` must equal the ticket `fare_class` after normalization (two different allowed classes do not match each other). Trim incidental surrounding spaces on input fields; compare status and `fare_class` case-insensitively.
+
+Each ticket input row may be consumed by at most one credit. The report schema is `ticket_id,traveler_id,fare_class,amount_cents,status` with one row per credit in credit input order. Use `MATCHED` or `UNMATCHED`; leave `fare_class` blank for unmatched rows. The JSON summary must contain `matched_count`, `matched_amount_cents`, `unmatched_count`, and `unmatched_amount_cents` as non-negative integers, with credit amounts counted as positive cents.

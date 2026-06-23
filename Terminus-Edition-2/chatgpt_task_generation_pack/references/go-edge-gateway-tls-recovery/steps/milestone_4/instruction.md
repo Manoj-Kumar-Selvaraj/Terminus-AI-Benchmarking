@@ -1,0 +1,3 @@
+The ledger endpoint now enforces mutual TLS, and the gateway must also adopt renewed client credentials without a process restart. Review `/app/evidence/mtls_reload.log`, `/app/docs/credential_reload_contract.md`, and the existing `Manager.Reload()` hook. Make the configured client identity available to new handshakes and make a successful reload visible to already-created upstream clients.
+
+Keep all prior server-verification and overlap behavior. Reload must be transactional: an unreadable or mismatched replacement returns an error and leaves the last known-good client credential active. Endpoints with no configured client certificate must remain supported.

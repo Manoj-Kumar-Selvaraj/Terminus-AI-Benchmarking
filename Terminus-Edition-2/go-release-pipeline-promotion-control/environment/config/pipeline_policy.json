@@ -1,0 +1,25 @@
+{
+  "schema_version": "pipeline-policy/v1",
+  "stage_names": [
+    "Build",
+    "Unit Test",
+    "Integration Test",
+    "Package",
+    "Quality Gate",
+    "Promote",
+    "Rollback"
+  ],
+  "quality_gate": {
+    "fail_closed": true,
+    "require_commit_match": true,
+    "require_artifact_hash_match": true
+  },
+  "rollback": {
+    "source": "release_history",
+    "allow_rebuild": false,
+    "minimum_release_contract_by_env": {
+      "prod": "2024.10",
+      "staging": "2024.06"
+    }
+  }
+}

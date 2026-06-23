@@ -1,0 +1,45 @@
+{
+  "cases": [
+    {
+      "id": "m3_commit",
+      "request": {
+        "id": "obj-201",
+        "business_id": "biz-201",
+        "attempts": 1
+      },
+      "policy": {}
+    },
+    {
+      "id": "m3_stale",
+      "request": {
+        "id": "obj-202"
+      },
+      "policy": {
+        "stale_event": true
+      }
+    },
+    {
+      "id": "m3_poison_retry",
+      "request": {
+        "id": "obj-203",
+        "attempts": 1
+      },
+      "policy": {
+        "poison": true,
+        "max_attempts": 3
+      }
+    },
+    {
+      "id": "m3_poison_dlq",
+      "request": {
+        "id": "obj-204",
+        "attempts": 3
+      },
+      "policy": {
+        "poison": true,
+        "max_attempts": 3,
+        "poison_reason": "POISON_MAX_ATTEMPTS"
+      }
+    }
+  ]
+}

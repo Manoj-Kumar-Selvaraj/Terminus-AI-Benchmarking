@@ -1,0 +1,4 @@
+tour_type,enabled,priority
+REEF,true,2
+SHARK,true,1
+VIP,true,3

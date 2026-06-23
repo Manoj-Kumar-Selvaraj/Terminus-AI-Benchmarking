@@ -1,0 +1,3 @@
+fleet_id,batch_id,location,max_reversal_amount,allow_any,enabled
+PARTY-1,SAMPLE,LOC-1,250,true,true
+PARTY-2,SAMPLE,LOC-2,500,false,true

@@ -1,0 +1,99 @@
+{
+  "environment": "prod",
+  "account_id": "111122223333",
+  "vpc_cidr": "10.42.0.0/16",
+  "availability_zones": [
+    "us-east-1a",
+    "us-east-1b",
+    "us-east-1c"
+  ],
+  "internet_gateway_id": "igw-prod-shared",
+  "subnets": [
+    {
+      "name": "prod-public-a",
+      "tier": "public",
+      "az": "us-east-1a",
+      "cidr": "10.42.0.0/24"
+    },
+    {
+      "name": "prod-public-b",
+      "tier": "public",
+      "az": "us-east-1b",
+      "cidr": "10.42.1.0/24"
+    },
+    {
+      "name": "prod-public-c",
+      "tier": "public",
+      "az": "us-east-1c",
+      "cidr": "10.42.2.0/24"
+    },
+    {
+      "name": "prod-app-a",
+      "tier": "app",
+      "az": "us-east-1a",
+      "cidr": "10.42.10.0/24"
+    },
+    {
+      "name": "prod-app-b",
+      "tier": "app",
+      "az": "us-east-1b",
+      "cidr": "10.42.11.0/24"
+    },
+    {
+      "name": "prod-app-c",
+      "tier": "app",
+      "az": "us-east-1c",
+      "cidr": "10.42.12.0/24"
+    },
+    {
+      "name": "prod-data-a",
+      "tier": "data",
+      "az": "us-east-1a",
+      "cidr": "10.42.20.0/24"
+    },
+    {
+      "name": "prod-data-b",
+      "tier": "data",
+      "az": "us-east-1b",
+      "cidr": "10.42.21.0/24"
+    },
+    {
+      "name": "prod-data-c",
+      "tier": "data",
+      "az": "us-east-1c",
+      "cidr": "10.42.22.0/24"
+    }
+  ],
+  "nat_gateways": [
+    {
+      "id": "nat-prod-a",
+      "az": "us-east-1a"
+    },
+    {
+      "id": "nat-prod-b",
+      "az": "us-east-1b"
+    },
+    {
+      "id": "nat-prod-c",
+      "az": "us-east-1c"
+    }
+  ],
+  "gateway_endpoints": [
+    {
+      "service": "s3"
+    },
+    {
+      "service": "dynamodb"
+    }
+  ],
+  "flow_log": {
+    "destination": "cloud-watch-logs",
+    "log_group_arn": "arn:aws:logs:us-east-1:111122223333:log-group:/aws/vpc/prod-flow"
+  },
+  "resolver": {
+    "allowed_cidrs": [
+      "172.16.20.10/32",
+      "172.16.20.11/32"
+    ]
+  }
+}

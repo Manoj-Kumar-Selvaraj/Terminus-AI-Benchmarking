@@ -1,0 +1,45 @@
+# Rubric 1
+Agent inspects and repairs `/app/cmd/reconcile/main.go` rather than relying on a prebuilt `/app/build/reconcile` binary, +2
+Agent matches milestone 1 credits only when full `order_id`, `cafe_id`, integer amount, `FULFILLED` order status, and allowed route all agree, +5
+Agent compares full order identifiers and avoids prefix, substring, or partial-id matching, +3
+Agent consumes each order row at most once while preserving credit input order and earliest eligible credit consumption, +3
+Agent writes `/app/out/credit_report.csv` and `/app/out/credit_summary.json` with required schemas, `MATCHED`/`UNMATCHED` labels, blank unmatched route, and positive cent totals, +5
+Agent reports the matched credit route after normalization rather than leaking raw order route casing, +3
+Agent hardcodes final output files instead of repairing the Go reconciliation logic, -5
+Agent leaves the Go program unable to compile or run after changes, -5
+# Rubric 2
+Agent normalizes milestone 2 legacy credit route aliases `LOC`, `REG`, and `EXP` to canonical `LOCAL`, `REGIONAL`, and `EXPORT`, +5
+Agent applies alias normalization case-insensitively and after trimming without accepting unknown route strings, +3
+Agent preserves milestone 1 full-id, cafe, amount, fulfilled-status, allowed-route, row-consumption, schema, and positive-total behavior while adding aliases, +5
+Agent emits canonical route values on matched milestone 2 report rows and never emits raw aliases, +3
+Agent leaves route blank on unmatched milestone 2 rows while keeping report and summary schemas unchanged, +2
+Agent regresses milestone 1 matching, consumption, output route source, or schema behavior while implementing aliases, -5
+Agent accepts unknown alias-like route strings as match-eligible, -3
+# Rubric 3
+Agent reads `/app/config/cutoff_calendar.txt` and treats only explicitly open `credit_date` values as eligible, +5
+Agent supports older undated CSV schemas without crashing while preserving milestone 2 matching behavior, +3
+Agent rejects blank, missing, closed, malformed, or unlisted credit dates and blank order `bake_date` values, +5
+Agent requires `credit_date <= bake_date` while preserving all prior identity, amount, status, route, alias, and consumption gates, +5
+Agent trims and case-folds order status values before applying the required `FULFILLED` gate under dated matching, +2
+Agent chooses the eligible unused order row with the latest `bake_date`, then earliest order row on tied dates, +5
+Agent preserves canonical route output, blank unmatched route, exact JSON summary fields, and positive totals under dated matching, +3
+Agent accepts closed, missing, malformed, or unlisted calendar dates as open in milestone 3, -5
+Agent chooses candidates by file order or identifier key instead of the required latest-date and row-order rules, -3
+# Rubric 4
+Agent loads `/app/config/route_policy.csv` and treats only canonical route rows with `enabled` equal to `Y` as match-eligible, +5
+Agent keeps concrete credit routes exact after canonicalization while applying the enabled-policy gate, +3
+Agent implements route `ANY` as a wildcard without emitting `ANY`, selecting by latest `bake_date`, then lowest configured priority, then earliest order row, +5
+Agent rejects disabled or unconfigured source routes before candidate ranking, including for `ANY` credits, +3
+Agent preserves milestone 1 through 3 behavior under route policy, including route aliases, open-date gates, row consumption, output schema, and positive totals, +5
+Agent emits `ANY` in matched report rows or lets disabled routes match, -5
+Agent regresses prior milestone route equality, date gating, or consumption behavior while adding route policy, -3
+# Rubric 5
+Agent loads `/app/config/cafe_limits.csv` and applies the latest effective cafe/date limit, using later file rows to break same-date limit ties, +5
+Agent processes credits in input order and rejects matches that would exceed the cafe/date cap without consuming order rows or budget, +5
+Agent rejects dated credits with no applicable cafe limit row, +3
+Agent loads `/app/config/route_blackouts.csv` and filters blacked-out cafe/route/bake-date candidates before ranking, +5
+Agent trims and case-folds blackout route values to canonical routes before comparing them with candidate order routes, +2
+Agent ignores blackout rows with blank cafe ids, blank dates, unknown routes, or reversed date windows, +3
+Agent preserves milestone 1 through 4 matching gates, `ANY` policy ranking, report schema, and positive summary totals under limit and blackout controls, +5
+Agent consumes order rows or budget for credits rejected by cafe limits or blackouts, -5
+Agent regresses any milestone 1 through 4 behavior while implementing cafe limits and blackouts, -5

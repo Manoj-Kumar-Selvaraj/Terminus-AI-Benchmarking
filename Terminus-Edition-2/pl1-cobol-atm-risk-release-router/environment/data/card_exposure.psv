@@ -1,0 +1,4 @@
+card_id|business_date|active_hold_cents|released_today_cents|release_count_today|risk_flags
+CARD-100|20260613|90000|10000|1|NONE
+CARD-200|20260613|30000|45000|2|WATCHLIST
+CARD-300|20260613|50000|0|0|NONE

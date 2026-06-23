@@ -1,0 +1,6 @@
+steps/
+tests/
+solution/
+rubric.txt
+**/__pycache__/
+**/*.pyc

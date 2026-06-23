@@ -1,0 +1,3 @@
+lease_id,tenant_id,amount_cents,unit_type
+INVEDGE000001,CUST9001,100,SMALL
+INVEDGE000002,CUST9002,200,MEDIUM

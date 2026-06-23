@@ -1,0 +1,5 @@
+code,meaning,enabled,priority
+CON,consumer return,true,2
+REF,refund return,true,1
+ADM,administrative return,true,3
+B2B,business return,true,4

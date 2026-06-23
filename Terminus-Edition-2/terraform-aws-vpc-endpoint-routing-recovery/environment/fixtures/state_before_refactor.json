@@ -1,0 +1,126 @@
+{
+  "environment": "staging",
+  "vpc": {
+    "id": "vpc-staging-01",
+    "cidr_block": "10.42.0.0/16",
+    "name": "shared-staging-vpc"
+  },
+  "subnets": {
+    "public-a": {
+      "id": "subnet-public-a",
+      "cidr_block": "10.42.0.0/24",
+      "az": "us-east-1a",
+      "tier": "public",
+      "route_table_key": "public-a"
+    },
+    "public-b": {
+      "id": "subnet-public-b",
+      "cidr_block": "10.42.1.0/24",
+      "az": "us-east-1b",
+      "tier": "public",
+      "route_table_key": "public-b"
+    },
+    "private-a": {
+      "id": "subnet-private-a",
+      "cidr_block": "10.42.16.0/20",
+      "az": "us-east-1a",
+      "tier": "private",
+      "route_table_key": "private-a"
+    },
+    "private-b": {
+      "id": "subnet-private-b",
+      "cidr_block": "10.42.32.0/20",
+      "az": "us-east-1b",
+      "tier": "private",
+      "route_table_key": "private-b"
+    }
+  },
+  "route_tables": {
+    "public-a": {
+      "id": "rtb-public-a",
+      "tier": "public",
+      "az": "us-east-1a"
+    },
+    "public-b": {
+      "id": "rtb-public-b",
+      "tier": "public",
+      "az": "us-east-1b"
+    },
+    "private-a": {
+      "id": "rtb-private-a",
+      "tier": "private",
+      "az": "us-east-1a",
+      "nat_gateway_id": "nat-a"
+    },
+    "private-b": {
+      "id": "rtb-private-b",
+      "tier": "private",
+      "az": "us-east-1b",
+      "nat_gateway_id": "nat-b"
+    }
+  },
+  "nat_gateways": {
+    "private-a": {
+      "id": "nat-a",
+      "public_ip": "198.51.100.10",
+      "az": "us-east-1a"
+    },
+    "private-b": {
+      "id": "nat-b",
+      "public_ip": "198.51.100.11",
+      "az": "us-east-1b"
+    }
+  },
+  "security_groups": {
+    "endpoint": {
+      "id": "sg-vpce-staging",
+      "name": "staging-vpce-shared"
+    },
+    "app": {
+      "id": "sg-app-staging",
+      "name": "staging-application"
+    },
+    "batch": {
+      "id": "sg-batch-staging",
+      "name": "staging-batch"
+    }
+  },
+  "gateway_endpoints": {
+    "s3": {
+      "id": "vpce-gw-s3",
+      "service": "com.amazonaws.us-east-1.s3"
+    },
+    "dynamodb": {
+      "id": "vpce-gw-dynamodb",
+      "service": "com.amazonaws.us-east-1.dynamodb"
+    }
+  },
+  "interface_endpoints": {
+    "ssm": {
+      "id": "vpce-if-ssm",
+      "service": "com.amazonaws.us-east-1.ssm"
+    },
+    "ssmmessages": {
+      "id": "vpce-if-ssmmessages",
+      "service": "com.amazonaws.us-east-1.ssmmessages"
+    },
+    "ec2messages": {
+      "id": "vpce-if-ec2messages",
+      "service": "com.amazonaws.us-east-1.ec2messages"
+    }
+  },
+  "legacy_resource_addresses": {
+    "aws_subnet.private[0]": "aws_subnet.this[\"private-a\"]",
+    "aws_subnet.private[1]": "aws_subnet.this[\"private-b\"]",
+    "aws_route_table.private[0]": "aws_route_table.this[\"private-a\"]",
+    "aws_route_table.private[1]": "aws_route_table.this[\"private-b\"]",
+    "aws_route.private_nat[0]": "aws_route.private_nat[\"private-a\"]",
+    "aws_route.private_nat[1]": "aws_route.private_nat[\"private-b\"]",
+    "aws_vpc_endpoint.gateway[\"s3\"]": "aws_vpc_endpoint.gateway[\"s3\"]",
+    "aws_vpc_endpoint.gateway[\"dynamodb\"]": "aws_vpc_endpoint.gateway[\"dynamodb\"]",
+    "aws_vpc_endpoint.interface[\"ssm\"]": "aws_vpc_endpoint.interface[\"ssm\"]",
+    "aws_vpc_endpoint.interface[\"ssmmessages\"]": "aws_vpc_endpoint.interface[\"ssmmessages\"]",
+    "aws_vpc_endpoint.interface[\"ec2messages\"]": "aws_vpc_endpoint.interface[\"ec2messages\"]",
+    "aws_security_group.endpoint[0]": "aws_security_group.endpoint[\"shared\"]"
+  }
+}

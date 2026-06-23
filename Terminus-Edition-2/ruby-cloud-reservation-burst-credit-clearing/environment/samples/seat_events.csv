@@ -1,0 +1,2 @@
+event_id,account_id,reservation_id,sku_type,amount,reserve_ts,status,region
+SRC-SAMPLE-1,PARTY-1,SAMPLE,CPU,100,20260528121000,ALLOCATED,LOC-1

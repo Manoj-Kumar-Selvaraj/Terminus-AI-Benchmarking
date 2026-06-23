@@ -1,0 +1,12 @@
+[batch]
+entrypoint = "/app/lib/reconcile.rb"
+pledges = "/app/data/pledges.csv"
+adjustments = "/app/data/adjustments.csv"
+report = "/app/out/adjustment_report.csv"
+summary = "/app/out/adjustment_summary.json"
+
+[matching]
+posted_status = "BOOKED"
+fund_config = "/app/config/methods.csv"
+alias_config = "/app/config/fund_aliases.json"
+calendar = "/app/config/cutoff_calendar.txt"

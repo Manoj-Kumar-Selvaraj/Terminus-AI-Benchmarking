@@ -1,0 +1,2 @@
+closing_id,escrow_id,trust_id,expected_total,required_kinds,package_state
+CLOSE-SAMPLE,SRC-SAMPLE-1,SAMPLE,100,SELLER,OPEN

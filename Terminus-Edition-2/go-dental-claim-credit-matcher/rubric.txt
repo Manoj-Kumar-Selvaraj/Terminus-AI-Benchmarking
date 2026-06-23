@@ -1,0 +1,30 @@
+# Rubric 1
+Agent updates `/app/cmd/reconcile/main.go` and uses `/app/data/claims.csv` and `/app/data/credits.csv` as runtime inputs, +2
+Agent enforces milestone 1 matching gates: full `claim_id`, `patient_id`, exact integer amount, `APPROVED` claim status, and allowed procedures `PREVENTIVE`/`RESTORATIVE`/`ORTHO`, +5
+Agent trims surrounding spaces and compares status and procedure case-insensitively without accepting unknown procedure values, +3
+Agent consumes each claim row at most once while preserving credit input order and earliest eligible credit consumption, +5
+Agent writes `/app/out/credit_report.csv` and `/app/out/credit_summary.json` with required schemas, `MATCHED`/`UNMATCHED`, blank unmatched procedure, and positive cent totals, +5
+Agent handles empty claim or credit input files with header-only reports and zero or unmatched summary totals as appropriate, +3
+Agent hardcodes final output files instead of repairing reconciliation logic, -5
+Agent uses partial claim-id matching or allows consumed claim rows to be reused, -5
+Agent changes task inputs, verifier behavior, or metadata to force a pass instead of fixing the Go source, -5
+# Rubric 2
+Agent implements legacy credit procedure aliases `PREV`, `REST`, and `ORT` as canonical `PREVENTIVE`, `RESTORATIVE`, and `ORTHO`, +5
+Agent applies alias normalization after trimming and case folding on credit procedures without accepting unknown alias-like values, +3
+Agent preserves milestone 1 full-id, patient, amount, approved-status, allowed-procedure, row-consumption, output-schema, and positive-total behavior while adding aliases, +5
+Agent emits canonical procedure values in matched rows and keeps unmatched procedure fields blank, +3
+Agent keeps output paths and JSON/CSV schemas unchanged after alias support is added, +3
+Agent emits raw alias strings in matched report rows, -5
+Agent accepts unknown procedure aliases as match-eligible, -5
+Agent regresses milestone 1 matching, consumption, empty-input, or output behavior while implementing aliases, -5
+# Rubric 3
+Agent supports dated `service_date` and `credit_date` columns while preserving earlier behavior where applicable, +3
+Agent reads `/app/config/cutoff_calendar.txt` and treats only listed `open` credit dates as eligible, +5
+Agent rejects missing, closed, unlisted, or malformed credit dates and claims with missing service dates under milestone 3 rules, +5
+Agent requires `credit_date <= service_date` while preserving all prior identity, amount, status, procedure, alias, and consumption gates, +5
+Agent resolves multiple eligible claim rows by latest `service_date`, then earliest claim input row when dates tie, while consuming by row position, +5
+Agent preserves uppercase `MATCHED` and `UNMATCHED` report status labels under dated milestone 3 matching, +2
+Agent preserves canonical procedure output, blank unmatched procedure, exact output schemas, and positive summary totals under dated matching, +3
+Agent relies on prior milestone import side effects instead of making the milestone 3 solution robust, -5
+Agent treats closed, missing, malformed, or unlisted calendar dates as eligible, -5
+Agent regresses milestone 1 or 2 behavior while implementing dated matching, -5

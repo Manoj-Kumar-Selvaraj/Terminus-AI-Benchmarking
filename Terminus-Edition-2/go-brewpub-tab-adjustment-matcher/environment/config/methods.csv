@@ -1,0 +1,5 @@
+method,enabled
+CASH,true
+CARD,true
+HOUSE,false
+PROMO,false

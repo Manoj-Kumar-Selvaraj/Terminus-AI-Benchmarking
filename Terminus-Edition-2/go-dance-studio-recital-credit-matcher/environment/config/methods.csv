@@ -1,0 +1,4 @@
+recital_type,enabled,priority
+SOLO,true,2
+GROUP,true,1
+STAGE,true,3

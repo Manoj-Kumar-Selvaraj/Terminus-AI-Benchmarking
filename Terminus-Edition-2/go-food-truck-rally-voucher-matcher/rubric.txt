@@ -1,0 +1,24 @@
+# Rubric 1
+Agent updates `/app/cmd/reconcile/main.go` and compiles with `/usr/local/go/bin/go`, +2
+Agent enforces full `order_id`, `vendor_id`, positive integer `amount_cents`, `COMPLETED` status, and allowed meal-tier gates for matching, +5
+Agent rejects voucher amounts with sign prefixes, decimals, blanks, or non-digit characters, +3
+Agent consumes each order row at most once and trims or case-folds compared fields, +5
+Agent writes `/app/out/rally_voucher_report.csv` and `/app/out/rally_voucher_summary.json` with exact schema, `MATCHED`/`UNMATCHED` only, blank unmatched `meal_tier`, and positive summary totals, +3
+Agent hardcodes output files instead of fixing the Go reconciler, -5
+Agent tampers with platform files or runtime input fixtures to force a pass, -5
+Agent uses partial order-id matching or allows consumed order rows to be reused, -5
+# Rubric 2
+Agent normalizes legacy aliases `SN`, `ML`, and `CB` to canonical `SNACK`, `MEAL`, and `COMBO` on both order and voucher rows, +5
+Agent expands eligible canonical tiers to `SNACK`, `MEAL`, and `COMBO` while rejecting unknown normalized values, +3
+Agent emits canonical order `meal_tier` on matched rows and preserves prior matching, consumption, and output-schema behavior, +3
+Agent preserves latest-selection and sequential consumption when multiple alias-normalized rows compete, +3
+Agent emits raw alias codes on matched rows or skips inherited consumption rules while adding aliases, -5
+Agent regresses full-id equality, amount validation, or positive summary totals while adding alias normalization, -5
+# Rubric 3
+Agent applies `/app/config/cutoff_calendar.txt` so only open voucher dates are eligible, with case-insensitive open-state handling, +5
+Agent selects the unused order row with the latest eligible `order_date`, breaking same-date ties by earliest input row, +5
+Agent tracks consumption by order row position and enforces voucher date on or before `order_date`, +3
+Agent preserves alias normalization and prior matching gates under calendar constraints and ignores the calendar in legacy undated mode, +3
+Agent treats closed or unlisted calendar dates as open, -5
+Agent chooses orders by file order alone instead of latest `order_date` and earliest-row tie-break rules, -5
+Agent keys consumption on shared `order_id` identity instead of physical order row position, -5

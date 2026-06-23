@@ -1,0 +1,5 @@
+{
+  "report_file": "credit_report.csv",
+  "summary_file": "credit_summary.json",
+  "columns": ["ticket_id", "traveler_id", "fare_class", "amount_cents", "status"]
+}

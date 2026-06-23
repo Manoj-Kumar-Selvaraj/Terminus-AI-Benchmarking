@@ -1,0 +1,5 @@
+LAST SEEN   TYPE      REASON      OBJECT                         MESSAGE
+4m12s       Warning   Unhealthy   pod/billing-7f2-ckl9s          Readiness probe failed: HTTP 503
+3m44s       Warning   Unhealthy   pod/billing-7f2-ckl9s          Liveness probe failed: HTTP 503 on /health/ready
+3m44s       Normal    Killing     pod/billing-7f2-ckl9s          Container billing-service failed liveness probe, will be restarted
+2m01s       Warning   OOMKilled   pod/billing-7f2-ckl9s          Memory cgroup limit exceeded

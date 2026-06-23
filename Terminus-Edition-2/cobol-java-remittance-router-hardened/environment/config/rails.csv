@@ -1,0 +1,5 @@
+rail,allowed
+ACH,true
+WIR,true
+RTP,true
+CHK,false

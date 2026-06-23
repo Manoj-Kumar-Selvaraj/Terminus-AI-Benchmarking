@@ -1,0 +1,31 @@
+# Rubric 1
+Agent updates `/app/cmd/reconcile/main.go` and compiles with `/usr/local/go/bin/go`, +2
+Agent enforces milestone 1 gates: full `order_id`, `seller_id`, positive integer `amount_cents`, `SHIPPED` status, and canonical `D2D`/`LOCKER`/`STORE` lane equality, +5
+Agent trims whitespace, compares lane and status case-insensitively, and consumes each order row at most once, +3
+Agent preserves payout input order, report schema, exact `MATCHED`/`UNMATCHED` labels, blank unmatched `lane`, and positive summary totals, +3
+Agent hardcodes output files instead of fixing the Go reconciler, -5
+Agent tampers with platform files or runtime input fixtures to force a pass, -5
+Agent uses partial order-id matching or allows consumed order rows to be reused, -5
+# Rubric 2
+Agent normalizes `DRP` to `D2D`, `PKU` to `LOCKER`, and `RTL` to `STORE` before matching while preserving milestone 1 gates, +5
+Agent emits canonical lanes on matched rows and leaves `lane` blank on unmatched rows, +3
+Agent prevents duplicate payouts from reusing one order row, +3
+Agent regresses milestone 1 behavior while adding alias normalization, -3
+Agent treats aliases as wildcard lane matches instead of exact canonical equality after normalization, -5
+Agent emits raw alias codes in matched report rows where canonical lane is required, -5
+# Rubric 3
+Agent applies `/app/config/cutoff_calendar.txt` so only `open` payout dates are eligible, +5
+Agent enforces payout date on or before order `ship_date` and selects the unused order with latest eligible `ship_date`, +5
+Agent breaks same `ship_date` ties by earliest order input row and tracks consumption by row position, +3
+Agent preserves alias normalization and milestone 1 gates under calendar constraints, +3
+Agent treats closed or unlisted calendar dates as open, -5
+Agent chooses orders by file order alone instead of latest `ship_date` and earliest-row tie-break rules, -5
+Agent regresses prior milestone behavior while implementing calendar and latest-date logic, -3
+# Rubric 4
+Agent reads `/app/config/methods.csv` at runtime and enables only canonical lanes whose `enabled=true` after alias normalization, +5
+Agent parses `methods.csv` lane names and enabled flags with case-insensitive, whitespace-tolerant comparison, +3
+Agent treats missing lanes, malformed rows, and non-true enabled values as ineligible in both dated and undated modes, +3
+Agent preserves calendar gating, latest-date selection, alias normalization, and consumption rules under methods policy, +3
+Agent regresses milestone 1-3 behavior while implementing methods eligibility, -3
+Agent hardcodes lane enablement instead of reading runtime `methods.csv`, -5
+Agent lets disabled or missing lanes match by bypassing calendar, consumption, or identity gates, -5

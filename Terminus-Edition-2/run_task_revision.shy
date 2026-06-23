@@ -1,0 +1,181 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+# --------------------------------------------------------------------------------------------------
+# Terminus Edition 2 task revision helper
+# Usage:
+#   ./run_task_revision.sh <task-name>
+#   ./run_task_revision.sh ruby-photography-session-refund-matcher
+#
+# Optional env overrides:
+#   REPO_ROOT="/mnt/d/Manoj/Projects/Portfolio/TerminalBench/Terminus-Edition-2"
+#   ZIP_OUT_DIR="All-Revision-Tasks"
+#   LOG_DIR="Revision-ChatGpt"
+#   ZIP_EVEN_IF_ORACLE_FAIL=1
+# --------------------------------------------------------------------------------------------------
+
+TASK="${1:-ruby-photography-session-refund-matcher}"
+
+REPO_ROOT="${REPO_ROOT:-/mnt/d/Manoj/Projects/Portfolio/TerminalBench/Terminus-Edition-2}"
+ZIP_OUT_DIR="${ZIP_OUT_DIR:-All-Revision-Tasks}"
+LOG_DIR="${LOG_DIR:-Revision-ChatGpt}"
+
+STAMP="$(date +%Y%m%d_%H%M%S)"
+TASK_LOG_DIR="${REPO_ROOT}/${LOG_DIR}"
+ORACLE_LOG="${TASK_LOG_DIR}/${TASK}_oracle_${STAMP}.log"
+PREFLIGHT_LOG="${TASK_LOG_DIR}/${TASK}_preflight_${STAMP}.log"
+ZIP_LOG="${TASK_LOG_DIR}/${TASK}_zip_${STAMP}.log"
+
+die() {
+    echo "❌ ERROR: $*" >&2
+    exit 1
+}
+
+info() {
+    echo
+    echo "===================================================================================================="
+    echo "✅ $*"
+    echo "===================================================================================================="
+}
+
+warn() {
+    echo
+    echo "⚠️  $*" >&2
+}
+
+require_file() {
+    local file="$1"
+    [[ -f "$file" ]] || die "Required file not found: $file"
+}
+
+require_executable() {
+    local file="$1"
+    [[ -x "$file" ]] || die "Required executable not found or not executable: $file"
+}
+
+on_error() {
+    local line_no="$1"
+    local command="$2"
+    echo
+    echo "❌ Script failed at line ${line_no}"
+    echo "Command: ${command}"
+    echo "Task: ${TASK}"
+    echo "Oracle log: ${ORACLE_LOG}"
+    exit 1
+}
+trap 'on_error "$LINENO" "$BASH_COMMAND"' ERR
+
+info "Starting revision workflow for task: ${TASK}"
+
+[[ -d "$REPO_ROOT" ]] || die "Repo root not found: $REPO_ROOT"
+cd "$REPO_ROOT"
+
+mkdir -p "$TASK_LOG_DIR"
+mkdir -p "$ZIP_OUT_DIR"
+
+require_executable "./scripts/replace_task_from_latest_zip.sh"
+require_executable "./scripts/terminus2_cli.sh"
+require_executable "./scripts/zip_task.sh"
+
+info "Replacing task from latest zip"
+./scripts/replace_task_from_latest_zip.sh "$TASK"
+
+[[ -d "$REPO_ROOT/$TASK" ]] || die "Task directory not found after replace: $REPO_ROOT/$TASK"
+
+info "Task directory summary"
+find "$REPO_ROOT/$TASK" -maxdepth 2 -type d | sort
+
+if [[ -f "./scripts/preflight_task.py" ]]; then
+    info "Running local preflight"
+    set +e
+    python3 ./scripts/preflight_task.py "$TASK" 2>&1 | tee "$PREFLIGHT_LOG"
+    PREFLIGHT_RC="${PIPESTATUS[0]}"
+    set -e
+
+    if [[ "$PREFLIGHT_RC" -ne 0 ]]; then
+        die "Preflight failed. Check log: $PREFLIGHT_LOG"
+    fi
+else
+    warn "scripts/preflight_task.py not found; skipping preflight"
+fi
+
+info "Running oracle"
+set +e
+./scripts/terminus2_cli.sh oracle "./${TASK}" 2>&1 | tee "$ORACLE_LOG"
+ORACLE_RC="${PIPESTATUS[0]}"
+set -e
+
+if [[ "$ORACLE_RC" -ne 0 ]]; then
+    die "Oracle command failed with exit code ${ORACLE_RC}. Check log: $ORACLE_LOG"
+fi
+
+info "Parsing latest oracle result.json"
+
+LATEST_RESULT_JSON="$(
+    find "$REPO_ROOT/.terminus_logs/$TASK" -path "*/result.json" -type f -printf '%T@ %p\n' 2>/dev/null \
+    | sort -nr \
+    | head -n 1 \
+    | cut -d' ' -f2-
+)"
+
+if [[ -z "${LATEST_RESULT_JSON:-}" || ! -f "$LATEST_RESULT_JSON" ]]; then
+    warn "Could not find latest result.json under .terminus_logs/${TASK}"
+    warn "Oracle command completed, but reward could not be parsed automatically."
+    ORACLE_REWARD="unknown"
+else
+    ORACLE_REWARD="$(
+        python3 - "$LATEST_RESULT_JSON" <<'PY'
+import json
+import sys
+
+path = sys.argv[1]
+with open(path, "r", encoding="utf-8") as f:
+    data = json.load(f)
+
+reward = (
+    data.get("verifier_result", {})
+        .get("rewards", {})
+        .get("reward", "unknown")
+)
+print(reward)
+PY
+    )"
+fi
+
+echo
+echo "Oracle result.json: ${LATEST_RESULT_JSON:-not found}"
+echo "Oracle reward: ${ORACLE_REWARD}"
+
+if [[ "$ORACLE_REWARD" != "1.0" && "$ORACLE_REWARD" != "1" ]]; then
+    warn "Oracle reward is not 1.0. This task is not submission-ready yet."
+
+    if [[ "${ZIP_EVEN_IF_ORACLE_FAIL:-0}" != "1" ]]; then
+        echo
+        echo "Skipping zip because oracle did not pass."
+        echo "To force zip anyway, run:"
+        echo "ZIP_EVEN_IF_ORACLE_FAIL=1 $0 $TASK"
+        exit 1
+    fi
+
+    warn "ZIP_EVEN_IF_ORACLE_FAIL=1 set, continuing to zip despite failed oracle."
+fi
+
+info "Creating zip"
+set +e
+./scripts/zip_task.sh --task "$TASK" --out "$ZIP_OUT_DIR" 2>&1 | tee "$ZIP_LOG"
+ZIP_RC="${PIPESTATUS[0]}"
+set -e
+
+if [[ "$ZIP_RC" -ne 0 ]]; then
+    die "Zip command failed with exit code ${ZIP_RC}. Check log: $ZIP_LOG"
+fi
+
+info "Workflow completed"
+
+echo "Task:          $TASK"
+echo "Repo root:     $REPO_ROOT"
+echo "Preflight log: $PREFLIGHT_LOG"
+echo "Oracle log:    $ORACLE_LOG"
+echo "Oracle reward: $ORACLE_REWARD"
+echo "Zip log:       $ZIP_LOG"
+echo "Zip out dir:   $REPO_ROOT/$ZIP_OUT_DIR"

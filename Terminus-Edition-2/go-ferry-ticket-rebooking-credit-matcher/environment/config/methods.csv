@@ -1,0 +1,4 @@
+fare_type,enabled,priority
+ECON,true,2
+BIKE,true,1
+CABIN,true,3

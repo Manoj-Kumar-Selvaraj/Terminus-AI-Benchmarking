@@ -1,0 +1,5 @@
+Payments apply only to open invoices.
+Held invoices remain unapplied.
+Returned payment records remain unapplied.
+Payments dated after the invoice cutoff date remain unapplied.
+Each invoice can be applied once.

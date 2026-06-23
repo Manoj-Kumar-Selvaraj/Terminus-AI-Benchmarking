@@ -1,0 +1,2 @@
+account_id|desk_id|currency_code|expected_count|expected_amount_cents|tolerance_cents
+991100|NYC|DOLLAR|1|50000|0

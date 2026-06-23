@@ -1,0 +1,14 @@
+{
+  "services": [
+    "db",
+    "cache",
+    "api"
+  ],
+  "state_keys": [
+    "db",
+    "cache",
+    "outbox",
+    "schema_version",
+    "app_version"
+  ]
+}

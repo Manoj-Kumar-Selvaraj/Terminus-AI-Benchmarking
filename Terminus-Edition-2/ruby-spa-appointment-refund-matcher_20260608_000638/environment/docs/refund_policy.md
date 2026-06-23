@@ -1,0 +1,1 @@
+Spa refund reconciliation inputs are CSV files with headers. Runtime config under /app/config controls service aliases, service policy, open refund dates, and client limits for later reconciliation stages.

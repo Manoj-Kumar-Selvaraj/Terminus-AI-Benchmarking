@@ -1,0 +1,2 @@
+hold_id,container_id,gate_id,hold_type,amount,hold_ts,status,lane
+SRC-SAMSEE-1,PARTY-1,SAMSEE,INSPECTION,100,20260528121000,ACTIVE,LOC-1

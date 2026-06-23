@@ -1,0 +1,7 @@
+Courier operations has introduced branch-level service controls in `/app/config/service_policy.csv`. Update `/app/src/parcel_credit_reconcile.cbl` so `/app/scripts/run_batch.sh` applies this policy while preserving the existing fixed-width parsing, aliases, dispatch-calendar eligibility, source consumption, output order, report schema, and summary totals.
+
+The policy header is `branch,service_tier,enabled,max_credit_cents,priority`. A source row is policy-eligible only when a row with the same branch and canonical service tier has `enabled` equal to `Y` case-insensitively, a numeric maximum at least as large as the credit amount, and a numeric priority. Missing, disabled, malformed, or non-covering policy rows do not enable a source row. When several valid policy rows describe the same branch and tier, use the lowest numeric priority.
+
+Action service tier `ANY` may match any policy-eligible canonical source tier and must never appear in output. Named canonical tiers and the existing `ST`, `NX`, and `SM` aliases still require the same canonical source tier. After all earlier gates and policy filtering, choose candidates by latest source date, then lowest policy priority, then earliest source input row. Consume only the selected source row.
+
+Continue to write `/app/out/surcharge_credit_report.csv` and `/app/out/surcharge_credit_summary.txt` with the established schemas. Matched rows report the selected source tier; unmatched rows keep `service_tier` blank.

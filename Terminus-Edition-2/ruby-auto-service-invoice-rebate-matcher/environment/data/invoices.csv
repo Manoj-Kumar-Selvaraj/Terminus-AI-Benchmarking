@@ -1,0 +1,2 @@
+invoice_id,vehicle_id,amount_cents,status,bay
+SRC1001,CUST1001,1200,CLOSED,EXPRESS

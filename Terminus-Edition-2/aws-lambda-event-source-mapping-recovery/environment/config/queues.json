@@ -1,0 +1,13 @@
+{
+  "migration_id": "queue-migration-2026-06-payments-ledger",
+  "expected_active_queue_arn": "arn:aws:sqs:us-east-1:111122223333:payments-ledger-v2",
+  "expected_active_queue_name": "payments-ledger-v2",
+  "old_queue_arn": "arn:aws:sqs:us-east-1:111122223333:payments-ledger-old",
+  "old_queue_name": "payments-ledger-old",
+  "dlq_arn": "arn:aws:sqs:us-east-1:111122223333:payments-ledger-v2-dlq",
+  "dlq_name": "payments-ledger-v2-dlq",
+  "lambda_function_name": "payments-ledger-ingestor",
+  "lambda_alias": "live",
+  "compatible_function_target": "payments-ledger-ingestor:live",
+  "visibility_timeout_seconds": 45
+}

@@ -1,0 +1,2 @@
+claim_id|wire_id|account|branch_id|rail_code|amount_cents|status
+LEDGER-OLD|W-LEDGER|991100|NYC|FED|99|COMMITTED

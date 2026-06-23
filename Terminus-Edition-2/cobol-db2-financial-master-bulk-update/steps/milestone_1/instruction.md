@@ -1,0 +1,7 @@
+# Milestone 1 - Restore controlled DB2 bulk updates
+
+Repair `/app/internal/finbulk/runner.go` and `/app/internal/finbulk/profile.go` using the offline DB2 simulator (`/app/tools/db2_financial_sim.py` for reference) and preserve `/app/bin/run_finbulk.sh` with flags `--batch`, `--input`, `--db`, `--out`, and `--abend-after`. Review `/app/docs/incident_timeline.md`, `/app/docs/db2_simulator_contract.md`, `/app/docs/fixed_width_layout.md`, and `/app/docs/operator_log.txt`. Do not add DB2 credentials, network calls, or static sample outputs.
+
+Validate the entire fixed-width file before any master, risk, ledger, audit, checkpoint, or reject mutation. Header and trailer batch IDs must match; trailer detail count and BAL financial total must equal the parsed details. Any malformed record or control mismatch must leave DB state unchanged, exit non-zero, and write `summary_<batch>.json` with status exactly `FAILED_CLOSED`. This includes malformed details that appear after valid details.
+
+Process valid details in input order. SQLCODE `+100` for a missing master row is a business reject: append the documented fixed-width row to `rejects_<batch>.dat`, continue later details, and do not mark the rejected event applied. Successful details must update simulator state and produce normal audit and BAL-ledger side effects. Write both output files beneath the requested `--out` directory using documented schemas. The verifier generates new batches and inspects state, so fixture-specific logic is invalid.

@@ -1,0 +1,2 @@
+delivery_id,customer_id,amount_cents,status,load_type
+SRC1001,CUST1001,1200,DROPPED,SOIL

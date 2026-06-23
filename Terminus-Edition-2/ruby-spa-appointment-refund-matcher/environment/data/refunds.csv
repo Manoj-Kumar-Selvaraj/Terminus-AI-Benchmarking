@@ -1,0 +1,4 @@
+appointment_id,client_id,amount_cents,service_area,refund_date
+SRC1001,CUST1001,1200,MASSAGE,2026-04-01
+SRC1002,CUST1002,2300,FAC,2026-04-02
+SRC1003,CUST1003,3400,ANY,2026-04-04

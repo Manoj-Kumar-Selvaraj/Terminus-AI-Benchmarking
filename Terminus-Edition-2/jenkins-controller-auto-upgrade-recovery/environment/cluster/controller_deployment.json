@@ -1,0 +1,13 @@
+{
+  "cluster": "prod-ci-east",
+  "controller_image": "registry.local/jenkins/controller:2.462.3-jdk11",
+  "deployment": "jenkins-controller",
+  "function": "controller",
+  "home_claim": "jenkins-home-rwo",
+  "home_path": "/app/jenkins_home",
+  "java_major": 11,
+  "jenkins_version": "2.462.3",
+  "namespace": "jenkins-prod",
+  "replicas": 1,
+  "service": "jenkins-web"
+}

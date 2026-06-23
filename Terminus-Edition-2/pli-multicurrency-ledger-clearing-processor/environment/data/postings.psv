@@ -1,0 +1,2 @@
+claim_id|txn_id|account_id|amount_cents|currency_code|post_ts|entry_type|desk_id
+PST-1|TXN-10001|991100|50000|USD|20260612120500|POST|NYC

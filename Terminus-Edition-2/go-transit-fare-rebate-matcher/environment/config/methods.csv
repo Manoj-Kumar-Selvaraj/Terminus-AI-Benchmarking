@@ -1,0 +1,5 @@
+mode,enabled
+BUS,true
+RAIL,true
+FERRY,true
+CHECK,false

@@ -1,0 +1,13 @@
+package finbulk
+
+var Profile = Options{
+	StrictValidate:    true,
+	FailClosed:        true,
+	SkipApplied:       true,
+	RejectNotFound:    false,
+	RejectBusiness:    true,
+	LockAsPending:     true,
+	AtomicLimitUpdate: true,
+	ControlManifest:   true,
+	RejectReason:      "BUSINESS_REJECT",
+}

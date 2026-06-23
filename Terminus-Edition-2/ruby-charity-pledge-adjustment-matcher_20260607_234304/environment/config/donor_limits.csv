@@ -1,0 +1,6 @@
+donor_id,fund,max_adjustment_cents,enabled
+CUST1001,GENERAL,5000,true
+CUST1002,CAP,5000,true
+CUST2001,RELIEF,5000,true
+CUST2002,GENERAL,5000,true
+CUST3001,GEN,750,true

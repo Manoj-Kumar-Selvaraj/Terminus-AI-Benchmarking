@@ -1,0 +1,12 @@
+{
+  "scenario": "retry_drift",
+  "primary_tag": "tag_lock",
+  "fallback_tag": "tag_open",
+  "declared_tag": "tag_lock",
+  "retry_count": 2,
+  "prefer_alt": true,
+  "op_name": "setns",
+  "declared_allows_op": false,
+  "runtime_denies_primary": true,
+  "runtime_denies_fallback": false
+}

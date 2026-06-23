@@ -1,0 +1,5 @@
+The hot-plug simulator under `/app/environment` reports a clean dashboard even on stale reopen results during alias churn. Repair the simulator code there; writable runtime state belongs in `/app/workspace`, and `/tests` is off limits. A one-off JSON file is not enough: the scenario helpers need to behave correctly under direct calls.
+
+A handoff transition leaves the live blob, readiness slice, and epoch counter on the same committed body; repeated swaps keep the final body. Grant labels include the slot and current live bytes, so an old label no longer opens the same slot with new bytes. URI expansion rejects a missing commit marker, and a committed open selects the full row instead of an earlier shallow row. The dashboard status stays down without a matching marker, epoch, and live blob.
+
+With the simulator repaired, run the pulse-rotation scenario and ship `/app/output/surface.json`. It is a JSON object with string keys `banner_pulse_ok`, `grant_id_hex`, `epoch_tick`, and `slice_digest`; the exact field meanings are in `/app/environment/docs/surface_contract.md` and `/app/environment/cfg/epoch_rules.txt`.

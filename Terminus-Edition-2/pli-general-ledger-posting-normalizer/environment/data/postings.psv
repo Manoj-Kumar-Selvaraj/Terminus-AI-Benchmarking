@@ -1,0 +1,2 @@
+entry_id|posting_id|account|amount_cents|ctrl_hash|post_ts|entry_type|ledger_class
+ENT-1|PST-10001|400100|15000|ab12|20260612120500|DEBIT|GENERAL

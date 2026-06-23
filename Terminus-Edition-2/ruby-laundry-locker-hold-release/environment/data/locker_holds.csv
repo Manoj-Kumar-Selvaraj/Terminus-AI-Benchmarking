@@ -1,0 +1,2 @@
+hold_id,customer_id,site_id,service_tier,amount,hold_ts,status,locker
+SRC-SAMPLE-1,PARTY-1,SAMPLE,WASH,100,20260528121000,LOADED,LOC-1

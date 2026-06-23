@@ -1,0 +1,3 @@
+The ledger issuing-CA rotation began while the edge gateway was still serving traffic, and outbound calls started failing with an unknown-authority error. Review `/app/evidence/handshake_before_rotation.log`, `/app/docs/rotation_timeline.md`, and the TLS material code under `/app/internal`. Restore verified HTTPS access using the trust file supplied through `tlsmaterial.Config`.
+
+Preserve the public gateway and TLS-material interfaces described in `/app/docs/gateway_contract.md`. The configured trust path is deployment-provided and may not be hard-coded. Certificate verification and the minimum TLS version must remain enforced.

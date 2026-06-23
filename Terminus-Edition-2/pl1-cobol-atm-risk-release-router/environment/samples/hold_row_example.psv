@@ -1,0 +1,2 @@
+hold_id|card_id|terminal_id|channel|amount_cents|hold_ts|status|region
+H-EX|CARD-EX|TERM-1|CASH|1500|20260528120000|HELD|N

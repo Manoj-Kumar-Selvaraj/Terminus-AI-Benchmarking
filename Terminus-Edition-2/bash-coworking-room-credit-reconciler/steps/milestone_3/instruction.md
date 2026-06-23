@@ -1,0 +1,11 @@
+Extend `/app/scripts/reconcile.sh` for dated credit batches while keeping all milestone 1 and milestone 2 behavior, including runtime alias parsing from `/app/config/plan_aliases.csv` with the same enabled, blank-alias, duplicate, and invalid-canonical rules from milestone 2.
+
+Dated matching applies only when **both** files include their respective date headers: `booking_date` in `bookings.csv` and `credit_date` in `credits.csv`. If either date header is missing, including when both date headers are absent or when only one side has a date header, ignore calendar and profile configuration and reconcile using milestone 2 undated behavior. Missing, empty, or malformed date values on either side make that row ineligible only when dated matching is active.
+
+In dated batches, dates are eligible only when they are non-empty strict `YYYY-MM-DD` strings. A credit can match a booking only when all prior criteria pass, the credit date is not later than the booking date, and both dates are listed as open in `/app/config/cutoff_calendar.txt`.
+
+The cutoff calendar contains whitespace-separated lines of `YYYY-MM-DD status`. Ignore blank lines, lines beginning with `#`, and malformed lines that do not contain both a valid `YYYY-MM-DD` date and a status token. Status is case-insensitive; only `open` is eligible. Closed, missing, unlisted, or malformed dates are not eligible.
+
+Read `/app/config/run_profile.ini` for `max_open_days_back`. Ignore blank lines, comments beginning with `#`, and section headers. The first positive integer assignment to `max_open_days_back` is authoritative and later assignments are ignored; default to `2` when no valid assignment exists. Count open calendar rows strictly after `credit_date` through and including `booking_date`. Same-day matches count as `0`, exactly the configured limit is eligible, and values above the limit are not eligible.
+
+If multiple unused bookings match one credit, choose the candidate with the latest `booking_date`; if dates tie, choose the earliest booking input row. Consumption is still by row position, not by identifier. Keep the existing report and summary schemas, status labels, canonical plan output, blank unmatched plan field, normalized valid amount output, summary derivation from the report, and credit input ordering. Signal completion by leaving the regenerated files in `/app/out`.

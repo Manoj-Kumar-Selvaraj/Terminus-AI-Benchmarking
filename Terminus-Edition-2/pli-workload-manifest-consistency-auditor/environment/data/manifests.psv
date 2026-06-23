@@ -1,0 +1,2 @@
+workload_id|namespace|selector_label|port_name|probe_path|applied_ts|state|kind_code
+MNF-10001|ns-payments|50000|HTTP|/healthz|20260612120000|POSTED|TM

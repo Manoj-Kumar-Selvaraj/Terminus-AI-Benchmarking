@@ -1,0 +1,6 @@
+tenant-route service SLO:
+
+- normal upstream responses should preserve the upstream status code
+- missing tenant routes return 404
+- upstream stalls past 100ms return 504 from the router
+- router-side timeout responses must not wait for the upstream handler to finish

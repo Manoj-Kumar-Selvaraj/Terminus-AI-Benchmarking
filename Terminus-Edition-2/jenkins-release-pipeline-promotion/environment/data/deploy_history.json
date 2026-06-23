@@ -1,0 +1,9 @@
+{
+  "production": [
+    {
+      "buildNumber": "141",
+      "artifactDigest": "sha256:prior-prod",
+      "commit": "def5678"
+    }
+  ]
+}

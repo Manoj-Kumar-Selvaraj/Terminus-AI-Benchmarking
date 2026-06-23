@@ -1,0 +1,3 @@
+tasting_id,guest_id,amount_cents,flight_tier
+WINEDGE000001,CUST9001,100,RED
+WINEDGE000002,CUST9002,200,WHITE

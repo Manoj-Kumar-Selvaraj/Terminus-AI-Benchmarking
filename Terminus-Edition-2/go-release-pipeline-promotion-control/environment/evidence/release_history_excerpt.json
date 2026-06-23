@@ -1,0 +1,19 @@
+{
+  "schema_version": "release-history/v1",
+  "releases": [
+    {
+      "environment": "prod",
+      "build_number": "4185",
+      "commit_sha": "0ldc0ffee",
+      "artifact_hash": "artifact-old",
+      "promoted_artifact_hash": "sha-old"
+    },
+    {
+      "environment": "prod",
+      "build_number": "4187",
+      "commit_sha": "6a0f5d3c8b21",
+      "artifact_hash": "artifact-new",
+      "promoted_artifact_hash": "sha-new"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+# Rubric 1
+Agent preserves each normalized action reason in the corresponding report row for both matched and unmatched disbursements, +2
+Agent keeps the runnable implementation in `/app/app/reconcile.rb` rather than moving the effective solution to an uninvoked helper or another language, +3
+Agent matches only full `escrow_id`, `payee_id`, `trust_id`, `location`, integer `amount`, canonical kind, eligible reason, held source status, numeric timestamps, and an open realtime window, +5
+Agent rejects invalid action reasons, kind mismatches, action timestamps on or before the hold or after window close, and location mismatches even when other fields align, +5
+Agent keeps initial kind eligibility limited to raw canonical `SELLER` and `BROKER` without alias normalization or `TAX` support, +5
+Agent consumes each hold row at most once, resolves ties by latest `source_ts` then earliest hold input row, and preserves disbursement input order, +5
+Agent writes `/app/out/disbursement_report.csv` and `/app/out/disbursement_summary.txt` with exact schemas, `MATCHED`/`UNMATCHED` labels, blank unmatched `kind`, and positive summary totals, +3
+Agent hardcodes final report or summary files instead of fixing reconciliation logic that regenerates them from runtime CSV inputs, -5
+Agent tampers with platform files, runtime fixtures, verifier files, or oracle files to force a passing result, -5
+Agent accepts aliases, `TAX`, prefix `escrow_id` overlap, location mismatches, closed windows, malformed timestamps, or reused hold rows in the initial contract, -5
+# Rubric 2
+Agent preserves milestone 1 row matching, report schema, summary behavior, and disbursement input order while adding closing-package clearing, +5
+Agent reads `/app/config/closing_packages.csv`, `/app/config/kind_aliases.csv`, and `/app/docs/support_matrix.md`, trims and case-folds kind values before mapping `SLR` to `SELLER`, `BRK` to `BROKER`, and `TAXAUTH` to `TAX`, +5
+Agent builds `/app/out/closing_group_report.csv` with the full nine-column schema, pipe-separated `required_kinds` and `matched_kinds`, populated `expected_amount`, and exact held reason tokens, +5
+Agent distinguishes `NO_MATCHED_ROWS` from `UNMATCHED_ACTION` and reports `MISSING_KIND:<KIND>` using the first missing kind in `required_kinds` order, +5
+Agent clears a package only when `package_state` is `OPEN`, every configured action row matched, all required kinds are present, matched amount equals `expected_total`, and uses `OK` on cleared rows without partial clearing, +3
+Agent regresses milestone 1 matching or uses case-sensitive alias lookup that rejects lowercase legacy inputs, -5
+Agent emits compound, snake-case, or generic held reasons instead of the documented single-token values, -5
+Agent partially clears a package by counting only successful rows while leaving the package incomplete, -3
+# Rubric 3
+Agent preserves milestone 1 and 2 behavior while reading `/app/data/trust_balances.csv` and `/app/config/control_totals.csv`, +3
+Agent writes `/app/out/trust_balance_after.csv` with `trust_id,balance` after consuming funds only from cleared groups in `closing_packages.csv` input order, +5
+Agent evaluates control totals before funding and holds packages with `CONTROL_TOTAL_MISMATCH` when operator count or amount totals do not reconcile, +5
+Agent holds packages with `INSUFFICIENT_FUNDS` only after control totals reconcile and leaves held packages unfunded, +3
+Agent leaves held groups unfunded, preserves exact closing-group report schemas, and keeps documented reason tokens on held rows, +3
+Agent silently clears groups when trust funds or control totals do not reconcile, -5
+Agent regresses package clearing, alias normalization, or milestone 1 row behavior while adding funding logic, -5
+# Rubric 4
+Agent preserves all prior row, package, funding, and control-total behavior while adding restart-safe commits from `/app/docs/runbook.md`, +3
+Agent writes `commit_id` as `COMMIT-<closing_id>`, `committed_at` as the 14-digit batch timestamp `20260613000000`, and checkpoint keys `last_committed_closing_id`, `committed_count`, and `status`, +5
+Agent regenerates all prior outputs including `trust_balance_after.csv`, then exits non-zero after exactly N new commits when `ABEND_AFTER_GROUPS=N`, writes `status=ABENDED`, and resumes without duplicates, +5
+Agent commits only cleared groups, never commits held groups across repeated reruns, and leaves reruns idempotent for trust balances and commit rows, +5
+Agent uses sequential integers, ISO timestamps, or wrong commit prefixes instead of `COMMIT-<closing_id>`, -5
+Agent omits the ABEND non-zero exit hook, duplicates committed groups after restart, or commits held groups to the escrow ledger, -5

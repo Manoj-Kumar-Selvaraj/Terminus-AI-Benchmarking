@@ -1,0 +1,5 @@
+/* PL/I batch control deck for orbit downlink frame auditor. */
+%SET KEY_COMPARE PREFIX5
+%SET CONSUME OFF
+%SET ALIAS_MODE OFF
+%SET WINDOW_MODE OFF

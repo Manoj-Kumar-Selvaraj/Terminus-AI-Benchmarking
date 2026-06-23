@@ -1,0 +1,3 @@
+booking_id,team_id,amount_cents,status,room_tier,slot_date
+ ESCEDGE0001 , TEAMEDGE , 000500 , completed , hard , 2026-06-05
+ESCEDGE0001,TEAMEDGE,500,COMPLETED,VIP,2026-06-06

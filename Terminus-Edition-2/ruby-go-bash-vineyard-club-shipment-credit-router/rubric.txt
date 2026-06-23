@@ -1,0 +1,71 @@
+# Rubric 1
+Agent investigates `/app/app/reconcile.rb`, `/app/cmd/normalize/main.go`, `/app/scripts/run_batch.sh`, `/app/data/sources.csv`, `/app/data/actions.csv`, and the documented report and summary outputs before editing, +2
+Agent runs the batch through `/app/scripts/run_batch.sh` with fresh synthetic source and action inputs before finalizing the fix, +2
+Agent repairs reconciliation logic in the Ruby/Go/Bash entrypoints instead of hardcoding `/app/out/resolution_report.csv` or `/app/out/resolution_summary.json`, +5
+Agent enforces full-key matching for `source_id`, `account_id`, `location_id`, `lane`, and exact positive `amount_cents` between source and action rows, +5
+Agent requires `ACTIVE` source status and eligible reasons `CREDIT`, `ADJUST`, or `RETURN` before a source row can match, +3
+Agent accepts only canonical kinds `STANDARD` and `PREMIUM` in milestone 1 and rejects other kinds even when other gates align, +3
+Agent consumes each eligible source row at most once so later actions cannot reuse an already matched source, +5
+Agent preserves action input order and writes exactly one report row per action with required columns and `MATCHED` or `UNMATCHED` status labels, +3
+Agent leaves `kind` blank on unmatched report rows and emits the matched source kind on matched rows, +3
+Agent writes summary JSON with non-negative integer `matched_count`, `matched_amount_cents`, `unmatched_count`, and `unmatched_amount_cents` using action amounts as positive cents, +3
+Agent keeps Ruby orchestration, Go kind normalization, and Bash batch compilation in the single-container task instead of replacing the entrypoint, +2
+Agent hardcodes visible output rows instead of implementing general source and action matching behavior, -5
+Agent removes or bypasses `/app/app/reconcile.rb`, `/app/cmd/normalize/main.go`, or `/app/scripts/run_batch.sh`, or tampers with verifier or input fixtures to force a pass, -5
+Agent allows one source row to satisfy multiple actions or matches non-`ACTIVE` sources and ineligible reasons, -5
+# Rubric 2
+Agent preserves all milestone 1 behavior before extending kind handling for aliases, +3
+Agent loads `/app/config/kind_aliases.csv` at runtime and normalizes `STD`, `PREM`, and `ELITE` to `STANDARD`, `PREMIUM`, and `VIP` through the Go helper, +5
+Agent treats `VIP` as a valid canonical kind from milestone 2 onward while still rejecting unknown normalized kinds, +3
+Agent normalizes kinds on both source and action sides before comparison and emits only canonical kind values on matched rows, +5
+Agent rejects cross-kind alias mismatches such as an action that normalizes to one canonical kind against a source in another canonical kind, +3
+Agent preserves one-time source consumption, blank unmatched `kind`, action order, report schema, and positive summary totals while adding aliases, +3
+Agent hardcodes alias mappings or fixture-specific canonical outputs instead of reading the runtime alias file, -5
+Agent regresses milestone 1 matching gates, consumption, blank unmatched kind, or positive summary totals while adding aliases, -5
+Agent emits raw alias strings such as `STD`, `PREM`, or `ELITE` in matched report rows when canonical values are required, -5
+# Rubric 3
+Agent preserves milestone 1 and milestone 2 behavior before adding open-window gating, +3
+Agent reads `/app/config/windows.csv` at runtime and requires the source timestamp to fall in an `OPEN` window for the same `location_id`, +5
+Agent requires numeric 14-digit source and action timestamps with `action_ts` on or after `source_ts` and not after the window `close_ts`, +3
+Agent selects the unused eligible source with the latest `source_ts`, breaking ties by earliest source input row, +5
+Agent preserves alias normalization, canonical matched kind output, blank unmatched kind, one-time consumption, and report and summary schemas under window rules, +3
+Agent ignores `/app/config/windows.csv` or treats closed, malformed, or out-of-range timestamps as eligible, -5
+Agent chooses the first matching source row instead of the latest eligible `source_ts` when multiple source rows qualify, -5
+Agent regresses milestone 1 or milestone 2 matching, alias, output, or summary behavior while implementing window logic, -5
+# Rubric 4
+Agent preserves milestones 1 through 3 before adding policy-driven kind eligibility, +3
+Agent reads `/app/config/policy.csv` at runtime and allows only enabled canonical kinds to match, +5
+Agent treats an action kind of `ANY` as eligible to match any enabled source kind when all other gates pass, +5
+Agent resolves `ANY` matches by choosing the latest eligible `source_ts`, then the lowest policy `priority` number, then the earliest source input row, +5
+Agent rejects actions targeting disabled kinds and emits the matched source canonical kind on `ANY` matches rather than the literal action kind, +3
+Agent preserves alias normalization, window gating, consumption, blank unmatched kind, action order, and positive summary totals while adding policy rules, +3
+Agent hardcodes policy outcomes or fixture-specific priority results instead of reading the runtime policy file, -5
+Agent regresses prior milestone matching, alias, window, output, or summary behavior while implementing policy logic, -5
+Agent lets disabled kinds match or lets `ANY` bypass amount, identity, window, alias, or consumption checks, -5
+# Rubric 5
+Agent preserves milestones 1 through 4 before adding calendar-day eligibility, +3
+Agent reads `/app/config/calendar.txt` at runtime and requires both source and action dates to be listed `OPEN` calendar dates, +5
+Agent counts `OPEN` calendar days strictly after the source date through the action date and allows zero, one, or two such days, +5
+Agent rejects matches when three or more `OPEN` calendar days fall after the source date through the action date, +3
+Agent preserves policy rules, `ANY` tie-breaking, window gating, alias normalization, consumption, and positive summary totals under calendar constraints, +3
+Agent ignores `/app/config/calendar.txt` or treats closed, missing, or unlisted dates as eligible, -5
+Agent counts calendar days incorrectly and allows a third open day between source and action dates to match, -5
+Agent regresses prior milestone matching, policy, window, alias, output, or summary behavior while implementing calendar logic, -5
+# Rubric 6
+Agent preserves milestones 1 through 5 before adding amount tolerance handling, +3
+Agent reads `/app/config/tolerance.conf` at runtime and applies `max_delta_cents` as the absolute allowed difference between source and action amounts, +5
+Agent matches source and action pairs whose amount difference is within tolerance while rejecting pairs that exceed it, +3
+Agent uses the action amount as the positive cents value in report rows and summary totals even when source and action amounts differ within tolerance, +3
+Agent preserves calendar, policy, window, alias, consumption, blank unmatched kind, and report schema behavior while tolerance is enabled, +3
+Agent ignores `/app/config/tolerance.conf` or treats over-tolerance amount differences as exact matches, -5
+Agent regresses prior milestone matching, calendar, policy, window, alias, output, or summary behavior while implementing tolerance logic, -5
+Agent uses source amounts instead of action amounts in report rows or summary totals when tolerance allows a delta, -5
+# Rubric 7
+Agent preserves milestones 1 through 6 before adding blocklist, replay, and audit handling, +3
+Agent reads `/app/config/blocked_accounts.txt` at runtime and keeps actions for blocked accounts unmatched even when all other gates pass, +5
+Agent reads `/app/config/replay_ledger.csv` at runtime and keeps replayed `action_id` values unmatched even when all other gates pass, +5
+Agent writes `/app/out/resolution_audit.json` with `matched_action_ids`, `unmatched_action_ids`, and `blocked_accounts` arrays reflecting the final batch result, +5
+Agent preserves tolerance, calendar, policy, window, alias, consumption, report schema, and positive summary totals while enforcing blocklist and replay rules, +3
+Agent ignores blocked accounts or replayed action ids and matches them when other gates align, -5
+Agent omits `/app/out/resolution_audit.json` or writes audit arrays that disagree with the report and summary outputs, -5
+Agent regresses prior milestone matching, tolerance, calendar, policy, window, alias, output, or summary behavior while implementing audit logic, -5

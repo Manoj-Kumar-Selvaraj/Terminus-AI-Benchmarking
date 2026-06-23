@@ -1,0 +1,5 @@
+reason,description
+MED,Medical policy denial
+NEC,Not enough clinical detail
+COB,Coordination of benefits
+AUT,Authorization missing

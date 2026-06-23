@@ -1,0 +1,3 @@
+Extend the charge reconciliation CLI for a legacy credit export that uses mode aliases. Legacy credit mode aliases `LESS`, `FULL`, and `RR` should be treated as canonical `LTL`, `FTL`, and `RAIL` after trimming and case folding. Normalize aliases before matching, run normalized values through the same gates as milestone 1, and emit only canonical modes on matched report rows.
+
+Unknown mode values stay unmatched even when credit and charge share the same unknown value. Matched rows should emit `LTL`, `FTL`, or `RAIL`; unmatched rows must leave `mode` blank. Report columns, JSON summary fields, credit input order, and positive-cent accounting stay the same as milestone 1.

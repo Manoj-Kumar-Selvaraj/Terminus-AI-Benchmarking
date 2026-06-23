@@ -1,0 +1,2 @@
+ticket_id,traveler_id,amount_cents,fare_class
+TK0001,TRAV01,5000,ECO

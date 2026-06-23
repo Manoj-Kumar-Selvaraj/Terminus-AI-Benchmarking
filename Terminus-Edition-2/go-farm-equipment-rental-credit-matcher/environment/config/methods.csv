@@ -1,0 +1,4 @@
+equipment_type,enabled,priority
+TRACTOR,true,2
+SPRAY,true,1
+LIFT,true,3

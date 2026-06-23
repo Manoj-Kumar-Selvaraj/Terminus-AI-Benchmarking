@@ -1,0 +1,3 @@
+Milestone 3 is a regression gate: implement no new rules beyond milestones 1 and 2. Re-verify alias normalization, realtime window gating, latest-`entry_ts` selection with earliest-row tie breaks, row consumption, and output schemas together on combined scenarios.
+
+Continue writing `/app/out/cod_parking_adjustment_report.csv` with header `adjustment_id,parcel_id,plate_id,station_id,rate_type,amount,reason,status` and `/app/out/cod_parking_adjustment_summary.txt` with `matched_count`, `matched_amount`, `unmatched_count`, and `unmatched_amount` as positive integers. Matched rows report canonical source `rate_type` values; unmatched rows leave `rate_type` blank and use only `MATCHED` or `UNMATCHED` for status.

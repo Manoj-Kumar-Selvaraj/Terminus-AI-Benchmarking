@@ -1,0 +1,35 @@
+Agent inspects the goroutine dump, queue depth evidence, dispatcher contract, and integration surface before changing enqueue behavior, +2
+Agent restores sustained concurrent enqueue progress under burst producer load without holding mutexes during queue backpressure, +5
+Agent sizes the jobs channel to `worker_count * queue_buffer_multiplier` and keeps delivery concurrency within the configured worker count, +5
+Agent preserves the exported `NewDispatcher`, `Enqueue`, `QueueDepth`, `Shutdown`, and `DeliverFunc` contracts, +3
+Agent preserves the fixed worker pool rather than spawning unbounded goroutines per accepted job, +5
+Agent rejects empty operation keys without changing queue depth and drains the queue after backlog completion, +3
+Agent removes the worker pool, returns `ErrQueueFull` on every burst enqueue, or disables asynchronous delivery to hide backlog stalls, -5
+Agent introduces unbounded goroutine creation per accepted job or exceeds worker-count concurrency during delivery, -5
+Agent replaces or renames exported dispatcher APIs while repairing enqueue behavior, -5
+Agent uses the shutdown trace, shutdown contract, and integration surface to repair deploy cancellation behavior, +2
+Agent passes the dispatcher lifecycle context into delivery callbacks so blocked in-flight work observes cancellation, +5
+Agent makes workers observe dispatcher cancellation, stop dequeuing new jobs, and lets in-flight callbacks finish before `Shutdown` returns, +5
+Agent returns from `Shutdown` within the caller-provided deadline while draining workers and leaves queue depth at zero, +3
+Agent rejects post-shutdown `Enqueue` calls promptly and keeps concurrent enqueue/shutdown races from panicking or hanging, +3
+Agent preserves milestone 1 burst enqueue guarantees while changing shutdown behavior, +3
+Agent substitutes `context.Background` or another detached context for delivery callbacks during shutdown, -5
+Agent stubs `Shutdown` to return immediately without waiting for workers or in-flight delivery to finish, -5
+Agent leaves workers blocked on the jobs channel after cancellation indefinitely, -5
+Agent inspects duplicate delivery evidence, the idempotency contract, and retry status contract before changing delivery behavior, +2
+Agent ensures at-most-one downstream POST side effect per operation key across repeated `DeliverWithRetry` calls, +5
+Agent coalesces concurrent callers for the same operation key into one retry sequence with one tenant-visible side effect, +5
+Agent preserves retry behavior for transient upstream 5xx responses on first-time keys while respecting the configured retry limit, +5
+Agent sends a stable `Idempotency-Key` header on every attempt and does not retry terminal 4xx responses, +3
+Agent keeps unrelated operation keys concurrent instead of serializing all deliveries behind one global lock, +3
+Agent preserves milestone 1 enqueue and milestone 2 shutdown behavior, +3
+Agent disables retries entirely, claims keys before a successful upstream response, or delivers the same operation key without durable idempotency state, -5
+Agent retries terminal 4xx responses or allows duplicate side effects after a 503 retry sequence, -5
+Agent inspects the legacy client contract, canonical legacy fixture, and integration surface before changing payload formatting, +2
+Agent preserves the legacy flat JSON payload shape for `legacy-v1` clients on every attempt including retries, +5
+Agent keeps `modern-default` payloads on the version-2 envelope with `schema_version`, `event_type`, `trace_id`, and nested `fields` on retries, +5
+Agent limits delivery package remediation to production sources under `/app/internal/delivery/` and avoids adding local `*_test.go` files, +3
+Agent preserves retry behavior, idempotency recording, caller payload immutability, and milestones 1 through 3 while fixing legacy retries, +3
+Agent rewrites legacy payloads into the modern schema on retry or applies the legacy shape to modern clients, -5
+Agent adds delivery package test files that collide with platform compile-time sources, -5
+Agent breaks non-legacy client payload formatting or idempotent retry behavior while fixing legacy retries, -5

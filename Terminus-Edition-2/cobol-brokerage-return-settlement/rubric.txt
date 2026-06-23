@@ -1,0 +1,41 @@
+# Rubric 1
+Agent inspects `/app/src/wire_returns.cbl`, fixed-width layouts, and output contracts before editing, +2
+Agent keeps rewritten COBOL valid for free-format compilation with `cobc -x -free -O2`, +3
+Agent fixes wire ID matching to use all 12 characters rather than a partial prefix, +5
+Agent adds B2B as an allowed return reason and reports cleared amounts as positive cents, +5
+Agent enforces full wire id, account, amount, settled status, and allowed reason gates for clearing, +3
+Agent preserves return input order and exact report columns with `CLEARED` and `EXCEPTION` labels only, +3
+Agent leaves `reason` blank on every `EXCEPTION` row and emits the matched wire reason on `CLEARED` rows, +3
+Agent writes positive integer `key=value` summary lines for cleared and exception counts and amounts, +3
+Agent hardcodes final output files instead of repairing the COBOL reconciliation logic, -5
+Agent tampers with platform files or runtime input fixtures to force a pass, -5
+Agent uses partial wire-id matching or leaves cleared amounts negative, -5
+# Rubric 2
+Agent prevents duplicate return rows from clearing the same settled wire more than once, +5
+Agent marks later duplicate returns as `EXCEPTION` while preserving the first eligible clear, +3
+Agent preserves milestone 1 matching gates, report schema, blank `EXCEPTION` reasons, and positive summary cents, +3
+Agent compiles and runs the COBOL batch after adding wire consumption tracking, +2
+Agent hardcodes outputs instead of implementing wire consumption in COBOL, -5
+Agent allows a second return row to reuse an already-consumed settled wire, -5
+Agent regresses milestone 1 wire-id, reason, or sign fixes while adding deduplication, -3
+# Rubric 3
+Agent applies open settlement-cycle gates from `/app/config/cycle_calendar.txt` while preserving prior matching rules, +5
+Agent treats calendar state `OPEN` case-insensitively and rejects closed, missing, unlisted, or malformed settlement dates, +3
+Agent enforces the two-open-cycle-day return window after wire settlement, +5
+Agent chooses the eligible wire with the latest settlement date when multiple unused rows qualify, +5
+Agent breaks tied settlement dates by selecting the earliest wire input row, +3
+Agent preserves undated backward compatibility when both wire and return date fields are blank, +3
+Agent preserves blank `reason` on `EXCEPTION` rows and positive summary totals under calendar-gated matching, +3
+Agent treats closed or unlisted calendar dates as open, -5
+Agent chooses wires by file order alone instead of latest settlement date and earliest-row tie-break rules, -5
+Agent regresses milestone 1 or 2 behavior while implementing calendar or latest-date logic, -3
+# Rubric 4
+Agent loads reason eligibility from `/app/config/reason_codes.csv` and honors enabled flags and numeric priorities, +5
+Agent supports return reason `ANY` with latest-date then lower priority then earliest wire row selection, +5
+Agent treats a blank return reason field as matching any enabled wire reason without priority ordering, +3
+Agent requires exact enabled reason matches for non-`ANY`, non-blank return reasons, +3
+Agent emits the matched wire reason on `CLEARED` rows and never emits the literal `ANY`, +3
+Agent preserves calendar gates, deduplication, blank-date backward compatibility, and prior report schemas under policy-driven matching, +3
+Agent ignores disabled reason codes or treats malformed policy rows as universally enabled, -3
+Agent emits the literal `ANY` in cleared report rows instead of the matched wire reason, -5
+Agent regresses calendar, consumption, or report behavior while implementing reason policy, -3

@@ -1,0 +1,4 @@
+Trim surrounding whitespace from CSV fields before comparison.
+Compare fine_id and patron_id as full strings after trimming.
+Uppercase status and desk values for case-insensitive matching.
+Canonicalize waiver desk aliases before matching: FR->FRONT, WEB->ONLINE, APP->MOBILE.

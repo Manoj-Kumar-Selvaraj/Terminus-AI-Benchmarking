@@ -1,0 +1,2 @@
+claim_id|mandate_id|service_id|cap_token|payload_hash|audit_ts|verdict_code|sandbox_class
+AUD-1|MND-10001|SVC-PAYMENTS|50000|FED|20260612120500|GRANT|NYC

@@ -1,0 +1,2 @@
+hold_id,patient_id,ward_id,care_room,amount,hold_ts,status,room
+SRC-SAMPLE-1,PARTY-1,SAMPLE,ACUTE,100,20260528121000,OCCUPIED,LOC-1

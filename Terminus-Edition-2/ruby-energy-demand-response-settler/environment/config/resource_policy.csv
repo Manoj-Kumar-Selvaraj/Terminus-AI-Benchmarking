@@ -1,0 +1,4 @@
+station_id,resource_type,enabled,priority,max_station_amount
+SAMPLE,LOAD,true,10,1000
+SAMPLE,SOLAR,true,20,1000
+SAMPLE,BATTERY,true,30,1000

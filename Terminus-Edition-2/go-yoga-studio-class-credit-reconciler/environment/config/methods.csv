@@ -1,0 +1,4 @@
+class_type,enabled,priority
+FLOW,true,2
+POWER,true,1
+PRIVATE,true,3

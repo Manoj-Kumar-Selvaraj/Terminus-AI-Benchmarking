@@ -1,0 +1,12 @@
+{
+  "uuid": "esm-payments-ledger-live-20260613",
+  "enabled": false,
+  "function_name": "payments-ledger-ingestor:live",
+  "event_source_arn": "arn:aws:sqs:us-east-1:111122223333:payments-ledger-old",
+  "batch_size": 3,
+  "maximum_batching_window_seconds": 0,
+  "function_response_types": [
+    "ReportBatchItemFailures"
+  ],
+  "source_access_configurations": []
+}

@@ -1,0 +1,5 @@
+repair_type,enabled
+TUNEUP,true
+BRAKE,true
+DRIVETRAIN,true
+CHECK,false

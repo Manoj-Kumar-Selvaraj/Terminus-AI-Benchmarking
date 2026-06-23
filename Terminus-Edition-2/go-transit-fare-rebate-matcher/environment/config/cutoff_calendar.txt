@@ -1,0 +1,4 @@
+# Sample open dates for inspection; rebate-date tests overwrite this file at runtime.
+2026-04-01 open
+2026-04-02 open
+2026-04-03 open

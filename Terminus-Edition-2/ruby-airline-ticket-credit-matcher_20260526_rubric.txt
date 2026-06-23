@@ -1,0 +1,16 @@
+Agent fixes `/app/lib/reconcile.rb` logic instead of hardcoding `/app/out/credit_report.csv` or `/app/out/credit_summary.json`, +5
+Agent matches only on full `ticket_id`, `traveler_id`, `amount_cents`, `FLOWN` status, and canonical `fare_class`, +5
+Agent normalizes all documented aliases (`ECO`,`BIZ`,`FST`) case-insensitively and emits canonical matched `fare_class` values, +3
+Agent preserves milestone 1-2 behavior when date columns are absent from both CSVs, +5
+Agent distinguishes absent columns from blank dated cells and treats blank dated cells as ineligible in dated mode, +3
+Agent applies dated matching only for open `credit_date` values and enforces `credit_date <= flight_date`, +5
+Agent chooses latest eligible `flight_date` among candidates and uses source row order as the tie-break, +3
+Agent consumes each ticket row at most once while preserving credit input order in the report, +5
+Agent writes exact report schema (`ticket_id,traveler_id,fare_class,amount_cents,status`) with blank unmatched `fare_class`, +3
+Agent writes JSON summary with `matched_count`, `matched_amount_cents`, `unmatched_count`, `unmatched_amount_cents` as non-negative integer cents, +3
+Agent bypasses application logic by writing final outputs directly or editing tests/solutions to force reward, -5
+Agent uses prefix id matching, skips row consumption, or ignores core status/identity/amount gates, -5
+Agent treats closed/unlisted/missing dated values as eligible, or breaks undated fallback behavior when date columns are absent, -5
+Agent enforces `config/methods.csv` fare_class enablement (`enabled=true`) after alias normalization in both dated and undated modes, +5
+Agent treats disabled/missing/malformed methods rows as ineligible and still preserves prior milestone behavior and schemas, +3
+Agent ignores methods gate or hardcodes class enablement instead of reading runtime config, -5

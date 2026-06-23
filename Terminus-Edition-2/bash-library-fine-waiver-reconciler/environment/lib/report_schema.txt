@@ -1,0 +1,5 @@
+fine_id,patron_id,desk,amount_cents,status
+
+One row per waiver in waiver input order.
+desk is blank on UNMATCHED rows; canonical desk on MATCHED rows.
+amount_cents uses the waiver amount as a positive integer string.

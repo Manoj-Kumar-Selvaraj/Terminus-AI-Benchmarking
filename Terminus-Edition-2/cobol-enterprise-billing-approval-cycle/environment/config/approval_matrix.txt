@@ -1,0 +1,2 @@
+regional_cents=500000
+dual_cents=2000000

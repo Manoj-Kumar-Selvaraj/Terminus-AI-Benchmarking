@@ -1,0 +1,37 @@
+# Rubric 1
+Agent inspects `/app/cmd/reconcile/main.go`, the runtime CSV inputs, and the batch command before changing reconciliation behavior, +2
+Agent keeps the executable implementation in `/app/cmd/reconcile/main.go` and uses the existing Go build path, +3
+Agent enforces full incident and severity identifiers, region, integer minutes, `POSTED` status, eligible reason, canonical severity, and numeric timestamp ordering, +5
+Agent requires a matching region window and rejects credits whose event timestamp exceeds its cutoff, +5
+Agent consumes each physical playback row at most once while preserving credit input order, +5
+Agent writes the exact report and summary contracts with canonical matched severity, blank unmatched severity, exact statuses, and positive minute totals, +5
+Agent hardcodes report or summary outputs instead of computing them from runtime inputs, -5
+Agent changes runtime fixtures, verifier files, or platform scaffolding to force expected results, -5
+Agent accepts prefix identifiers, missing windows, expired credits, invalid gates, or reused playback rows, -5
+# Rubric 2
+Agent preserves strict matching, cutoff eligibility, row consumption, ordering, schemas, and totals while adding severity aliases, +5
+Agent trims and case-folds playback and credit severities before mapping `MEDIUM` to `CMEDIUM`, `PHONE` to `LOW`, and `WEBAPP` to `BROWSER`, +5
+Agent validates both normalized values through the canonical severity gate and rejects unknown values, +5
+Agent emits canonical playback severity in matched report rows and leaves unmatched severity blank, +3
+Agent normalizes only one side or fails to handle whitespace-padded mixed-case aliases, -5
+Agent regresses full-key matching, cutoff gates, row consumption, or output contracts while adding aliases, -5
+# Rubric 3
+Agent preserves strict matching and aliases while treating only explicitly `OPEN` region windows as eligible, +5
+Agent rejects closed, missing, malformed, unlisted, expired, and non-numeric playback or credit timestamp scenarios, +5
+Agent selects the unused qualifying playback with the latest `end_utc` and leaves earlier candidates available for timed follow-up credits, +5
+Agent breaks equal `end_utc` values by earliest physical playback input row while preserving one-time consumption, +5
+Agent preserves canonical severity output, credit order, report schema, and positive summary totals under window selection, +3
+Agent treats closed or malformed windows as open or ignores the region window contract, -5
+Agent uses first-fit selection or consumes an earlier playback before the required latest candidate, -5
+Agent accepts malformed credit `event_utc` values or regresses prior identity and consumption gates, -3
+# Rubric 4
+Agent loads reason eligibility from `/app/config/reasons.csv` instead of relying on a hardcoded reason allowlist, +5
+Agent trims and evaluates the `eligible` value case-insensitively so `Y` and `y` enable the configured reason, +3
+Agent blocks disabled, absent, or malformed reasons and preserves the original credit reason in report output, +3
+Agent implements the credit-side `ANY` wildcard without requiring an `ANY` policy row or emitting a substituted reason, +5
+Agent applies every identity, severity, region, window, timestamp, consumption, and latest-candidate gate to `ANY` credits, +5
+Agent resolves `ANY` candidates by latest `end_utc`, then earliest physical playback row, leaving eligible earlier rows for follow-up credits, +5
+Agent preserves report schema, status vocabulary, canonical matched severity, blank unmatched severity, and positive totals, +3
+Agent treats lowercase eligible flags as disabled or lets disabled, absent, or malformed policy rows match, -5
+Agent lets `ANY` bypass prior gates or consumes a playback before all eligibility checks pass, -5
+Agent hardcodes policy scenarios instead of deriving behavior from `reasons.csv` and runtime inputs, -5

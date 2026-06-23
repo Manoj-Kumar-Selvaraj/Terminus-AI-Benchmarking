@@ -1,0 +1,3 @@
+During the statement-completion surge, the dispatcher stopped making enqueue progress even though delivery latency remained low and all workers were still allocated. Review `/app/evidence/goroutine_dump.txt`, `/app/evidence/queue_depth.log`, `/app/config/workers.json`, and `/app/docs/dispatcher_contract.md`. Restore bounded producer progress and accurate queue-depth accounting without removing the fixed worker pool, spawning a goroutine per job, or changing the exported dispatch API.
+
+The verifier exercises concurrent bursts, configured queue capacity, worker-concurrency bounds, invalid-job handling, and eventual queue drainage under the race detector.

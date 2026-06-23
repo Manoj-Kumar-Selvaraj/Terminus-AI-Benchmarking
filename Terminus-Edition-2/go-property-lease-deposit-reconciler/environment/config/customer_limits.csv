@@ -1,0 +1,2 @@
+customer_id,channel,effective_date,max_daily_amount,status
+CUST-SAMPLE,CARD,2026-04-01,50000,ACTIVE

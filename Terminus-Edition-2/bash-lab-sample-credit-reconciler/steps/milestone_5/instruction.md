@@ -1,0 +1,9 @@
+Extend `/app/scripts/reconcile.sh` with specimen release-lot controls from `/app/config/specimen_release_lots.csv`. This milestone keeps all milestone 1-4 behavior and adds a final chain-of-custody gate when the runtime input CSV files include a `lot_id` column.
+
+The lot file has header `lot_id,payer,release_date,capacity_cents,enabled`. Treat `lot_id`, `payer`, and `enabled` with surrounding whitespace trimmed; payer aliases still canonicalize through milestone 2 rules. A lot is usable only when it exists in the lot file, `enabled` is `Y`, `YES`, or `1` case-insensitively, its payer equals the canonical matched payer, and its `release_date` is an open date in `/app/config/cutoff_calendar.txt`. Blank, malformed, closed, or unlisted release dates are not usable.
+
+If either input CSV has a `lot_id` header, require both `samples.csv` and `credits.csv` to carry a nonblank matching `lot_id` value for a credit to match. Compare lot ids after trimming and case folding. When dated columns are present, the selected lot's `release_date` must be on or after both the credit's `credit_date` and the sample row's `result_date`; this is in addition to the milestone 3 two-open-day window and latest-result-date selection rule.
+
+Apply the release-lot gate while deciding which unused sample rows are eligible, before the latest-result-date and earliest-input-row tie break is finalized. A later sample row whose lot is not released for that row must not be selected ahead of an older eligible row. After a row is selected, enforce cumulative `capacity_cents` per lot and canonical payer in credit input order. If the capacity would be exceeded, emit `UNMATCHED` and do not consume the sample, payer cap, or lot capacity.
+
+Inputs without any `lot_id` headers must continue to behave exactly like milestone 4. Keep `/app/out/credit_report.csv` and `/app/out/credit_summary.json` schemas unchanged.

@@ -1,0 +1,3 @@
+pledge_id,donor_id,amount_cents,status,fund
+PLG0001,DONOR01,5000,BOOKED,GENERAL
+PLG0002,DONOR02,7500,BOOKED,CAPITAL

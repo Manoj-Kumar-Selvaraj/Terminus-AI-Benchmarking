@@ -1,0 +1,2 @@
+parcel_id,plate_id,station_id,rate_type,amount,entry_ts,status,level
+SRC-SAMPLE-1,PARTY-1,SAMPLE,HOURLY,100,20260528121000,CLOSED,LOC-1

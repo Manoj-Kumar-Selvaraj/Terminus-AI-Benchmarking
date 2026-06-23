@@ -1,0 +1,13 @@
+{
+  "abort_on_failed_preflight": false,
+  "auto_upgrade_enabled": true,
+  "backup_required": false,
+  "channel": "latest",
+  "java_preflight_required": false,
+  "last_upgrade_id": "auto-20260618-220801",
+  "lock_strategy": "leave-existing-lock",
+  "pin_target_version": false,
+  "required_backup_snapshot": "",
+  "source_version": "2.426.3",
+  "target_version": "2.462.3"
+}

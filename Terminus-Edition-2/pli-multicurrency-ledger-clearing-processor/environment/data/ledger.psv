@@ -1,0 +1,2 @@
+txn_id|account_id|amount_cents|currency_code|desk_id|book_ts|state|kind_code
+TXN-10001|991100|50000|USD|NYC|20260612120000|OPEN|TM

@@ -1,0 +1,3 @@
+Extend the Ruby reconciler for legacy `package` aliases while keeping all milestone 1 behavior. Normalize aliases before matching: `MIN` means `MINI`, `STD` means `STANDARD`, and `PRM` means `PREMIUM`. Alias matching is case-insensitive and trimmed on both session and refund rows. Matched report rows must emit the canonical uppercase `package` value, not the raw alias. Unmatched rows still leave `package` blank.
+
+Continue to write `/app/out/refund_report.csv` and `/app/out/refund_summary.json` with the same schemas, status labels, blank unmatched fields, and summary keys from the earlier milestone.

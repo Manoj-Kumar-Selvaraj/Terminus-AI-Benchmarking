@@ -1,0 +1,1 @@
+Verifier scenarios rewrite shipments.dat, credits.dat, and dispatch_calendar.txt.

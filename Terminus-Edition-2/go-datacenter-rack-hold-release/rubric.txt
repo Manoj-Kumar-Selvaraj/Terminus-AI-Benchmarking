@@ -1,0 +1,58 @@
+# Rubric 1
+Agent fixes the Go reconciliation algorithm directly instead of hardcoding `/app/out/rack_release_report.csv` or `/app/out/rack_release_summary.txt`, +5
+Agent enforces exact matching for `hold_id`, `asset_id`, `aisle_id`, `rack`, and positive canonical integer `amount`, +5
+Agent requires eligible source status and eligible release reason according to the milestone 1 contract, +3
+Agent trims surrounding whitespace from compared and reported CSV fields without changing the required output schema, +3
+Agent rejects non-numeric, signed, decimal, zero, negative, blank, or malformed amount values as unmatched rather than accepting them, +5
+Agent rejects non-numeric or non-14-digit `hold_ts` and `release_ts` values as unmatched without crashing the CLI, +3
+Agent consumes each qualifying source row at most once and chooses the first qualifying source row in file order when multiple rows qualify, +5
+Agent preserves release input order, exact CSV report columns, exact `MATCHED` and `UNMATCHED` labels, and positive integer summary totals, +3
+Agent hardcodes visible fixture outputs instead of implementing general matching behavior, -5
+Agent changes task metadata or reward artifacts to force a pass, -5
+Agent uses prefix, substring, or partial identifier matching for any required identity field, -3
+Agent allows one source hold row to be reused by multiple releases, -3
+Agent crashes or exits non-zero on malformed but expected input rows such as invalid timestamps or invalid amounts, -3
+
+# Rubric 2
+Agent loads access-tier aliases dynamically from `/app/config/access_tier_aliases.csv` at runtime instead of hardcoding only the shipped aliases, +5
+Agent normalizes aliases and canonical tiers case-insensitively after trimming surrounding whitespace, +3
+Agent emits canonical access-tier values on matched report rows rather than raw alias values from the release feed, +3
+Agent preserves blank access-tier output on unmatched rows while adding alias behavior, +3
+Agent preserves all milestone 1 gates for exact identifiers, amount validation, timestamp validation, source eligibility, release eligibility, row consumption, and summary totals, +5
+Agent ignores `/app/config/windows.csv` for milestone 2 matching even if the file is present or overwritten, +3
+Agent keeps required output paths, CSV columns, row order, status labels, and summary schema unchanged, +3
+Agent keeps the implementation maintainable and data-driven without fixture-specific conditionals for known IDs or aliases, +3
+Agent hardcodes alias mappings instead of reading `/app/config/access_tier_aliases.csv` dynamically, -5
+Agent regresses milestone 1 matching, validation, consumption, or summary behavior while adding alias logic, -5
+Agent emits raw alias values on matched report rows when canonical values are required, -3
+Agent lets alias normalization bypass amount, identity, status, reason, timestamp, or one-time-consumption gates, -3
+Agent changes required output schemas or status labels to force a pass, -5
+
+# Rubric 3
+Agent loads realtime window rules dynamically from `/app/config/windows.csv` at runtime and uses overwritten verifier fixtures correctly, +5
+Agent preserves dynamic alias loading from `/app/config/access_tier_aliases.csv` while applying window checks, +3
+Agent applies the required timestamp window rules to source and release timestamps using the normalized canonical access tier, +5
+Agent rejects malformed, blank, non-numeric, non-14-digit, out-of-window, missing-window, or otherwise ineligible timestamp cases deterministically, +5
+Agent writes `/app/out/rack_release_rejections.csv` with the required columns, rejection codes, row order, and rejection precedence, +5
+Agent preserves milestone 1 and milestone 2 behavior for exact identifiers, positive integer amounts, status and reason gates, alias output, source consumption, and summary totals, +5
+Agent handles overlapping windows and non-standard dynamic aliases without relying on shipped config values, +3
+Agent keeps matched and unmatched report rows, summary totals, and rejection rows mutually consistent, +3
+Agent hardcodes shipped window or alias values instead of reading runtime config files, -5
+Agent treats missing, malformed, closed, or out-of-window cases as matched when they should be rejected or unmatched, -5
+Agent writes incorrect rejection codes, wrong rejection precedence, duplicate rejection rows, or rejection rows for successfully matched releases, -3
+Agent regresses milestone 1 or milestone 2 behavior while implementing window or rejection logic, -5
+Agent changes required output schemas, filenames, or CLI behavior to force a pass, -5
+
+# Rubric 4
+Agent writes `/app/out/rack_release_audit.csv` with the exact required columns and deterministic aisle ordering, +5
+Agent aggregates `total_releases`, `matched_count`, `unmatched_count`, `matched_amount`, and `unmatched_amount` per `aisle_id` from actual release outcomes, +5
+Agent keeps audit totals consistent with `/app/out/rack_release_report.csv` and `/app/out/rack_release_summary.txt`, +5
+Agent preserves milestone 3 rejection behavior and does not let audit generation change matching or rejection decisions, +3
+Agent handles aisles containing only matched releases, only unmatched releases, and mixed outcomes, +3
+Agent handles trimmed whitespace and canonical values consistently when grouping audit rows by aisle, +3
+Agent preserves exact report, summary, rejection, and audit output paths and schemas, +3
+Agent hardcodes `/app/out/rack_release_audit.csv` or derives audit rows from fixture assumptions instead of actual program results, -5
+Agent produces audit totals that disagree with report rows, summary totals, or rejection outcomes, -5
+Agent regresses matching, alias normalization, window handling, rejection output, source consumption, or summary behavior while adding audit output, -5
+Agent changes required filenames, column order, status labels, or rejection schema to force a pass, -5
+Agent omits aisles with only unmatched releases or mishandles zero matched or zero unmatched totals, -3

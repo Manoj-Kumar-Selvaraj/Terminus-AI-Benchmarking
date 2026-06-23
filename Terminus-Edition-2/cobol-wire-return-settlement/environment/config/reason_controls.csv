@@ -1,0 +1,5 @@
+reason,enabled,max_open_days
+CON,Y,2
+REF,Y,2
+ADM,Y,2
+B2B,Y,1

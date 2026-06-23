@@ -1,0 +1,40 @@
+# Rubric 1
+Agent inspects `/app/src/wire_returns.cbl`, `/app/scripts/compile.sh`, `/app/data/wires.dat`, `/app/data/returns.dat`, and `/app/config/reason_codes.csv` before editing, +2
+Agent repairs the COBOL source so full 12-character wire id, account id, amount, settled status, and allowed healthcare return reason all gate clearing, +5
+Agent preserves return-file output order and writes `/app/out/wire_return_report.csv` with schema `wire_id,account_id,reason,amount_cents,status`, +3
+Agent writes `/app/out/wire_return_summary.txt` as key-value lines with positive cleared and exception amount totals, +3
+Agent keeps the task compiled through `cobc` from `/app/src/wire_returns.cbl` into `/app/build/batch`, +5
+Agent hardcodes the final report or summary instead of fixing the reconciliation logic, -5
+Agent replaces the COBOL batch with an equivalent C, Go, shell, or Python implementation, -5
+Agent tampers with platform files, task metadata, or runtime input fixtures to force a pass, -5
+# Rubric 2
+Agent preserves all milestone 1 matching, schema, positive-total, and COBOL compile-path behavior while adding duplicate-return protection, +5
+Agent tracks consumed wire rows so each settled wire clears at most one return, +5
+Agent leaves duplicate or otherwise ineligible returns as `EXCEPTION` rows with positive exception totals, +3
+Agent keeps return-file ordering stable while applying consumed-wire logic, +3
+Agent verifies the rebuilt `/app/build/batch` comes from `cobc` compiling `/app/src/wire_returns.cbl`, +3
+Agent allows duplicate returns to reuse the same settled wire, -5
+Agent regresses milestone 1 full-field matching, allowed reason handling, or positive summary totals, -5
+Agent bypasses COBOL compilation or leaves a stale `/app/build/batch` binary in place, -5
+# Rubric 3
+Agent preserves milestones 1 and 2 while adding settlement and return date parsing from the fixed-width records, +5
+Agent reads `/app/config/cycle_calendar.txt` and treats `OPEN` case-insensitively while ignoring closed or absent dates, +5
+Agent requires nonblank settlement and return dates and rejects blank, missing-calendar, closed settlement, and closed return-date cases, +3
+Agent enforces the two-open-cycle-day eligibility window, including exactly two open days as eligible and three or more as ineligible, +5
+Agent selects the eligible unused wire with the latest settlement date and breaks tied dates by earliest wire input row, +5
+Agent leaves `reason` blank on `EXCEPTION` rows while preserving canonical report and summary schemas, +3
+Agent validates the COBOL compile path and final output artifacts before finishing, +3
+Agent treats closed, absent, or blank cycle dates as eligible, -5
+Agent chooses candidate wires by file order alone instead of latest settlement date then earliest input row, -5
+Agent regresses duplicate-return consumption or milestone 1 matching while implementing cycle controls, -5
+# Rubric 4
+Agent preserves milestones 1 through 3 while adding `/app/out/wire_return_audit.csv` as a second output view, +5
+Agent writes the audit extract in return-file order with header `id,amount_cents,status`, +5
+Agent keeps the audit status aligned with the main report so `CLEARED` and `EXCEPTION` rows match across both outputs, +3
+Agent derives the audit extract from the batch results instead of hardcoding a separate fixture, +3
+Agent writes audit rows for both cleared and exception outcomes from the same reconciliation pass, +3
+Agent leaves the report schema, summary schema, duplicate-consumption rule, and cycle-date rule intact while adding the audit view, +5
+Agent maps the audit `id` column to the same 12-character wire identifier used in the main report, +2
+Agent omits the audit file, writes the wrong header, or changes only one output path, -5
+Agent hardcodes the audit extract independently of the reconciler logic, -5
+Agent regresses any prior milestone behavior while adding the audit view, -5

@@ -1,0 +1,36 @@
+# Rubric 1
+
+Agent investigates `/app/cmd/reconcile/main.go`, `/app/data/shipments.csv`, and `/app/data/claims.csv` instead of unrelated files, +2
+Agent compiles the Go CLI with `/usr/local/go/bin/go` and runs it against fresh synthetic inputs, +3
+Agent preserves the exact carrier schema, including the intentionally spelled `admgount_id` column in inputs and report output, +2
+Agent enforces milestone 1 matching gates: full shipment id equality, exact `admgount_id`, amount, posted shipment status, allowed reasons `DAMAGED`/`LOST`/`HAZ`, and matching reason after trim and case folding, +5
+Agent consumes each shipment row at most once regardless of reason while preserving claim input order and earliest eligible claim consumption, +5
+Agent writes `/app/out/claim_report.csv` and `/app/out/claim_summary.json` with required schema, `MATCHED`/`UNMATCHED` only, canonical uppercase matched claim reasons, blank unmatched `reason`, and positive summary cents, +5
+Agent hardcodes final output files instead of fixing reconciliation logic, -5
+Agent tampers with verifier harness files, oracle scripts, metadata, or input fixtures to force a pass, -5
+Agent leaves prefix shipment-id matching, negative matched totals, or reusable shipment rows in place, -3
+
+# Rubric 2
+
+Agent normalizes legacy reason aliases `DMG` to `LOST` and `HZD` to `HAZ` after trim and case folding, +5
+Agent emits canonical reason values in matched report rows rather than raw alias codes, +3
+Agent preserves milestone 1 full-id, exact `admgount_id` schema, identity, consumption, cleaned output fields, and positive-total behavior while adding aliases, +5
+Agent trims surrounding whitespace and compares status/reason case-insensitively under alias-aware matching, +3
+Agent leaves `reason` blank on unmatched rows after alias-aware matching, +2
+Agent uses milestone 2 tests to target alias-specific behavior without duplicating the entire milestone 1 suite, +2
+Agent regresses milestone 1 behavior while implementing alias normalization, -3
+Agent hardcodes final output files instead of fixing reconciliation logic, -5
+Agent tampers with verifier harness files, oracle scripts, metadata, or input fixtures to force a pass, -5
+
+# Rubric 3
+
+Agent applies open-date gates from `/app/config/cutoff_calendar.txt` while preserving all earlier matching rules and exact input/output schemas, +5
+Agent requires claim dates listed as `open` and rejects missing, closed, or unlisted claim dates, +3
+Agent rejects shipments whose `ship_date` is missing or later than the claim date, +3
+Agent chooses the eligible shipment with the latest `ship_date` when multiple unused rows qualify, +5
+Agent breaks tied `ship_date` values by selecting the earliest shipment input row and tracks one-use consumption by row position across multiple claims, +3
+Agent preserves alias normalization, canonical reason output, exact schemas, and positive summary totals under date-gated matching, +3
+Agent validates final CSV and JSON artifacts before finishing milestone 3, +2
+Agent regresses milestone 1 or 2 matching behavior while adding calendar or tie-break logic, -3
+Agent hardcodes final output files instead of fixing reconciliation logic, -5
+Agent tampers with verifier harness files, oracle scripts, metadata, or input fixtures to force a pass, -5

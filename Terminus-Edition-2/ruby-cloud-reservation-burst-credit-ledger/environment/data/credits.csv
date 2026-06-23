@@ -1,0 +1,2 @@
+credit_id,event_id,account_id,reservation_id,sku_type,amount,credit_ts,reason,region
+ACT-SAMPLE-1,SRC-SAMPLE-1,PARTY-1,SAMPLE,C,100,20260528121100,BURST,LOC-1

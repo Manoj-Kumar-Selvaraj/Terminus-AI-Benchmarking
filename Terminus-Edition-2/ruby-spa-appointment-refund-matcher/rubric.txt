@@ -1,0 +1,41 @@
+Agent inspects `/app/lib/reconcile.rb`, `/app/data/appointments.csv`, `/app/data/refunds.csv`, and the documented output files before editing, +2
+Agent fixes the Ruby reconciler logic instead of hardcoding `/app/out/refund_report.csv` or `/app/out/refund_summary.json`, +3
+Agent parses CSV inputs by header name rather than fixed column positions, +3
+Agent compares full `appointment_id` values and does not use prefix or substring matching, +3
+Agent enforces milestone 1 matching gates including appointment id, client id, positive integer amount, `COMPLETED` status, and allowed canonical service areas, +5
+Agent trims surrounding whitespace and compares status and service values case-insensitively without corrupting report values, +3
+Agent consumes each appointment row at most once by physical row position so duplicate refund rows cannot reuse the same source row, +5
+Agent preserves refund input order, exact `MATCHED` and `UNMATCHED` labels, blank unmatched service areas, and verbatim refund amount strings in the report, +3
+Agent reports matched and unmatched summary counts and positive integer cent totals in the required JSON keys, +3
+Agent hardcodes final output files instead of repairing the reconciliation logic, -5
+Agent tampers with platform files or runtime input fixtures to force a pass, -5
+Agent reads `/app/config/service_aliases.csv` and normalizes both appointment and refund service areas through the runtime alias map, +5
+Agent treats alias rows with absent or case-insensitive `true` enabled values as eligible and ignores disabled, blank, unsupported, or malformed alias rows without crashing, +3
+Agent emits canonical uppercase service areas on matched rows and leaves unmatched service areas blank, +3
+Agent preserves milestone 1 matching, row consumption, ordering, status labels, amount preservation, and positive totals after adding runtime aliases, +5
+Agent hardcodes aliases absent from the runtime alias file instead of reading the config map, -5
+Agent regresses milestone 1 behavior while implementing alias handling, -3
+Agent supports optional `service_date` and `refund_date` columns without breaking undated CSV files that omit those columns, +3
+Agent reads `/app/config/cutoff_calendar.txt` and treats only refund dates explicitly marked open as eligible, comparing open status case-insensitively, +5
+Agent rejects missing, closed, unlisted, malformed, or invalid ISO refund dates and missing service dates before allowing a match, +3
+Agent enforces that `refund_date` is not later than `service_date` together with all prior matching gates, +5
+Agent selects the eligible appointment row with the latest `service_date` and breaks equal-date ties by earliest appointment input row, +5
+Agent regenerates `appointment_selection.csv` from actual matched row selections in refund order when dated columns are present, +3
+Agent preserves alias normalization, canonical report output, and row-position consumption under dated matching, +3
+Agent chooses candidates by file order alone or emits an inaccurate selection trace, -5
+Agent treats closed, missing, or unlisted calendar dates as open, -5
+Agent reads `/app/config/methods.csv` and treats only services with case-insensitive `enabled=true` as match-eligible after alias normalization, +5
+Agent supports refund `ANY` rows by selecting the eligible appointment using latest service date, lower configured service priority, then earliest appointment input row, +5
+Agent emits the selected canonical service for matched `ANY` refunds and never emits raw `ANY` in the report, +3
+Agent rejects missing, blank, disabled, malformed, or short methods rows without crashing the reconciler, +3
+Agent preserves exact full `appointment_id` matching, selection trace accuracy, and all prior schemas, consumption, and positive-total behavior while adding methods policy, +3
+Agent regresses earlier milestone behavior while implementing methods eligibility, -3
+Agent reads `/app/config/client_limits.csv` and requires an enabled exact client-and-service limit row before matching, +5
+Agent walks eligible appointments in priority order and skips policy-blocked candidates without consuming them before trying the next-best row, +5
+Agent enforces `max_refund_cents` caps using trimmed client ids, alias-normalized services, and case-insensitive enabled and allow_any parsing, +5
+Agent treats blank, malformed, short, disabled, over-limit, or missing client-limit rows as ineligible without crashing, +3
+Agent defaults absent `allow_any` columns to false, rejects malformed `allow_any` values, and requires `allow_any=true` for matched `ANY` refunds, +3
+Agent applies the last well-formed client-limit row in file order as authoritative for the same client and canonical service, +3
+Agent preserves latest-date selection, row-position consumption, selection trace, report schemas, and positive summary totals under client-limit gating, +3
+Agent consumes appointment rows or permits matches when client-limit policy is missing, malformed, or over cap, -5
+Agent regresses earlier milestone behavior while implementing client-limit policy, -3

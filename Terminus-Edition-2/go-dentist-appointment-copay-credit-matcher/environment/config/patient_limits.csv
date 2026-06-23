@@ -1,0 +1,2 @@
+patient_id,service_type,effective_date,max_daily_amount,status
+CUST-SAMPLE,CLEAN,2026-04-01,9999,ACTIVE

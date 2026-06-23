@@ -1,0 +1,3 @@
+Continue fixing `/app/src/chargeback_clear.cbl` while preserving milestone 1 matching, report schema, status labels, blank `EXCEPTION` reasons, the exact four-key summary schema, and positive summary cents.
+
+Each settled sale input row may be consumed by at most one applied chargeback. Duplicate chargeback rows targeting the same sale must not reuse an already-consumed sale row; later duplicates must appear as `EXCEPTION` rows in chargeback input order with blank `reason`. Consumption is tracked by sale row position, not by sale id alone, so duplicate sale ids in separate rows remain independent.

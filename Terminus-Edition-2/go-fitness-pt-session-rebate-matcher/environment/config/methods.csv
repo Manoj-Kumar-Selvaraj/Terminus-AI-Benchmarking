@@ -1,0 +1,4 @@
+training_type,enabled,priority
+SOLO,true,2
+DUO,true,1
+TEAM,true,3

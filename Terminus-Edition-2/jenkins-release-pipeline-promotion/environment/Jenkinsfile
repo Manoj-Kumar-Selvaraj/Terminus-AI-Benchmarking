@@ -1,0 +1,11 @@
+@Library('release-shared-lib@stable') _
+pipeline {
+  agent any
+  stages {
+    stage('Build') { steps { sh './ci/simulate_pipeline.py' } }
+    stage('Integration') { parallel { stage('linux') { steps { echo 'linux' } }; stage('windows') { steps { echo 'windows' } } } }
+    stage('Quality Gate') { steps { echo 'quality gate' } }
+    stage('Promote') { steps { echo 'promote' } }
+    stage('Rollback') { steps { echo 'rollback' } }
+  }
+}

@@ -1,0 +1,4 @@
+status,description
+FULFILLED,Ready for reconciliation
+DRAFT,Not eligible
+VOID,Not eligible

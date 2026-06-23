@@ -1,0 +1,5 @@
+code,meaning
+F10,fraud chargeback
+F20,authorization chargeback
+R99,retrieval chargeback
+MRC,merchant-resolved chargeback

@@ -1,0 +1,29 @@
+# Rubric 1
+Agent inspects ledger batch contracts, PL/I control decks, and PSV schemas before editing, +2
+Agent enables full five-key comparison with one-use ledger consumption and latest book_ts tie-break, +5
+Agent reads eligible state and entry-type gates from the PL/I rule declarations, +3
+Agent preserves posting order and writes the exact pipe-separated row report and four-line summary, +5
+Agent hardcodes report or summary artifacts instead of repairing runtime clearing controls, -5
+Agent clears postings on prefix txn_id match only or reuses a consumed ledger row, -5
+# Rubric 2
+Agent preserves strict keys, eligibility, consumption, schemas, and totals while adding aliases, +5
+Agent parses trimmed case-insensitive currency alias mappings from the PL/I rule declarations, +5
+Agent canonicalizes currency codes on both ledger and posting sides before comparison, +5
+Agent emits canonical currency only on CLEARED rows and leaves HELD currency blank, +3
+Agent hardcodes sample aliases instead of reading the PL/I rule declarations, -5
+Agent regresses full-key matching or one-use consumption while adding aliases, -3
+# Rubric 3
+Agent preserves milestones 1–2 behavior while enabling FX window gating, +5
+Agent applies the configured open FX state only to a case-insensitive matching account window, +5
+Agent requires ledger book_ts and posting post_ts inside one inclusive non-reversed window, +5
+Agent selects the latest eligible book_ts candidate and preserves row-position consumption, +3
+Agent treats closed, malformed, missing, reversed, or non-covering windows as ineligible, -5
+Agent regresses aliases, strict keys, row consumption, report schema, or summary totals, -3
+# Rubric 4
+Agent preserves all earlier clearing behavior while enabling group control totals and restart mode, +5
+Agent rolls cleared rows into account, desk, and canonical currency groups with control reconciliation, +5
+Agent writes exact clearing_groups.psv, clearing_commits.psv, and restart_checkpoint.txt schemas, +5
+Agent uses group status COMMITTED or HELD_CONTROL and downgrades failed groups to HELD rows, +5
+Agent avoids duplicate committed groups after ABEND restart and continues pending groups, +5
+Agent commits rows independently while ignoring group control totals or restart checkpoint state, -5
+Agent duplicates committed groups, loses checkpoint state, or regresses milestones 1–3 behavior, -5

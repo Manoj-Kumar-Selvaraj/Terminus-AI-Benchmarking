@@ -1,0 +1,31 @@
+# Rubric 1
+Agent fixes the manifest bundle so the simulator reports a ready service-account authorization chain, +2
+Agent restores the service-account authorization chain so the batch identity can read invoice-batch-config, +5
+Agent keeps the CronJob service account aligned with the RoleBinding subject in billing-batch, +3
+Agent pins the active billing window through the ConfigMap key named by active_window_key, +5
+Agent ensures the overlap fixture resolves to WIN-20260612 and ledger-WIN-20260612 via pinned_key selection, +3
+Agent preserves the publication contract and offline simulator workflow while fixing authorization, +3
+Agent patches manifests or simulator configuration instead of bypassing RBAC checks, +3
+Agent disables the batch CronJob or removes configuration reads to hide the Forbidden incident, -5
+Agent edits only the simulator to force a pass without repairing manifest authorization, -5
+Agent relies on windows.yaml list order instead of pinning current_window for the active billing window, -5
+# Rubric 2
+Agent fixes schedule overlap behavior through Kubernetes CronJob configuration rather than simulator shortcuts, +2
+Agent preserves milestone 1 configuration-read authorization while fixing overlapping publication, +3
+Agent preserves milestone 1 pinned billing window WIN-20260612 while fixing overlap behavior, +3
+Agent configures the CronJob for single-flight behavior when a prior run is still active, +5
+Agent ensures only one ledger artifact is published per billing window under the overlap fixture, +5
+Agent keeps the offline overlap simulation honest instead of hardcoding publication counts, +3
+Agent allows overlapping runs to publish duplicate artifacts for the same billing window, -5
+Agent regresses milestone 1 authorization while changing concurrency behavior, -5
+Agent regresses milestone 1 window pinning so publication targets the wrong billing window, -5
+# Rubric 3
+Agent produces a least-privilege Role whose simulator permission summary has no wildcard grants, +2
+Agent preserves milestone 1 authorization and milestone 2 single-publication behavior, +3
+Agent removes wildcard apiGroups, resources, and verbs from the batch Role, +5
+Agent scopes ConfigMap get to invoice-batch-config with resourceNames, +5
+Agent grants only ConfigMap get and Secret create/get needed for the batch workflow, +3
+Agent avoids unrelated API resources and excess verbs while keeping the simulator green, +3
+Agent leaves cluster-wide wildcard permissions on the batch Role, -5
+Agent removes required ConfigMap or Secret permissions and breaks the recovered workflow, -5
+Agent grants unrestricted ConfigMap list/get without resourceNames scoping on invoice-batch-config, -5

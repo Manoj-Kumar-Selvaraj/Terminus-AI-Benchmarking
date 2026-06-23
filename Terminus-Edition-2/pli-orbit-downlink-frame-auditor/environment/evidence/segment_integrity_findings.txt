@@ -1,0 +1,3 @@
+SEG-010: count and hash total matched the receiver trailer.
+SEG-011: archive index claimed a valid footer but the operator trace shows a frame after trailer.
+SEG-012: sample compressor warning is unrelated unless the segment control fields fail.

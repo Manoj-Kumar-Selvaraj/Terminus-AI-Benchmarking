@@ -1,0 +1,22 @@
+{
+  "private_subnet_to_route_table_id": {
+    "subnet-private-a": "rtb-private-a",
+    "subnet-private-b": "rtb-private-b"
+  },
+  "public_subnet_to_route_table_id": {
+    "subnet-public-a": "rtb-public-a",
+    "subnet-public-b": "rtb-public-b"
+  },
+  "private_route_table_ids": [
+    "rtb-private-a",
+    "rtb-private-b"
+  ],
+  "public_route_table_ids": [
+    "rtb-public-a",
+    "rtb-public-b"
+  ],
+  "nat_by_private_route_table_id": {
+    "rtb-private-a": "nat-a",
+    "rtb-private-b": "nat-b"
+  }
+}

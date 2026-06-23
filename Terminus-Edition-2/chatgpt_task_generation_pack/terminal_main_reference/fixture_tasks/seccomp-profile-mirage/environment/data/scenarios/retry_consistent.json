@@ -1,0 +1,12 @@
+{
+  "scenario": "retry_consistent",
+  "primary_tag": "tag_lock",
+  "fallback_tag": "tag_open",
+  "declared_tag": "tag_open",
+  "retry_count": 3,
+  "prefer_alt": true,
+  "op_name": "unshare",
+  "declared_allows_op": true,
+  "runtime_denies_primary": true,
+  "runtime_denies_fallback": false
+}

@@ -1,0 +1,2 @@
+fragment_id|parent_id|shard_value|channel|ingest_ts|state|ingest_class
+FRG-10001|ROOT-1|42|NORTH|20260612120000|ACTIVE|LEDGER

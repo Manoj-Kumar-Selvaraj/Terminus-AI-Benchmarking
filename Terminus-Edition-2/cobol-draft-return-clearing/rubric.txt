@@ -1,0 +1,15 @@
+Agent investigates and updates intended `cobol-draft-return-clearing` implementation paths (/app/out/draft_return_report.csv, /app/out/draft_return_summary.txt, /app/config/reason_codes.csv) instead of unrelated files, +2
+Agent satisfies `cobol-draft-return-clearing` milestone 1 core requirement: The `/app/out/draft_return_summary.txt` file must use `key=value` lines for `cleared_count`, `cleared_amount_cents`, `exception_count`, and `exception_amount_cents`, with both cleared and exception amounts r..., +5
+Agent preserves milestone 1 rule for `cobol-draft-return-clearing`: A return should clear only when its full draft id, account, amount, settled status, and allowed return reason line up., +3
+Agent handles milestone 1 edge/ordering behavior for `cobol-draft-return-clearing` validated by tests: Verify the batch still comes from the COBOL compile path., +3
+Agent satisfies `cobol-draft-return-clearing` milestone 2 core requirement: Keep `/app/out/draft_return_report.csv` in return-file order with schema `draft_id,account_id,reason,amount_cents,status`., +5
+Agent preserves milestone 2 rule for `cobol-draft-return-clearing`: Keep `/app/out/draft_return_summary.txt` as `key=value` lines for `cleared_count`, `cleared_amount_cents`, `exception_count`, and `exception_amount_cents`, with cleared and exception amounts reported as posi..., +3
+Agent handles milestone 2 edge/ordering behavior for `cobol-draft-return-clearing` validated by tests: Verify the batch still comes from the COBOL compile path., +3
+Agent satisfies `cobol-draft-return-clearing` milestone 3 core requirement: If more than one unused draft satisfies all matching and cycle-window rules for a return, clear against the eligible draft with the latest settlement date; when dates tie, use the earliest draft input row., +5
+Agent preserves milestone 3 rule for `cobol-draft-return-clearing`: Keep all prior behavior and output schemas for `/app/out/draft_return_report.csv` and `/app/out/draft_return_summary.txt`; `EXCEPTION` rows must leave the `reason` field blank., +3
+Agent handles milestone 3 edge/ordering behavior for `cobol-draft-return-clearing` validated by tests: Verify the batch still comes from the COBOL compile path., +3
+Agent validates `cobol-draft-return-clearing` output artifacts against required schemas and deterministic ordering before finalizing, +3
+Agent hardcodes final output files for `cobol-draft-return-clearing` instead of fixing underlying implementation, -5
+Agent edits tests/oracle/metadata in `cobol-draft-return-clearing` to force a pass rather than solving the task, -5
+Agent regresses earlier milestones in `cobol-draft-return-clearing` while implementing later milestone changes, -3
+Agent repeats failing commands for `cobol-draft-return-clearing` without adjusting approach after clear errors, -2

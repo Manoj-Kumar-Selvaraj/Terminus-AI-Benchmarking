@@ -1,0 +1,8 @@
+/* multicurrency ledger clearing processor batch control deck */
+%SET KEY_COMPARE PREFIX5
+%SET CONSUME OFF
+%SET ALIAS_MODE OFF
+%SET WINDOW_MODE OFF
+%SET GROUP_MODE OFF
+%SET CONTROL_MODE OFF
+%SET RESTART_MODE OFF

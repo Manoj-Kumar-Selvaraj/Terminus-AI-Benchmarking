@@ -1,0 +1,33 @@
+{
+  "vpc_id": "vpc-staging-01",
+  "vpc_cidr_block": "10.42.0.0/16",
+  "private_subnet_ids": [
+    "subnet-private-a",
+    "subnet-private-b"
+  ],
+  "public_subnet_ids": [
+    "subnet-public-a",
+    "subnet-public-b"
+  ],
+  "private_route_table_ids": [
+    "rtb-private-a",
+    "rtb-private-b"
+  ],
+  "public_route_table_ids": [
+    "rtb-public-a",
+    "rtb-public-b"
+  ],
+  "gateway_vpc_endpoint_ids": {
+    "s3": "vpce-gw-s3",
+    "dynamodb": "vpce-gw-dynamodb"
+  },
+  "interface_vpc_endpoint_ids": {
+    "ssm": "vpce-if-ssm",
+    "ssmmessages": "vpce-if-ssmmessages",
+    "ec2messages": "vpce-if-ec2messages"
+  },
+  "endpoint_security_group_id": "sg-vpce-staging",
+  "endpoint_security_group_ids": [
+    "sg-vpce-staging"
+  ]
+}

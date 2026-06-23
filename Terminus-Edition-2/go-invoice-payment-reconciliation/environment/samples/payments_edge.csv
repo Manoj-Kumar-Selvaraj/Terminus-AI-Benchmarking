@@ -1,0 +1,3 @@
+invoice_id,customer_id,amount_cents,method,payment_date
+INV-A,CUST-A,1000,ANY,2026-04-03
+INV-A,CUST-A,bad,CC,2026-04-03

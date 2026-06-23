@@ -1,0 +1,34 @@
+Agent inspects `/app/lib/reconcile.rb`, `/app/data/plans.csv`, `/app/data/credits.csv`, and the batch command before editing, +2
+Agent enforces full plan and student identifiers, integer amount equality, active plan status, and canonical allowed-location equality, +5
+Agent consumes each physical plan row at most once while preserving credit input order, +5
+Agent writes the exact credit report and JSON summary contracts with blank unmatched locations and positive cent totals, +5
+Agent hardcodes report or summary artifacts instead of repairing runtime reconciliation, -5
+Agent changes runtime inputs, task metadata, or execution scaffolding to force expected output, -5
+Agent accepts prefix identifiers, inactive plans, amount mismatches, unsupported locations, or reused plan rows, -5
+Agent preserves strict matching, row consumption, ordering, schemas, and totals while adding location aliases, +5
+Agent trims and case-folds `DIN`, `CAF`, and `MKT` before mapping them to `DINING`, `CAFE`, and `MARKET`, +5
+Agent applies canonicalization consistently to plan and credit locations and emits canonical matched locations, +5
+Agent leaves unknown aliases unmatched with a blank report location, +3
+Agent emits raw aliases or regresses full-key and one-time-consumption behavior, -5
+Agent special-cases sample rows instead of using shared canonicalization logic, -3
+Agent preserves strict matching and aliases while adding optional dated processing, +5
+Agent applies open-date calendar eligibility and requires credit dates not later than selected cycle ends, +5
+Agent selects the latest eligible cycle end and breaks equal dates by earliest physical plan row, +5
+Agent regenerates `plan_consumption.csv` from actual matched row selections in credit order, +3
+Agent rejects blank or malformed required date values without breaking undated compatibility, +3
+Agent chooses candidates by file order alone or emits an inaccurate consumption trace, -5
+Agent treats closed, unlisted, blank, or after-cycle dates as eligible, -5
+Agent reads `/app/config/methods.csv` and enables only recognized canonical locations with trimmed case-insensitive `true` values, +5
+Agent applies all three location aliases consistently to methods, plans, and credits, +5
+Agent ignores disabled, missing, blank, malformed, unknown, or non-true method rows without crashing, +3
+Agent preserves date ordering, physical-row consumption, selection trace, report schema, and summary totals under method gating, +5
+Agent lets a method entry bypass identity, amount, status, date, or consumption gates, -5
+Agent accepts disabled or malformed method rows as enabled locations, -5
+Agent reads `/app/config/student_limits.csv` and filters limits by student, canonical location, active status, valid date, and integer-cent amount, +5
+Agent selects the latest effective limit and breaks equal effective dates by earliest physical limit row, +5
+Agent enforces daily budgets per student, canonical location, and credit date in credit input order, +5
+Agent leaves plan rows and budget unchanged when a credit is rejected by the limit gate, +5
+Agent preserves undated methods behavior and all dated selection, trace, report, and summary contracts, +3
+Agent treats missing limits as unlimited or converts cent values to another unit, -5
+Agent consumes plan rows or budget for unmatched credits, -5
+Agent regresses aliases, date gates, methods eligibility, or physical-row ordering while adding limits, -3

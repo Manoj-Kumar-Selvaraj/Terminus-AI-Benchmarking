@@ -1,0 +1,36 @@
+# Rubric 1
+Agent inspects the route store, incident evidence, and route refresh protocol before changing service behavior, +2
+Agent preserves whole-snapshot route refresh semantics, including removal of tenants absent from the newest snapshot, +5
+Agent makes route refresh and tenant lookup safe under overlapping request and refresh activity, +5
+Agent preserves tenant lookup behavior and revision reporting without disabling live refresh, +3
+Agent keeps missing tenants unroutable after a refresh, +3
+Agent relies on synchronization or immutable snapshot ownership rather than sleeping, retry loops, or suppressing refreshes, +3
+Agent disables live route refresh or serializes all HTTP request handling globally to hide the incident, -5
+Agent makes absent tenants remain routable after a replacement snapshot, -3
+# Rubric 2
+Agent investigates the upstream failure evidence and fixes resource cleanup on the proxy request path, +2
+Agent closes upstream response bodies on successful responses, upstream gateway errors, and read failures, +5
+Agent preserves successful upstream status pass-through and response body forwarding, +3
+Agent continues to classify upstream 5xx responses as gateway errors rather than tenant-route misses, +3
+Agent preserves milestone 1 route refresh safety while changing proxy behavior, +3
+Agent validates repeated upstream failure behavior without depending on external network access, +2
+Agent leaks response bodies or persistent upstream resources during repeated failures, -5
+Agent rewrites the proxy path to return canned responses instead of calling the configured upstream, -5
+# Rubric 3
+Agent uses the rollout contract and shutdown evidence to repair accepted-request termination behavior, +2
+Agent allows requests accepted before termination to finish inside the provided grace context, +5
+Agent stops accepting new listener work through the HTTP server shutdown path rather than abruptly closing active connections, +3
+Agent preserves health, route lookup, and proxy behavior from prior milestones, +3
+Agent keeps shutdown bounded by the caller-provided context, +3
+Agent validates graceful termination using a real HTTP server and delayed upstream response, +3
+Agent drops already accepted requests by closing the listener or process immediately, -5
+Agent makes shutdown hang indefinitely when an upstream is slow, -5
+# Rubric 4
+Agent uses the latency contract to enforce bounded behavior for stalled upstream requests, +2
+Agent returns HTTP 504 for upstream stalls that exceed the service SLO, +5
+Agent returns the timeout response within the published router-side deadline instead of waiting for the upstream to finish, +5
+Agent preserves normal successful upstream pass-through, including status code and route revision header, +3
+Agent preserves 404 behavior for unknown tenants and gateway-error behavior for upstream failures, +3
+Agent carries request cancellation or deadlines through the outbound proxy call, +3
+Agent lets stalled upstream calls hold client connections past the route-service contract, -5
+Agent converts all upstream errors or all slow successful responses into the same generic status without preserving earlier behavior, -3

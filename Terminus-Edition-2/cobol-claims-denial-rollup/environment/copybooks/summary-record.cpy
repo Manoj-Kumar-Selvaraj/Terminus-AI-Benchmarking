@@ -1,0 +1,3 @@
+       01 SUMMARY-LAYOUT.
+          05 SUMMARY-KEY PIC X(32).
+          05 SUMMARY-VALUE PIC S9(12).

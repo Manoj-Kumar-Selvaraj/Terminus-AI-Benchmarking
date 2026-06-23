@@ -1,0 +1,1 @@
+resource "kubernetes_secret" "controller_aws_keys" { metadata { name = "jenkins-controller-aws-keys" namespace = "jenkins" } data = { aws_access_key_id = var.aws_access_key aws_secret_access_key = var.aws_secret_key } }

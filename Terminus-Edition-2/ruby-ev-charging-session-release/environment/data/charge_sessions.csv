@@ -1,0 +1,2 @@
+session_id,vehicle_id,station_id,rate_plan,amount,plug_ts,status,port
+SRC-SAMPLE-1,PARTY-1,SAMPLE,LEVEL2,100,20260528121000,ACTIVE,LOC-1

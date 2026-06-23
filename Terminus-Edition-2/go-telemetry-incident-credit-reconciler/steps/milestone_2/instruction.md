@@ -1,0 +1,3 @@
+Keep every milestone 1 rule and add severity alias normalization. Before any comparison, trim and fold the credit severity to its canonical form: `MEDIUM` maps to `CMEDIUM`, `PHONE` maps to `LOW`, and `WEBAPP` maps to `BROWSER`. Normalize playback severity the same way. After normalization the severity must still be one of the canonical values `CMEDIUM`, `LOW`, or `BROWSER`; unknown values on either side leave the row unmatched. Matched report rows must emit only the canonical playback severity, never the original alias.
+
+The report must start with exactly `credit_id,incident_id,severity_id,severity,minutes,reason,status`. Keep all other output schemas and summary keys from milestone 1.
