@@ -14,8 +14,16 @@ COMPILE_TIMEOUT = 45
 RUN_TIMEOUT = 15
 
 
+def fmt_amount(amount: int) -> str:
+    if amount < 0:
+        return f"-{abs(amount):09d}"
+    return f"{amount:010d}"
+
+
 def fmt_usage(account: str, batch: str, seq: str, amount: int, service: str = "SVC1") -> str:
-    line = f"U{account}{batch}{seq}{amount:010d}{service}"
+    amount_field = fmt_amount(amount)
+    line = f"U{account}{batch}{seq}{amount_field}{service}"
+    assert len(amount_field) == 10, amount_field
     assert len(line) <= 52, line
     return line.ljust(52)
 

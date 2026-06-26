@@ -25,6 +25,6 @@ The offline inspector reads `endpoint_security_group_rules` in `/app/modules/net
 - `cidr_blocks` (list) and `ipv6_cidr_blocks` (list) for CIDR sources
 - `source_security_group_ids` (list) for security-group sources — use this plural key, not `security_groups`, `security_group_ids`, or `source_security_group_id`
 
-Every ingress rule must name at least one approved source via `cidr_blocks`, `ipv6_cidr_blocks`, or `source_security_group_ids`. See `/app/docs/endpoint_design.md` for the manifest contract.
+Every ingress rule must name at least one approved source via `cidr_blocks`, `ipv6_cidr_blocks`, or `source_security_group_ids`. The inspector reads manifest JSON keys literally — see `/app/docs/network_module_contract.md` and `/app/docs/endpoint_design.md` for the full schema and worked ingress examples.
 
 Keep the prior route-table and gateway endpoint fixes intact.

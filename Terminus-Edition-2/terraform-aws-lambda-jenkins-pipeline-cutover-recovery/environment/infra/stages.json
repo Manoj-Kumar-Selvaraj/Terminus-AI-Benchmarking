@@ -1,0 +1,167 @@
+{
+  "stages": [
+    {
+      "name": "intake",
+      "function_name": "settlement-pipeline-intake",
+      "timeout_seconds": 30,
+      "reserved_concurrency": 4,
+      "memory_mb": 256,
+      "permissions": [
+        "logs:PutLogEvents",
+        "xray:PutTraceSegments"
+      ],
+      "alias": "$LATEST",
+      "package_hash": "shared-unversioned-package"
+    },
+    {
+      "name": "verify_manifest",
+      "function_name": "settlement-pipeline-verify_manifest",
+      "timeout_seconds": 45,
+      "reserved_concurrency": 4,
+      "memory_mb": 256,
+      "permissions": [
+        "s3:GetObject",
+        "kms:Verify",
+        "logs:PutLogEvents"
+      ],
+      "alias": "$LATEST",
+      "package_hash": "shared-unversioned-package"
+    },
+    {
+      "name": "fetch_inputs",
+      "function_name": "settlement-pipeline-fetch_inputs",
+      "timeout_seconds": 120,
+      "reserved_concurrency": 12,
+      "memory_mb": 512,
+      "permissions": [
+        "s3:GetObject",
+        "logs:PutLogEvents"
+      ],
+      "alias": "$LATEST",
+      "package_hash": "shared-unversioned-package"
+    },
+    {
+      "name": "acquire_lock",
+      "function_name": "settlement-pipeline-acquire_lock",
+      "timeout_seconds": 20,
+      "reserved_concurrency": 8,
+      "memory_mb": 128,
+      "permissions": [
+        "dynamodb:PutItem",
+        "dynamodb:GetItem",
+        "logs:PutLogEvents"
+      ],
+      "alias": "$LATEST",
+      "package_hash": "shared-unversioned-package"
+    },
+    {
+      "name": "validate_inputs",
+      "function_name": "settlement-pipeline-validate_inputs",
+      "timeout_seconds": 90,
+      "reserved_concurrency": 12,
+      "memory_mb": 512,
+      "permissions": [
+        "s3:GetObject",
+        "logs:PutLogEvents"
+      ],
+      "alias": "$LATEST",
+      "package_hash": "shared-unversioned-package"
+    },
+    {
+      "name": "transform_records",
+      "function_name": "settlement-pipeline-transform_records",
+      "timeout_seconds": 180,
+      "reserved_concurrency": 8,
+      "memory_mb": 1024,
+      "permissions": [
+        "s3:GetObject",
+        "s3:PutObject",
+        "logs:PutLogEvents",
+        "*"
+      ],
+      "alias": "$LATEST",
+      "package_hash": "shared-unversioned-package"
+    },
+    {
+      "name": "precheck_ledger",
+      "function_name": "settlement-pipeline-precheck_ledger",
+      "timeout_seconds": 60,
+      "reserved_concurrency": 6,
+      "memory_mb": 256,
+      "permissions": [
+        "dynamodb:GetItem",
+        "logs:PutLogEvents"
+      ],
+      "alias": "$LATEST",
+      "package_hash": "shared-unversioned-package"
+    },
+    {
+      "name": "write_ledger",
+      "function_name": "settlement-pipeline-write_ledger",
+      "timeout_seconds": 120,
+      "reserved_concurrency": 6,
+      "memory_mb": 512,
+      "permissions": [
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "logs:PutLogEvents"
+      ],
+      "alias": "$LATEST",
+      "package_hash": "shared-unversioned-package"
+    },
+    {
+      "name": "build_report",
+      "function_name": "settlement-pipeline-build_report",
+      "timeout_seconds": 90,
+      "reserved_concurrency": 4,
+      "memory_mb": 512,
+      "permissions": [
+        "s3:PutObject",
+        "logs:PutLogEvents"
+      ],
+      "alias": "$LATEST",
+      "package_hash": "shared-unversioned-package"
+    },
+    {
+      "name": "notify_partner",
+      "function_name": "settlement-pipeline-notify_partner",
+      "timeout_seconds": 30,
+      "reserved_concurrency": 4,
+      "memory_mb": 256,
+      "permissions": [
+        "events:PutEvents",
+        "logs:PutLogEvents"
+      ],
+      "alias": "$LATEST",
+      "package_hash": "shared-unversioned-package"
+    },
+    {
+      "name": "archive_batch",
+      "function_name": "settlement-pipeline-archive_batch",
+      "timeout_seconds": 60,
+      "reserved_concurrency": 4,
+      "memory_mb": 256,
+      "permissions": [
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:DeleteObject",
+        "logs:PutLogEvents"
+      ],
+      "alias": "$LATEST",
+      "package_hash": "shared-unversioned-package"
+    },
+    {
+      "name": "release_lock",
+      "function_name": "settlement-pipeline-release_lock",
+      "timeout_seconds": 20,
+      "reserved_concurrency": 8,
+      "memory_mb": 128,
+      "permissions": [
+        "dynamodb:DeleteItem",
+        "logs:PutLogEvents"
+      ],
+      "alias": "$LATEST",
+      "package_hash": "shared-unversioned-package"
+    }
+  ]
+}

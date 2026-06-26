@@ -6,12 +6,12 @@ author_email = "anonymous@example.com"
 difficulty = "hard"
 category = "system-administration"
 subcategories = ["api_integration", "tool_specific"]
-number_of_milestones = 4
+number_of_milestones = 5
 codebase_size = "small"
 languages = ["javascript", "python", "json", "bash"]
 tags = ["aws", "lambda", "sqs", "iam", "idempotency", "simulator"]
-expert_time_estimate_min = 180
-junior_time_estimate_min = 480
+expert_time_estimate_min = 300
+junior_time_estimate_min = 720
 
 [environment]
 allow_internet = false
@@ -44,6 +44,13 @@ timeout_sec = 900.0
 
 [[steps]]
 name = "milestone_4"
+[steps.agent]
+timeout_sec = 1800.0
+[steps.verifier]
+timeout_sec = 900.0
+
+[[steps]]
+name = "milestone_5"
 [steps.agent]
 timeout_sec = 1800.0
 [steps.verifier]

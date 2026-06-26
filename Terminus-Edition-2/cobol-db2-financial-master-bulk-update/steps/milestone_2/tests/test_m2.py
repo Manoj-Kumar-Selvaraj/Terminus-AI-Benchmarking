@@ -73,6 +73,16 @@ class TestMilestone2:
         assert first.returncode == 66
         mid = load_db(db)
         assert mid["checkpoint"][batch] == 2
+        ae = mid["applied_events"]
+        assert f"{batch}|000001" in ae
+        assert ae[f"{batch}|000001"]["event_id"] == "RPL00001"
+        assert ae[f"{batch}|000001"]["account"] == "AC1000000001"
+        assert ae[f"{batch}|000001"]["op"] == "BAL"
+        assert f"{batch}|000002" in ae
+        assert ae[f"{batch}|000002"]["event_id"] == "RPL00002"
+        assert ae[f"{batch}|000002"]["account"] == "AC1000000002"
+        assert ae[f"{batch}|000002"]["op"] == "BAL"
+        assert f"{batch}|000003" not in ae
         assert mid["master"]["AC1000000001"]["balance_cents"] == 100250
         assert mid["master"]["AC1000000002"]["balance_cents"] == 199500
         assert mid["master"]["AC1000000003"]["rate_bp"] == 325
@@ -91,6 +101,11 @@ class TestMilestone2:
         audit_events = [row["event_id"] for row in state["audit"] if row["batch_id"] == batch]
         assert sorted(audit_events) == ["RPL00001", "RPL00002", "RPL00003"]
         assert state["checkpoint"][batch] == 3
+        final_ae = state["applied_events"]
+        assert f"{batch}|000003" in final_ae
+        assert final_ae[f"{batch}|000003"]["event_id"] == "RPL00003"
+        assert final_ae[f"{batch}|000003"]["account"] == "AC1000000003"
+        assert final_ae[f"{batch}|000003"]["op"] == "RAT"
 
     def test_duplicate_sequence_in_same_batch_is_skipped_not_reapplied(self, tmp_path):
         """A repeated batch/sequence event should be considered already applied and must not double-post balance or ledger."""
@@ -106,7 +121,12 @@ class TestMilestone2:
         assert result.returncode == 0
         state = load_db(db)
         assert state["master"]["AC1000000001"]["balance_cents"] == 100100
+        assert state["master"]["AC1000000002"]["rate_bp"] == 415
         assert [row["event_id"] for row in state["ledger"] if row["batch_id"] == batch] == ["DUP00001"]
+        audit_events = sorted(
+            row["event_id"] for row in state["audit"] if row["batch_id"] == batch
+        )
+        assert audit_events == ["DUP00001", "DUP00002"]
         summary = load_summary(out, batch)
         assert summary["skipped"] == 1
 

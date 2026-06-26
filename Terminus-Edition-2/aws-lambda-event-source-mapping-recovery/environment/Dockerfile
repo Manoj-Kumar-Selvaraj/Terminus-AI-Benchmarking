@@ -1,5 +1,5 @@
-# Dual-runtime image: Python runs the offline simulator/tests; Node.js runs the Lambda handler subprocess.
-FROM public.ecr.aws/docker/library/debian:bookworm-slim@sha256:4724b8cc51e33e398f0e2e15e18d5ec2851ff0c2280647e1310bc1642182655d
+# Dual-runtime image: canonical Python base for simulator/tests; Node.js for the Lambda handler subprocess.
+FROM public.ecr.aws/docker/library/python:3.13-slim-bookworm@sha256:01f42367a0a94ad4bc17111776fd66e3500c1d87c15bbd6055b7371d39c124fb
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -11,8 +11,6 @@ RUN apt-get update \
         bash \
         ca-certificates \
         nodejs \
-        python3 \
-        python3-pip \
         tmux=3.3a-3 \
         asciinema=2.2.0-1 \
     && rm -rf /var/lib/apt/lists/*

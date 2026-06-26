@@ -1,3 +1,4 @@
+import copy
 import hashlib
 import json
 import os
@@ -16,7 +17,7 @@ EXPECTED_RUNTIME_HASHES = {
     "src/jsonio.py": "b02f370932d6b3fd79e2b68f548442a6ceaeef9d9755685b7803f0d40edca841",
     "src/mapping.py": "20f85f93420621ebb4c66271102c63308b9a7dfc49affdbe974a3e02a5e33c9a",
     "src/paths.py": "4bc3961286a5f232e3d2a5304c77c835942d6ea2febe8ebd056f541ca39f10d8",
-    "src/simulator.py": "de78ea2e2dfd83ffd3b49e08443104fafef2f395f9f7302784292cc0938e99ff",
+    "src/simulator.py": "9972671cb1630234649ba9687af445da38acc48cb1ec2deabf5b39334bc3b2a0",
     "src/state_store.py": "15e0ea35acc3b2ec2c5f7ea70d8beb6882f09ed2a4e552411a7e3ab7945add7d",
     "handler/invoke.mjs": "e813d6b93639ef16b3a2a4f2fd905bbdaf9c8810e2a50318676d8cbd56fef21d",
 }
@@ -70,7 +71,7 @@ def sqs_message(mid, event_id, amount=100, account="acct-dyn", poison=False, mal
     return {"messageId": mid, "receiptHandle": f"rh-{mid}", "eventSourceARN": queue_arn or queues["expected_active_queue_arn"], "body": rendered, "attributes": {"ApproximateReceiveCount": "0"}, "messageAttributes": {}}
 
 
-def invoke_handler(tmp_path, records):
+def invoke_handler_raw(tmp_path, records, env_extra=None):
     assert_runtime_integrity()
     ledger = tmp_path / "handler_ledger.json"
     ledger.write_text("[]\n", encoding="utf-8")
@@ -78,7 +79,9 @@ def invoke_handler(tmp_path, records):
     env["PYTHONPATH"] = str(APP)
     env["APP_ROOT"] = str(APP)
     env["SIDE_EFFECT_LEDGER"] = str(ledger)
-    proc = subprocess.run(
+    if env_extra:
+        env.update(env_extra)
+    return subprocess.run(
         ["node", str(HANDLER_DIR / "invoke.mjs")],
         input=json.dumps({"Records": records}),
         text=True,
@@ -86,6 +89,10 @@ def invoke_handler(tmp_path, records):
         env=env,
         cwd=APP,
     )
+
+
+def invoke_handler(tmp_path, records):
+    proc = invoke_handler_raw(tmp_path, records)
     assert proc.returncode == 0, proc.stderr + proc.stdout
     return json.loads(proc.stdout)
 
@@ -142,3 +149,40 @@ class TestMilestone3:
         bodies = [json.loads(m["body"]) for m in batch["messages"]]
         assert any(body.get("poison") is True for body in bodies)
         assert {m["messageId"] for m in batch["messages"]} >= {"msg-good-2001", "msg-poison-2002", "msg-good-2003"}
+
+
+    def test_empty_batch_returns_exact_empty_partial_response(self, tmp_path):
+        """An empty SQS delivery returns the exact partial-batch envelope."""
+        response = invoke_handler(tmp_path, [])
+        assert response == {"batchItemFailures": []}
+
+    def test_failure_identifiers_are_unique_valid_and_input_ordered(self, tmp_path):
+        """Multiple failures are reported once each and retain input order."""
+        records = [sqs_message("bad-a", "BAD-A", poison=True), sqs_message("good-b", "GOOD-B"), sqs_message("bad-c", "BAD-C", malformed=True)]
+        response = invoke_handler(tmp_path, records)
+        ids = [x["itemIdentifier"] for x in response["batchItemFailures"]]
+        assert ids == ["bad-a", "bad-c"]
+        assert len(ids) == len(set(ids))
+        assert set(ids) <= {r["messageId"] for r in records}
+
+    def test_handler_does_not_mutate_inbound_records(self, tmp_path):
+        """The handler must leave SQS record bodies, attributes, and identifiers unchanged."""
+        records = [
+            sqs_message("keep-a", "KEEP-A", amount=21),
+            sqs_message("keep-b", "KEEP-B", poison=True),
+        ]
+        before = copy.deepcopy(records)
+        invoke_handler(tmp_path, records)
+        assert records == before
+
+    def test_unexpected_handler_error_fails_invocation(self, tmp_path):
+        """Unexpected errors must fail the invocation instead of returning a whole-batch retry response."""
+        ledger_dir = tmp_path / "ledger-is-a-directory"
+        ledger_dir.mkdir()
+        proc = invoke_handler_raw(
+            tmp_path,
+            [sqs_message("good-only", "GOOD-ONLY")],
+            env_extra={"SIDE_EFFECT_LEDGER": str(ledger_dir)},
+        )
+        assert proc.returncode != 0
+        assert "batchItemFailures" not in proc.stdout

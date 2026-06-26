@@ -303,3 +303,18 @@ PY
 
 echo "Auto-eval logs saved to: $DEST"
 echo "Zip created: $ZIP_PATH"
+
+if [[ "$FEEDBACK_RC" -ne 0 || "$FETCH_RC" -ne 0 ]]; then
+  echo "Failed to pull complete feedback for $TASK_NAME / $SUBMISSION_ID." >&2
+  echo "stb submissions feedback exit code: $FEEDBACK_RC" >&2
+  echo "stb submissions fetch-task exit code: $FETCH_RC" >&2
+  echo "See command logs under: $LOG_DIR" >&2
+  exit 1
+fi
+
+if [[ -z "${JSON_PATH:-}" ]]; then
+  echo "Failed to pull submission JSON for $TASK_NAME / $SUBMISSION_ID." >&2
+  echo "REVISION_BRIEF.md would be incomplete without fetched submission data." >&2
+  echo "See command logs under: $LOG_DIR" >&2
+  exit 1
+fi

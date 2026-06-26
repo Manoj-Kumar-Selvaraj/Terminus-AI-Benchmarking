@@ -1,0 +1,3 @@
+SET	api.payments.internal	A	30	10.42.8.19
+SET	api.payments.internal	TXT	30	deployment=blue
+DEL	old.payments.internal	A

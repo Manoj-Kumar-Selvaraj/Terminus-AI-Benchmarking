@@ -1,14 +1,19 @@
-# Pin launch template identity to the release artifact
+# Recover immutable launch-template provenance
 
-You are recovering a Terraform AWS EC2 module rollout for the payments API fleet. This is offline: do not call AWS and do not require Terraform. Use `/app/tools/ec2sim.py`, `/app/docs/module_contract.md`, and `/app/evidence`.
+The payments API rollout selected an unapproved machine image even though the release manifest in `/app/evidence/release_manifest.json` was approved. Operators also observed that equivalent reruns produced different launch-template identities.
 
-Use immutable AMI, commit, build, and user-data hash from the release artifact and fail closed when fields are missing.
+Work offline. Use `/app/tools/ec2sim`, `/app/docs/release_contract.md`, `/app/docs/module_contract.md`, and the incident evidence. Repair the existing Go EC2 module rather than replacing the simulator or fabricating output.
 
-## Success criteria
+## Required behavior
 
-- `plan` and `apply` pin `launch_template.ami_id`, `user_data_sha256`, `provenance.commit_sha`, and `provenance.build_id` to `release_artifact` values (not `ami_catalog.latest`).
-- `validate` rejects missing `ami_id`, `commit_sha`, `build_id`, or `user_data_sha256` with errors containing `release_artifact.<field>`.
-- Instances carry `CommitSha` and `BuildId` tags from the artifact; `outputs.launch_template_version` matches the template version.
-- `ec2sim.py` accepts `--prior-state` and `--state` on `plan`/`apply` without error.
+- `plan` and `apply` use the complete approved `release_artifact` identity, never the mutable catalog alias (`ami_catalog.latest`).
+- `launch_template.provenance` must be exactly the three release fields `commit_sha`, `build_id`, and `manifest_sha256`; do not embed the full release artifact or any extra keys there.
+- Validate the normative canonical manifest digest and catalog provenance, including owner account, architecture, availability, and deprecation state.
+- Missing or inconsistent release fields fail closed with field-specific errors such as `release_artifact.manifest_version is required`.
+- Equivalent JSON ordering produces the same launch-template version and state digest.
+- Replanning the same approved release preserves launch-template and logical instance identity.
+- Instance tags retain exact slot, commit, build, and release-manifest provenance.
+- `apply` atomically writes the complete state and appends one JSONL journal record. Each record includes `operation_id`, `release_manifest_sha256` from the approved artifact, `refresh_status`, and the rendered `state_digest`; with no `--journal`, use `${state}.journal.jsonl`.
+- Preserve the documented CLI, Terraform resource labels, and output keys.
 
-Compatibility constraints: keep `/app/infra/modules/ec2`, all labels in `main.tf`, all outputs in `outputs.tf`, and CLI flags `plan`, `apply`, `validate`, `--config`, `--prior-state`, `--out`, `--state`. Do not hardcode sample JSON or edit verifier fixtures.
+Do not hardcode the production sample, edit verifier files, modify the simulator CLI, or call AWS or Terraform.

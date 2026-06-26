@@ -1,0 +1,17 @@
+--- /app/lib/Broker/Policy.pm
++++ /app/lib/Broker/Policy.pm
+@@ -1,5 +1,12 @@
+ package Broker::Policy;
+ use strict; use warnings;
+-use Broker::Util qw(runtime_config state_path read_json write_json);
+-sub authorize { my($claims,$requested,$aud)=@_; my $p=read_json(runtime_config('policy.json'),{}); my $cache=read_json(state_path('policy-cache.json'),{entries=>{}}); my $key=$claims->{sub}; if($cache->{entries}{$key}){ return $cache->{entries}{$key}; } my $t=$p->{tenants}{$claims->{tenant}} or die 'unknown tenant'; my $s=$t->{subjects}{$claims->{sub}} or die 'unknown subject'; my %allow=map{$_=>1}@{$s->{allow}||[]}; my @granted=grep{$allow{$_}} @$requested; my $d={tenant=>$claims->{tenant},subject=>$claims->{sub},scopes=>\@granted,policy_generation=>$p->{generation}}; $cache->{entries}{$key}=$d; write_json(state_path('policy-cache.json'),$cache); return $d; }
++use Broker::Util qw(runtime_config state_path read_json write_json canonical_json sha256_hex);
++use Broker::Store qw(audit);
++sub _set { return {map{$_=>1}@{$_[0]||[]}}; }
++sub authorize { my($claims,$requested,$aud)=@_; die 'requested scopes must be an array' unless ref($requested) eq 'ARRAY'; my $p=read_json(runtime_config('policy.json'),{}); die 'capability audience mismatch' unless $aud eq ($p->{capability_audience}//''); my $tenant=$p->{tenants}{$claims->{tenant}} or die 'unknown tenant policy'; my @actors=@{$claims->{act}||[]}; die 'delegation chain must be an array' if ref($claims->{act}) && ref($claims->{act}) ne 'ARRAY'; die 'delegation depth exceeded' if @actors>($p->{max_delegation_depth}//0); my @principals=(@actors,$claims->{sub}); my %seen; for(@principals){ die 'delegation cycle detected' if $seen{$_}++; die 'unknown principal' unless $tenant->{subjects}{$_}; }
++ my $cache=read_json(state_path('policy-cache.json'),{entries=>{}}); my @rq=sort @$requested; my $key=sha256_hex(canonical_json({generation=>$p->{generation},tenant=>$claims->{tenant},subject=>$claims->{sub},actors=>\@actors,audience=>$aud,requested=>\@rq})); if(my $hit=$cache->{entries}{$key}){ return $hit; }
++ my $effective; my %deny; for my $principal (@principals){ my $sp=$tenant->{subjects}{$principal}; my $a=_set($sp->{allow}); $effective={%$a} if !defined $effective; for my $s (keys %$effective){ delete $effective->{$s} unless $a->{$s}; } $deny{$_}=1 for @{$sp->{deny}||[]}; }
++ for(my $i=0;$i<@principals-1;$i++){ my($from,$to)=@principals[$i,$i+1]; my($edge)=grep{$_->{from} eq $from && $_->{to} eq $to}@{$tenant->{delegations}||[]}; die 'delegation edge not permitted' unless $edge; my $es=_set($edge->{scopes}); for my $s (keys %$effective){ delete $effective->{$s} unless $es->{$s}; } }
++ delete $effective->{$_} for keys %deny; for my $s (@rq){ die "scope denied: $s" unless $effective->{$s}; }
++ my $d={tenant=>$claims->{tenant},subject=>$claims->{sub},actors=>\@actors,scopes=>\@rq,audience=>$aud,policy_generation=>$p->{generation},cache_key=>$key}; $cache->{entries}{$key}=$d; write_json(state_path('policy-cache.json'),$cache); audit({kind=>'authorization_decision',tenant=>$claims->{tenant},subject=>$claims->{sub},actors=>\@actors,scopes=>\@rq,policy_generation=>$p->{generation},assertion_fingerprint=>$claims->{assertion_fingerprint}}); return $d; }
+ 1;

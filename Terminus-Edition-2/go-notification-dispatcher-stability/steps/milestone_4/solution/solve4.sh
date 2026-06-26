@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
+rm -f /app/internal/delivery/*_test.go
 cat > /app/internal/dispatch/dispatcher.go <<'GO'
 package dispatch
 

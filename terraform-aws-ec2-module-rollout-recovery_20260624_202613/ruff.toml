@@ -1,0 +1,2 @@
+[per-file-ignores]
+"environment/tools/ec2sim.py" = ["E402", "E501"]

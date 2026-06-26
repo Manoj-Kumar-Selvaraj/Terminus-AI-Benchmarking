@@ -3,12 +3,12 @@ version = "2.0"
 [metadata]
 author_name = "anonymous"
 author_email = "anonymous@example.com"
-difficulty = "hard"
+difficulty = "medium"
 category = "system-administration"
 subcategories = ["tool_specific"]
 number_of_milestones = 5
 codebase_size = "minimal"
-languages = ["terraform", "python", "bash"]
+languages = ["terraform", "go", "bash"]
 tags = ["terraform", "aws", "eks", "karpenter", "iac", "upgrade"]
 expert_time_estimate_min = 120
 junior_time_estimate_min = 360

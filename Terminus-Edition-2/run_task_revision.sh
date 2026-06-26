@@ -406,15 +406,16 @@ for index, marker in enumerate(markers):
     end = markers[index + 1].start() if index + 1 < len(markers) else len(text)
     block = text[start:end]
 
-    has_reward_one = re.search(r"(?m)^1\s*$", block) is not None
-    has_failure_signal = re.search(
-        r"(?i)(=+\s+FAILURES\s+=+|FAILED\s+|ERROR\s+|Traceback|"
-        r"reward\.txt.*0|^0\s*$)",
-        block,
-        re.M,
-    ) is not None
-
-    reward = "1" if has_reward_one and not has_failure_signal else "0"
+    reward_lines = re.findall(r"(?m)^([01])\s*$", block)
+    if reward_lines:
+        reward = reward_lines[-1]
+    else:
+        has_failure_signal = re.search(
+            r"(?i)(=+\s+FAILURES\s+=+|FAILED\s+|Traceback)",
+            block,
+            re.M,
+        ) is not None
+        reward = "0" if has_failure_signal else "0"
     details.append((name, reward))
 
     if reward == "1":

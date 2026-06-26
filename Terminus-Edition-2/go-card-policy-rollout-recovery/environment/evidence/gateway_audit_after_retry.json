@@ -1,0 +1,16 @@
+{
+  "region": "us-east",
+  "active_generation": 184,
+  "sequence": 1,
+  "request_attempts": {
+    "attempt-251-1718745189001000000": 1,
+    "attempt-309-1718745244003000000": 1
+  },
+  "audits": [
+    {
+      "rollout_id": "fr-184",
+      "generation": 184,
+      "sequence": 1
+    }
+  ]
+}

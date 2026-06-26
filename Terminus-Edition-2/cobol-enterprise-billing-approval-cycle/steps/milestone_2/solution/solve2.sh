@@ -1,18 +1,35 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -Eeuo pipefail
 cd /app
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-STEPS_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
-if ! grep -q "MOVE WS-ACCOUNT-TOTAL TO WS-TIER-AMOUNT" /app/src/billing_approval.cbl; then
-  bash "$STEPS_ROOT/milestone_1/solution/solve1.sh"
-fi
 python3 <<'PY'
 from pathlib import Path
+
 path = Path("/app/src/billing_approval.cbl")
 text = path.read_text()
-old = """       CHECK-PRIOR-LEDGER.
+
+def apply_m1(src: str) -> str:
+    if "MOVE WS-LAST-LINE-AMOUNT TO WS-TIER-AMOUNT" in src:
+        src = src.replace(
+            "           MOVE WS-LAST-LINE-AMOUNT TO WS-TIER-AMOUNT",
+            "           MOVE WS-ACCOUNT-TOTAL TO WS-TIER-AMOUNT",
+            1,
+        )
+    elif "MOVE WS-ACCOUNT-TOTAL TO WS-TIER-AMOUNT" not in src:
+        raise SystemExit("m1 tier anchor missing")
+    old_add = "           ADD USG-AMOUNT TO WS-ACCOUNT-TOTAL"
+    new_add = """           IF USG-AMOUNT > 0
+               ADD USG-AMOUNT TO WS-ACCOUNT-TOTAL
+           END-IF"""
+    if old_add in src:
+        src = src.replace(old_add, new_add, 1)
+    elif "IF USG-AMOUNT > 0" not in src:
+        raise SystemExit("m1 positive amount anchor missing")
+    return src
+
+def apply_m2(src: str) -> str:
+    old = """       CHECK-PRIOR-LEDGER.
            MOVE "N" TO WS-DUP-BATCH-FOUND."""
-new = """       CHECK-PRIOR-LEDGER.
+    new = """       CHECK-PRIOR-LEDGER.
            MOVE "N" TO WS-DUP-BATCH-FOUND
            OPEN INPUT LEDGER-FILE
            PERFORM UNTIL WS-EOF-MAN = "Y"
@@ -33,25 +50,11 @@ new = """       CHECK-PRIOR-LEDGER.
            END-PERFORM
            CLOSE LEDGER-FILE
            MOVE "N" TO WS-EOF-MAN."""
-if old not in text:
-    raise SystemExit("milestone 2 patch anchor missing")
-path.write_text(text.replace(old, new, 1))
-text = path.read_text()
-old = """           IF WS-DUP-BATCH-FOUND = "Y"
-               ADD 1 TO WS-DUP-BLOCKED
-               MOVE "DUPBATCH" TO WS-FINAL-STATUS
-               GO TO FINALIZE-RESET
-           END-IF"""
-new = """           IF WS-DUP-BATCH-FOUND = "Y"
-               ADD 1 TO WS-DUP-BLOCKED
-               MOVE "DUPBATCH" TO WS-FINAL-STATUS
-               PERFORM FINALIZE-RESET
-               GO TO FINALIZE-DONE
-           END-IF"""
-if old not in text:
-    raise SystemExit("milestone 2 duplicate branch anchor missing")
-text = text.replace(old, new, 1)
-old = """       FINALIZE-ACCOUNT.
+    if old in src:
+        src = src.replace(old, new, 1)
+    elif "OPEN INPUT LEDGER-FILE" not in src:
+        raise SystemExit("m2 ledger anchor missing")
+    old = """       FINALIZE-ACCOUNT.
            IF WS-USAGE-COUNT = 0
                GO TO FINALIZE-DONE
            END-IF
@@ -66,14 +69,13 @@ old = """       FINALIZE-ACCOUNT.
            IF WS-DUP-BATCH-FOUND = "Y"
                ADD 1 TO WS-DUP-BLOCKED
                MOVE "DUPBATCH" TO WS-FINAL-STATUS
-               PERFORM FINALIZE-RESET
-               GO TO FINALIZE-DONE
+               GO TO FINALIZE-RESET
            END-IF
            PERFORM DETERMINE-APPROVAL-TIER
            PERFORM RUN-APPROVAL-CHAIN
            PERFORM FINALIZE-WRITE
            ."""
-new = """       FINALIZE-ACCOUNT.
+    new = """       FINALIZE-ACCOUNT.
            IF WS-USAGE-COUNT > 0
                PERFORM LOOKUP-ACCOUNT-STATUS
                IF WS-ACCOUNT-STATUS = "CLOSED"
@@ -95,8 +97,14 @@ new = """       FINALIZE-ACCOUNT.
                END-IF
            END-IF
            ."""
-if old not in text:
-    raise SystemExit("milestone 2 finalize paragraph anchor missing")
-path.write_text(text.replace(old, new, 1))
+    if old in src:
+        src = src.replace(old, new, 1)
+    elif "IF WS-USAGE-COUNT > 0" not in src:
+        raise SystemExit("m2 finalize anchor missing")
+    return src
+
+text = apply_m1(text)
+text = apply_m2(text)
+path.write_text(text)
 PY
 /app/scripts/run_batch.sh

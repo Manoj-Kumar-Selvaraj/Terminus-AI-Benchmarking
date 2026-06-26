@@ -1,0 +1,5 @@
+# Workload identity contract
+
+`payment-ledger-api` authenticates through the trusted Kubernetes-token validation endpoint exposed by `/opt/task-tools/vault-db-runtime`. Signature validation is necessary but not sufficient. Authorization is bound to the configured issuer, the required audience, the exact subject `system:serviceaccount:payments:payment-ledger-api`, namespace `payments`, service account `payment-ledger-api`, and the token validity interval measured by the simulator clock.
+
+The application must derive the Vault role from `/app/config/kubernetes-auth.json`; token fields, pod labels, request parameters, namespace prefixes, or service-account prefixes cannot select a more privileged role. A successful login response contains a stable accessor and non-secret identity metadata. Failure responses use the documented codes `INVALID_SIGNATURE`, `INVALID_ISSUER`, `INVALID_AUDIENCE`, `TOKEN_EXPIRED`, `TOKEN_NOT_YET_VALID`, `MALFORMED_SUBJECT`, `WRONG_NAMESPACE`, `WRONG_SERVICE_ACCOUNT`, `MISSING_CLAIM`, or `EMPTY_TOKEN`. Raw JWTs and unredacted claims are never logged.

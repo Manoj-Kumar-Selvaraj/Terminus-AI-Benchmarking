@@ -3,28 +3,28 @@ Agent inspects vpcsim evidence and module contract before changing routing logic
 Agent restores same-AZ NAT default routes for every app subnet route table, +5
 Agent removes default internet routes from isolated data route tables, +5
 Agent preserves required output keys and subnet Name/Tier tags, +3
-Agent hardcodes vpcsim JSON outputs instead of fixing module.py routing, -5
+Agent hardcodes vpcsim JSON outputs instead of fixing module.go routing, -5
 # Rubric 2
 Agent preserves milestone 1 routing while scoping gateway endpoints, +3
 Agent attaches S3 and DynamoDB endpoints only to app route tables, +5
 Agent fails closed on unsupported gateway endpoint services, +3
-Agent preserves endpoint account provenance and ManagedBy tags, +3
+Agent preserves endpoint `ManagedBy` tags and the nested IAM policy path `Statement[0].Condition.StringEquals.aws:PrincipalAccount`, +3
 Agent leaves endpoints attached to public or data route tables, -5
 # Rubric 3
 Agent preserves prior routing and endpoint fixes while hardening CIDR validation, +3
-Agent rejects overlapping subnet CIDRs with overlaps errors, +5
+Agent rejects overlapping subnet CIDRs, including partial range overlap, with overlaps errors, +5
 Agent rejects subnets outside vpc_cidr with outside vpc_cidr errors, +5
-Agent preserves subnet identity on AZ expansion without replace plan actions, +5
+Agent preserves subnet identity on AZ expansion by using `--prior-state` unchanged CIDRs without replace plan actions, +5
 Agent allows destructive replace actions or deletes regulated workload evidence, -5
 # Rubric 4
 Agent preserves prior fixes while enabling audit-grade flow logs and resolver SG, +3
-Agent emits ALL-traffic flow logs covering every subnet with scoped IAM and interface-id format, +5
-Agent configures exactly TCP and UDP port 53 resolver ingress from corporate CIDRs, +5
+Agent emits ALL-traffic flow logs covering every subnet with flat scoped IAM policy using non-empty `Action`, `subnet_ids`, configured log group `Resource`, fl- ID prefix, and interface-id format, +5
+Agent configures exactly TCP and UDP port 53 resolver ingress from corporate CIDRs using `cidr_blocks` with the resolver sg- ID prefix, +5
 Agent preserves main.tf labels and outputs.tf keys, +3
 Agent uses wildcard IAM resources or 0.0.0.0/0 resolver ingress, -5
 # Rubric 5
 Agent preserves recovered module behavior while fixing imported-state handling, +3
-Agent declares legacy private subnet paths as moved resources to app addresses, +5
+Agent declares each legacy private subnet path exactly once across `moved + plan_actions`, including integer-indexed prior-state addresses without AZ fields, as `{"action": "moved", "from": ..., "to": ...}` records to matching app addresses, +5
 Agent avoids replace actions on unchanged imported state, +5
 Agent fails closed when app AZs lack same-AZ NAT with missing nat gateway errors, +5
 Agent toggles hidden feature flags instead of implementing real module fixes, -5

@@ -4,9 +4,18 @@
   "function_name": "payments-ledger-ingestor:live",
   "event_source_arn": "arn:aws:sqs:us-east-1:111122223333:payments-ledger-old",
   "batch_size": 3,
-  "maximum_batching_window_seconds": 0,
+  "maximum_batching_window_seconds": 2,
   "function_response_types": [
     "ReportBatchItemFailures"
   ],
-  "source_access_configurations": []
+  "source_access_configurations": [],
+  "scaling_config": {
+    "maximum_concurrency": 4
+  },
+  "filter_criteria": {
+    "event_type": [
+      "ledger_credit"
+    ]
+  },
+  "bisect_batch_on_function_error": false
 }

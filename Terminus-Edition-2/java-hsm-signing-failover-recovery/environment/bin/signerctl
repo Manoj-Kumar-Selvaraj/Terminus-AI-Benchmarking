@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+build=/tmp/signerctl-${UID}
+mkdir -p "$build"
+class="$build/SignerCtl.class"
+if [[ ! -f "$class" || /app/src/SignerCtl.java -nt "$class" ]]; then
+  rm -rf "$build"/*
+  javac -encoding UTF-8 -d "$build" /app/src/SignerCtl.java
+fi
+exec java -cp "$build" SignerCtl "$@"

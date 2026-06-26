@@ -63,7 +63,7 @@ def simulate_batch(batch_file: str | Path, cycles: int = 1) -> dict[str, Any]:
     messages = [dict(m) for m in batch.get("messages", [])]
     max_receive = int(redrive.get("max_receive_count", 3))
     deleted: set[str] = set()
-    dlqed: set[str] = set()
+    dlqed: set[str] = {str(entry.get("original_message_id")) for entry in load_dlq(dlq_path()) if entry.get("original_message_id")}
     for _cycle in range(cycles):
         available = [m for m in messages if m.get("messageId") not in deleted and m.get("messageId") not in dlqed]
         if not available:

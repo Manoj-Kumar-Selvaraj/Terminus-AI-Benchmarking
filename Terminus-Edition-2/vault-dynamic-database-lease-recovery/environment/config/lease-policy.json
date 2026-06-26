@@ -1,0 +1,13 @@
+{
+  "defaultTtlSeconds": 300,
+  "maxRenewalAttempts": 4,
+  "maxTtlSeconds": 1800,
+  "minimumRenewalIntervalSeconds": 30,
+  "renewalWindowSeconds": 90,
+  "retryBackoffSeconds": [
+    1,
+    2,
+    4,
+    8
+  ]
+}

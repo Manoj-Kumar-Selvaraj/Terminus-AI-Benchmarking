@@ -108,7 +108,10 @@ task_name = sys.argv[2]
 
 json_paths = sorted(dest.glob("submission_*.json"))
 if not json_paths:
-    raise SystemExit(0)
+    raise SystemExit(
+        "No submission_*.json found in fresh feedback. "
+        "The pull likely failed; refusing to generate an incomplete latest-only report."
+    )
 
 data = json.loads(json_paths[0].read_text(encoding="utf-8"))
 sources = {}

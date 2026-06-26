@@ -1,0 +1,23 @@
+{
+  "protocol_version": 2,
+  "execution_id": "exec-sample-001",
+  "batch_id": "batch-20260623-001",
+  "artifact_digest": "sha256:6fb42a0f970a196e83578c7c61a5dc3d7628c8c6df841e99877289023b0892ab",
+  "owner": "lambda-pod-a",
+  "items": [
+    {
+      "id": "item-001",
+      "amount": 12500,
+      "tenant": "merchant-a"
+    },
+    {
+      "id": "item-002",
+      "amount": 8250,
+      "tenant": "merchant-a"
+    }
+  ],
+  "metadata": {
+    "source": "s3://settlement-intake/batch-20260623-001.json",
+    "partner": "bank-a"
+  }
+}

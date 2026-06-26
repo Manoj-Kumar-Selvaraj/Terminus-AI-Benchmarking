@@ -1,1 +1,3 @@
 Rejected previous emergency policy because it used 0.0.0.0/0 and allowed the proxy namespace unintentionally.
+Private audit reconciliation approved only for TCP 9443 to 10.44.0.0/24 with an explicit exception for 10.44.0.200/32.
+Do not restore broad Internet egress or namespace-wide escape hatches.

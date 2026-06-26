@@ -7,11 +7,11 @@ difficulty = "hard"
 category = "system-administration"
 subcategories = ["tool_specific"]
 number_of_milestones = 5
-codebase_size = "minimal"
-languages = ["terraform", "python", "bash"]
-tags = ["terraform", "aws", "modules", "offline-simulator", "production-incident"]
-expert_time_estimate_min = 120
-junior_time_estimate_min = 360
+codebase_size = "small"
+languages = ["terraform", "go", "bash"]
+tags = ["terraform", "aws", "ec2", "autoscaling", "incident-recovery", "offline-simulator"]
+expert_time_estimate_min = 300
+junior_time_estimate_min = 900
 
 [environment]
 allow_internet = false
@@ -20,6 +20,12 @@ cpus = 2
 memory_mb = 4096
 storage_mb = 10240
 workdir = "/app"
+
+[agent]
+timeout_sec = 1800.0
+
+[verifier]
+timeout_sec = 1200.0
 
 [[steps]]
 name = "milestone_1"
@@ -40,18 +46,18 @@ name = "milestone_3"
 [steps.agent]
 timeout_sec = 1800.0
 [steps.verifier]
-timeout_sec = 900.0
+timeout_sec = 1200.0
 
 [[steps]]
 name = "milestone_4"
 [steps.agent]
 timeout_sec = 1800.0
 [steps.verifier]
-timeout_sec = 900.0
+timeout_sec = 1200.0
 
 [[steps]]
 name = "milestone_5"
 [steps.agent]
 timeout_sec = 1800.0
 [steps.verifier]
-timeout_sec = 900.0
+timeout_sec = 1200.0

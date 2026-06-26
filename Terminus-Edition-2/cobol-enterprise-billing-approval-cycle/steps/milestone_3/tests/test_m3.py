@@ -35,6 +35,7 @@ class TestMilestone3:
         write_usage(run1, [fmt_usage("ACCT2001", "BATCH2", "0001", 600000)])
         invoices, trace, _ = run_full()
         assert invoices[0]["approval_tier"] == "REGIONAL"
+        assert invoices[0]["stages"] == "REGIONAL"
         assert [t["stage"] for t in trace] == ["REGIONAL"]
         assert [t["result"] for t in trace] == ["PASS"]
 

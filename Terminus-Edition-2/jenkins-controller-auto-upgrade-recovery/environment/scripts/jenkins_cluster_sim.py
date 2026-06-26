@@ -198,8 +198,14 @@ def diagnose():
         if a.get("online")
     )
     queue = load_json("jenkins_home/queue.json", {"items": []})
-    ids = [i.get("id") for i in queue.get("items", [])]
-    queue_ok = len(ids) == len(set(ids)) and {"q-1001", "q-1002"}.issubset(set(ids))
+    items = queue.get("items", [])
+    ids = [i.get("id") for i in items]
+    by_id = {i.get("id"): i.get("job") for i in items}
+    queue_ok = (
+        len(ids) == len(set(ids))
+        and by_id.get("q-1001") == "payments-ledger/main"
+        and by_id.get("q-1002") == "shared-library/test"
+    )
     cluster_ok = service_ok and fencing_ok and agents_ok and queue_ok
     checks.append(
         {

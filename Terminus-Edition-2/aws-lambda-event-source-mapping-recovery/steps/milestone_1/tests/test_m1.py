@@ -44,6 +44,10 @@ def sqs_message(mid, event_id, amount=100, account="acct-dyn", poison=False, mal
     return {"messageId": mid, "receiptHandle": f"rh-{mid}", "eventSourceARN": queue_arn or queues["expected_active_queue_arn"], "body": rendered, "attributes": {"ApproximateReceiveCount": "0"}, "messageAttributes": {}}
 
 class TestMilestone1:
+    def test_handler_entry_point_not_relocated(self):
+        """The production handler must remain at /app/handler/index.mjs."""
+        assert (APP / "handler" / "index.mjs").is_file()
+
     def test_mapping_discovers_enabled_migrated_queue(self, tmp_path):
         """The active event-source mapping must be enabled and point to the migrated queue."""
         result, _ledger, _dlq = run_sim(tmp_path, "mapping")
@@ -73,3 +77,25 @@ class TestMilestone1:
         assert result["queue_arn"] == result["mapping"]["old_queue_arn"]
         assert result["delivered_message_ids"] == []
         assert ledger == []
+
+
+    def test_mapping_preserves_stable_uuid_and_exact_operational_controls(self):
+        """The repaired mapping retains identity and exact concurrency and batching controls."""
+        mapping = load_json(APP / "config" / "event_source_mapping.json")
+        assert mapping["uuid"] == "esm-payments-ledger-live-20260613"
+        assert mapping["maximum_batching_window_seconds"] == 2
+        assert mapping["scaling_config"] == {"maximum_concurrency": 4}
+        assert mapping["bisect_batch_on_function_error"] is False
+
+    def test_mapping_filter_is_exact_and_response_type_is_not_duplicated(self):
+        """Only ledger-credit events are selected and partial failure mode appears once."""
+        mapping = load_json(APP / "config" / "event_source_mapping.json")
+        assert mapping["filter_criteria"] == {"event_type": ["ledger_credit"]}
+        assert mapping["function_response_types"] == ["ReportBatchItemFailures"]
+
+    def test_mapping_target_is_alias_qualified_and_queue_arn_is_nonempty(self):
+        """The mapping cannot fall back to an unqualified function or empty queue source."""
+        mapping = load_json(APP / "config" / "event_source_mapping.json")
+        assert mapping["function_name"].count(":") == 1
+        assert mapping["function_name"].endswith(":live")
+        assert mapping["event_source_arn"].startswith("arn:aws:sqs:")

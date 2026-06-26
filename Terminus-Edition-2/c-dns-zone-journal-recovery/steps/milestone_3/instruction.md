@@ -1,0 +1,5 @@
+The replay fix exposed a second restart hazard during snapshot compaction. A crash left a higher-numbered snapshot beside a manifest that still selected the previous generation, and startup promoted the orphan. Review `/app/evidence/state_listing.txt`, `/app/evidence/incident_timeline.log`, `/app/docs/compaction_contract.md`, and the existing implementation.
+
+Make snapshot generation changes crash-consistent while preserving milestones 1 and 2. The manifest-selected snapshot is authoritative; incomplete promotion must not change the served state. Completed promotion must survive restart, stale generations must be retired only after a successful switch, orphan cleanup must not remove the active snapshot, and repeated compaction must preserve serial, transaction history, and records, including across the unsigned serial wrap.
+
+The verifier injects crashes before and after manifest replacement, introduces misleading higher-numbered snapshots, checks active-generation selection and cleanup, repeats compaction and recovery, and validates wrapped serial behavior.

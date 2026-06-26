@@ -7,6 +7,18 @@ Usage:
   bash scripts/start_revision.sh --task <task-name> --submission <submission-id>
 
 Options:
+  --no-clean-feedback-folders
+                  Do not remove other task folders under All-New-Feedbacks.
+                  By default, all All-New-Feedbacks/<task> folders are removed
+                  except the requested task and --keep-task values.
+  --keep-task <task-name>
+                  Exempt an additional All-New-Feedbacks/<task> folder from
+                  cleanup. May be passed multiple times.
+  --keep-feedback-task <task-name>
+                  Alias for --keep-task.
+                  May be passed multiple times.
+  --keep-tasks <a,b,c>
+                  Comma-separated form of --keep-task for multiple exemptions.
   --no-pull        Do not fetch feedback; regenerate REVISION_BRIEF.md only.
   --validate       Run preflight and oracle after creating the brief.
   --zip            Rebuild upload zip after validation/setup.
@@ -22,6 +34,11 @@ Default behavior:
   1. Refresh All-New-Feedbacks/<task>
   2. Generate All-New-Feedbacks/<task>/REVISION_BRIEF.md
   3. Print the exact prompt to paste into the agent
+
+Fresh feedback cleanup:
+  By default this script keeps All-New-Feedbacks/<requested-task> and removes
+  other task folders under All-New-Feedbacks. Use --keep-task for exemptions,
+  or --no-clean-feedback-folders to disable cleanup.
 EOF
 }
 
@@ -32,7 +49,9 @@ DO_VALIDATE=0
 DO_ZIP=0
 DO_CHECK=0
 ALLOW_UNCHECKED=0
+CLEAN_FEEDBACK_FOLDERS=1
 OVERRIDES=()
+KEEP_TASKS=()
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -42,6 +61,23 @@ while [[ $# -gt 0 ]]; do
       ;;
     --submission|--id)
       SUBMISSION_ID="${2:-}"
+      shift 2
+      ;;
+    --no-clean-feedback-folders|--no-clean-task-folders)
+      CLEAN_FEEDBACK_FOLDERS=0
+      shift
+      ;;
+    --keep-task|--keep-feedback-task|--exempt-task)
+      KEEP_TASKS+=("${2:-}")
+      shift 2
+      ;;
+    --keep-tasks|--exempt-tasks)
+      IFS=',' read -r -a _extra_keep_tasks <<< "${2:-}"
+      for _task in "${_extra_keep_tasks[@]}"; do
+        _task="${_task#"${_task%%[![:space:]]*}"}"
+        _task="${_task%"${_task##*[![:space:]]}"}"
+        [[ -n "$_task" ]] && KEEP_TASKS+=("$_task")
+      done
       shift 2
       ;;
     --no-pull)
@@ -93,6 +129,69 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$ROOT_DIR"
+
+safe_task_name() {
+  local name="$1"
+  case "$name" in
+    ""|.|..|*/*|*\\*)
+      return 1
+      ;;
+  esac
+  return 0
+}
+
+if ! safe_task_name "$TASK_NAME"; then
+  echo "Unsafe task name: $TASK_NAME" >&2
+  exit 2
+fi
+
+for keep in "${KEEP_TASKS[@]}"; do
+  if ! safe_task_name "$keep"; then
+    echo "Unsafe --keep-task value: $keep" >&2
+    exit 2
+  fi
+done
+
+clean_other_feedback_folders() {
+  local task="$1"
+  local feedback_root="$ROOT_DIR/All-New-Feedbacks"
+  local keep_file
+
+  mkdir -p "$feedback_root"
+  keep_file="$(mktemp)"
+  cleanup_keep_file() {
+    rm -f "$keep_file"
+  }
+  trap cleanup_keep_file RETURN
+
+  printf '%s\n' "$task" > "$keep_file"
+  for keep in "${KEEP_TASKS[@]}"; do
+    printf '%s\n' "$keep" >> "$keep_file"
+  done
+
+  echo "Cleaning All-New-Feedbacks task folders; keeping: $(paste -sd ', ' "$keep_file")"
+  local candidate base
+  for candidate in "$feedback_root"/*; do
+    [[ -d "$candidate" ]] || continue
+    base="$(basename "$candidate")"
+    if grep -Fxq "$base" "$keep_file"; then
+      continue
+    fi
+    case "$candidate" in
+      "$feedback_root"/*) ;;
+      *)
+        echo "Refusing to remove path outside All-New-Feedbacks: $candidate" >&2
+        exit 1
+        ;;
+    esac
+    echo "Removing fresh feedback folder: $base"
+    rm -rf -- "$candidate"
+  done
+}
+
+if [[ "$CLEAN_FEEDBACK_FOLDERS" -eq 1 ]]; then
+  clean_other_feedback_folders "$TASK_NAME"
+fi
 
 if [[ "$DO_PULL" -eq 1 ]]; then
   bash scripts/pull_auto_eval_logs_fresh.sh --task "$TASK_NAME" --submission "$SUBMISSION_ID"

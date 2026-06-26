@@ -1,0 +1,26 @@
+# Rubric 1
+Agent uses coordinator time and durable epoch fencing for lease acquisition, renewal, and every privileged command, +12
+Agent prevents pre-expiry takeover and increments epoch on valid takeover, +8
+Agent keeps same-owner reacquisition idempotent and renewal epoch-stable, +5
+Agent serializes competing acquisitions through atomic state locking, +5
+Agent validates only owner name or host wall-clock expiry, -5
+Agent allows a stale or tampered epoch token to perform privileged work, -5
+Agent disables failover or hardcodes one winning node, -3
+
+# Rubric 2
+Agent durably prepares requests before HSM execution and keeps a stable operation ID through retry and restart, +10
+Agent consults HSM audit to finalize an existing external side effect without repeating it, +10
+Agent returns committed signatures and rejects request-ID payload conflicts, +6
+Agent coalesces concurrent same-request callers while recovering independent requests, +4
+Agent generates a new operation ID during retry or recovery, -5
+Agent trusts local status without reconciling HSM audit, -5
+Agent bypasses fencing for recovery, -3
+
+# Rubric 3
+Agent pins key and policy generation at first preparation and preserves them through retry and recovery, +9
+Agent enforces grace and revocation before new HSM work while finalizing already-audited side effects, +9
+Agent uses the current key for newly prepared requests and rejects invalid rotation atomically, +7
+Agent fences rotation and revocation with the active lease, +5
+Agent substitutes the newest active key for pending requests, -5
+Agent repeats or discards an already-audited side effect after grace or revocation, -5
+Agent mutates policy before validating the rotation deadline, -3

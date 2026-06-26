@@ -68,8 +68,11 @@ class TestMilestone4:
         assert ids.count("PAY-3002") == 1
 
         entry = next(item for item in ledger if item["business_event_id"] == "PAY-3001")
-        evidence = entry.get("duplicate_message_ids", entry.get("seen_message_ids", []))
-        assert "msg-replay-3001-a" in evidence or "msg-replay-3001-b" in evidence
+        assert "duplicate_message_ids" in entry
+        evidence = entry["duplicate_message_ids"]
+        primary = entry["message_id"]
+        alternate = "msg-replay-3001-b" if primary == "msg-replay-3001-a" else "msg-replay-3001-a"
+        assert alternate in evidence
 
     def test_restart_replay_preserves_preexisting_committed_state(self, tmp_path):
         """Rerunning with an existing committed ledger must not append duplicate business events."""
@@ -107,3 +110,64 @@ class TestMilestone4:
         assert len(dlq) == 1
         assert dlq[0]["original_message_id"] == "dyn-malformed-z"
         assert dlq[0]["failure_reason"] == "MALFORMED_JSON"
+
+
+    def test_duplicate_message_evidence_is_unique_and_excludes_primary(self, tmp_path):
+        """Repeated duplicate deliveries do not grow duplicate evidence with repeated IDs."""
+        _result, ledger, _dlq = run_sim_with_state(tmp_path, APP / "data" / "duplicate_delivery_replay.json", cycles=3)
+        entry = next(x for x in ledger if x["business_event_id"] == "PAY-3001")
+        evidence = entry.get("duplicate_message_ids", [])
+        assert len(evidence) == len(set(evidence))
+        assert entry["message_id"] not in evidence
+        assert set(evidence) == {"msg-replay-3001-a", "msg-replay-3001-b"} - {entry["message_id"]}
+
+    def test_duplicate_message_ids_follow_first_seen_delivery_order(self, tmp_path):
+        """Alternate message IDs are recorded in first-seen delivery order."""
+        first_batch = write_temp_batch(
+            tmp_path,
+            [
+                sqs_message("msg-order-secondary", "PAY-ORDER-A", amount=50),
+                sqs_message("msg-order-primary", "PAY-ORDER-A", amount=50),
+            ],
+        )
+        _result, ledger, _dlq = run_sim_with_state(tmp_path, first_batch, cycles=1)
+        entry = next(item for item in ledger if item["business_event_id"] == "PAY-ORDER-A")
+        assert entry["message_id"] == "msg-order-secondary"
+        assert entry["duplicate_message_ids"] == ["msg-order-primary"]
+
+        second_batch = write_temp_batch(
+            tmp_path,
+            [
+                sqs_message("msg-order2-primary", "PAY-ORDER-B", amount=60),
+                sqs_message("msg-order2-secondary", "PAY-ORDER-B", amount=60),
+            ],
+        )
+        _result2, ledger2, _dlq2 = run_sim_with_state(tmp_path, second_batch, cycles=1)
+        entry2 = next(item for item in ledger2 if item["business_event_id"] == "PAY-ORDER-B")
+        assert entry2["message_id"] == "msg-order2-primary"
+        assert entry2["duplicate_message_ids"] == ["msg-order2-secondary"]
+
+    def test_preexisting_dlq_record_prevents_redelivery_and_duplicate_append(self, tmp_path):
+        """A message already in durable DLQ state must not be delivered or appended again after restart."""
+        queues = load_json(APP / "config" / "queues.json")
+        redrive = load_json(APP / "config" / "redrive_policy.json")
+        poison_id = "msg-poison-3003"
+        initial_dlq = [
+            {
+                "message_id": "dlq-preexisting",
+                "original_message_id": poison_id,
+                "business_event_id": "PAY-POISON-3003",
+                "source_queue_arn": queues["expected_active_queue_arn"],
+                "failure_reason": "schema_missing_amount",
+                "receive_count": redrive["max_receive_count"],
+            }
+        ]
+        result, _ledger, dlq = run_sim_with_state(
+            tmp_path,
+            APP / "data" / "duplicate_delivery_replay.json",
+            cycles=3,
+            initial_dlq=initial_dlq,
+        )
+        assert poison_id not in result["delivered_message_ids"]
+        assert len([entry for entry in dlq if entry["original_message_id"] == poison_id]) == 1
+

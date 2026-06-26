@@ -1,0 +1,55 @@
+{
+  "assertion_type": "SWA1",
+  "audience": "profile-export",
+  "clock_skew_seconds": 30,
+  "issuers": [
+    {
+      "allowed_tenants": [
+        "acme",
+        "globex"
+      ],
+      "issuer": "profile-ci",
+      "keys": [
+        {
+          "kid": "rot-17",
+          "secret": "profile-rot17-secret-2026",
+          "status": "active"
+        },
+        {
+          "kid": "old-16",
+          "secret": "profile-old16-secret",
+          "status": "retiring"
+        }
+      ],
+      "minimum_source_epoch": 7
+    },
+    {
+      "allowed_tenants": [
+        "partner-sandbox"
+      ],
+      "issuer": "partner-ci",
+      "keys": [
+        {
+          "kid": "rot-17",
+          "secret": "partner-rot17-secret-2026",
+          "status": "active"
+        }
+      ],
+      "minimum_source_epoch": 3
+    },
+    {
+      "allowed_tenants": [
+        "legacy"
+      ],
+      "issuer": "legacy-ci",
+      "keys": [
+        {
+          "kid": "legacy-1",
+          "secret": "legacy-retired-secret",
+          "status": "retired"
+        }
+      ],
+      "minimum_source_epoch": 1
+    }
+  ]
+}

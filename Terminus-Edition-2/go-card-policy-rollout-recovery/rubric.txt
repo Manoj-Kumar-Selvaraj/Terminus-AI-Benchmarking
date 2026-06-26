@@ -1,0 +1,41 @@
+# Rubric 1
+Agent reviews `/app/evidence/controller_startup.log`, `/app/evidence/journal_tail_excerpt.txt`, `/app/evidence/incident_state/journal.jsonl`, and `/app/docs/journal_contract.md` before editing Go replay logic, +2
+Agent repairs journal recovery in the Go controller/store while keeping `/app/bin/rolloutctl`, JSONL format, and the state-directory layout compatible, +3
+Agent quarantines an incomplete final journal suffix to `recovery/torn-tail.bin` byte-for-byte while preserving the valid prefix and accepted rollout history in `journal.jsonl`, +5
+Agent makes torn-tail recovery idempotent across repeated `status` loads without extra recovery artifacts or further journal mutation, +3
+Agent rejects newline-terminated corrupt journal records as hard errors without truncating or rewriting the journal, +3
+Agent replays a syntactically valid final JSON record even when the writer omitted the trailing newline, +3
+Agent preserves existing enqueue validation so invalid policy files fail before any journal is created, +2
+Agent deletes or replaces the state directory, silently truncates corruption, edits evidence, or bypasses the normal Go build/replay path, -5
+Agent tampers with verifier fixtures, solution files, or protected binaries to force a pass, -5
+# Rubric 2
+Agent preserves milestone 1 journal recovery while repairing dispatch and gateway acknowledgement in the Go controller, +3
+Agent reviews `/app/evidence/gateway_audit_after_retry.json`, `/app/docs/delivery_contract.md`, and `/app/docs/cli_contract.md` before changing delivery behavior, +2
+Agent reuses one stable `command_id` per rollout-region pair across `after-apply` crashes, retries, and process restarts, +5
+Agent converges to exactly one gateway activation audit per region while allowing additional request attempts on the same command, +5
+Agent leaves already-acked deliveries as no-ops on later dispatch without duplicate gateway activations, +3
+Agent recovers multi-region rollouts after a regional crash without duplicate activations or lost acknowledgements, +3
+Agent preserves gateway generation conflict handling so same-generation different-policy deliveries fail while stale generations become `superseded`, +3
+Agent keeps enqueue replay idempotent and rejects conflicting redefinition of the same rollout identity, +3
+Agent resets controller or gateway persistent state, disables retries, or mints fresh delivery identities per attempt, -5
+Agent regresses milestone 1 torn-tail recovery or journal hard-error behavior while fixing delivery retries, -3
+# Rubric 3
+Agent preserves milestones 1 and 2 while repairing shared-state dispatch, leases, and generation fencing in the Go controller, +3
+Agent reviews `/app/evidence/dual_worker_trace.log`, `/app/evidence/stale_ack_trace.log`, `/app/docs/concurrency_contract.md`, and `/app/docs/delivery_contract.md` before changing claim logic, +2
+Agent enforces the documented 30-second logical lease so competing controller processes cannot send duplicate live gateway requests for one delivery, +5
+Agent blocks takeover before `lease_until`, then recovers expired claims with the same `command_id` and an incremented `claim_token`, +5
+Agent records delayed older generations as `superseded` after a newer generation is active without regressing regional gateway state, +5
+Agent superseded locally obsolete pending rollouts below the durable regional active generation without sending another gateway request, +3
+Agent keeps unmapped regions pending while mapped regions progress under partial gateway maps, +3
+Agent allows completion from obsolete claim tokens to overwrite current delivery state or disables concurrency to avoid coordination, -5
+Agent regresses stable delivery identity, single-activation audit behavior, or milestone 1-2 recovery while adding lease safety, -3
+# Rubric 4
+Agent preserves milestones 1 through 3 while repairing snapshot/compaction and legacy replay in the Go store, +3
+Agent reviews `/app/evidence/compaction_restart.log`, `/app/docs/compaction_contract.md`, `/app/docs/journal_contract.md`, and `/app/docs/cli_contract.md` before changing compaction behavior, +2
+Agent normalizes documented version-1 queued records into the current model, dispatches them, and retains them through compaction, +5
+Agent preserves acknowledged, superseded, failed, pending, and claimed delivery state plus regional active-generation fences after compaction, +5
+Agent retains `command_id`, lease owner/expiry, and `claim_token` across compaction so claimed work remains unavailable until lease expiry, +5
+Agent records `journal_offset` during interrupted compaction and restarts exactly once without replaying completed gateway work, +5
+Agent limits compatibility to the documented legacy shape and keeps unknown versions and complete malformed journal lines non-destructive hard errors, +3
+Agent discards acknowledged or superseded history, turns completed deliveries back into pending work, or replaces compaction with a no-op, -5
+Agent regresses milestone 1-3 journal recovery, stable command identity, lease fencing, or gateway audit convergence while adding compaction, -3

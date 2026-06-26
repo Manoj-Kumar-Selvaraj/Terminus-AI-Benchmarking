@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+src=/app/src/zonectl.c
+bin=/tmp/zonectl-${UID}
+if [[ ! -x "$bin" || "$src" -nt "$bin" ]]; then
+  gcc -std=c17 -O2 -Wall -Wextra -pedantic "$src" -o "$bin"
+fi
+exec "$bin" "$@"

@@ -99,3 +99,20 @@ class TestMilestone1:
         assert [row["invoice_no"] for row in invoices] == [1, 2]
         assert trace == [{"account_id": "ACCT5002", "stage": "REGIONAL", "result": "PASS"}]
         assert summary["total_billed_cents"] == 900000
+
+    def test_negative_amount_excluded_from_aggregate(self):
+        """Negative usage rows must not reduce the account aggregate total."""
+        run1 = APP / "data" / "run01.usg"
+        write_prior([])
+        write_manifest(["/app/data/run01.usg"])
+        write_usage(
+            run1,
+            [
+                fmt_usage("ACCT2001", "BATCH9", "0001", 600000),
+                fmt_usage("ACCT2001", "BATCH9", "0002", -100000),
+            ],
+        )
+        invoices, trace, _ = run_full()
+        assert invoices[0]["total_cents"] == 600000
+        assert invoices[0]["approval_tier"] == "REGIONAL"
+        assert trace == [{"account_id": "ACCT2001", "stage": "REGIONAL", "result": "PASS"}]

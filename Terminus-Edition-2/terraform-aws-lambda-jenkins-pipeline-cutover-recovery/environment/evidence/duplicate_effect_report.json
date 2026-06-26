@@ -1,0 +1,7 @@
+{
+  "batch_id": "batch-20260623-044",
+  "ledger_effects": {"expected": 18, "observed": 20},
+  "partner_notifications": {"expected": 1, "observed": 2},
+  "archive_events": {"expected": 1, "observed": 2},
+  "same_execution_id": true
+}

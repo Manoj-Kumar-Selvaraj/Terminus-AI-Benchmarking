@@ -1,0 +1,29 @@
+# Rubric 1
+Agent recovers every complete checksum-valid transaction before a final interrupted journal transaction, +5
+Agent discards only the incomplete final transaction and preserves the earlier committed prefix, +5
+Agent rejects complete checksum or transaction-identity corruption without mutating authoritative state, +5
+Agent preserves record replacement, deletion, deterministic reports, and restart safety, +5
+Agent treats any journal corruption as permission to clear the whole journal, -5
+Agent silently accepts a checksum-invalid complete transaction, -5
+Agent hardcodes incident transaction IDs, serials, or record names, -3
+
+# Rubric 2
+Agent persists transaction identity and makes identical replay a no-op across restarts, +5
+Agent rejects conflicting transaction-ID reuse and both stale and skipped serial chains without state mutation, +5
+Agent emits an operator-facing stderr message containing `conflict` for conflicting transaction-ID reuse, +3
+Agent applies independent new transactions exactly once and preserves delete semantics, +3
+Agent implements unsigned modulo-2^32 serial succession, +5
+Agent deduplicates only within one process invocation or one in-memory map, -5
+Agent accepts conflicting payloads for an existing transaction ID, -5
+Agent accepts only stale or only skipped serial mismatches instead of rejecting both, -3
+Agent uses signed or saturating serial arithmetic, -3
+
+# Rubric 3
+Agent treats the manifest-selected snapshot as authoritative and never promotes an orphan by filename or serial, +5
+Agent preserves the old generation after writing the next snapshot but before manifest replacement, +5
+Agent uses the new generation after completed manifest replacement and retires stale generations only after success, +5
+Agent removes misleading orphan snapshots during recovery while preserving the manifest-selected snapshot, +5
+Agent preserves records, transaction history, wrapped serials, and idempotence through repeated compaction, +5
+Agent chooses the numerically highest snapshot regardless of manifest, -5
+Agent removes the active snapshot during cleanup or before a successful switch, -5
+Agent solves crash injection by disabling compaction or by skipping snapshot writes before crash injection, -3

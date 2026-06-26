@@ -1,0 +1,4 @@
+-/+ module.legacy_payments.aws_autoscaling_group.payments must be replaced
+-/+ module.legacy_payments.aws_launch_template.payments must be replaced
+  # six imported instance IDs omitted from state mapping
+  # manual launch-template drift scheduled for repair

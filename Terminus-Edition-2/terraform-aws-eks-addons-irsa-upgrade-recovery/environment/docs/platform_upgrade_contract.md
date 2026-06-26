@@ -18,8 +18,8 @@ Core EKS add-ons (`vpc-cni`, `coredns`, `kube-proxy`, `aws-ebs-csi-driver`) must
 
 EBS CSI and AWS Load Balancer Controller must use IRSA via `terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks` with service accounts:
 
-- `kube-system:ebs-csi-controller-sa`
-- `kube-system:aws-load-balancer-controller`
+- `kube-system:ebs-csi-controller-sa` → `module.ebs_csi_irsa`
+- `kube-system:aws-load-balancer-controller` → `module.alb_controller_irsa`
 
 Annotate pods/service accounts with `eks.amazonaws.com/role-arn`. Do not attach `AdministratorAccess`, `node_addon_admin`, or wildcard IAM policies (`Action = "*"`, `Resource = "*"`).
 
@@ -30,7 +30,8 @@ Karpenter must include:
 - an `aws_sqs_queue` for interruption handling (name contains `karpenter-interruption`)
 - IRSA for Karpenter via `terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks`
 - private selectors (`karpenter.sh/discovery`, `subnetSelectorTerms`, `securityGroupSelectorTerms`; no public subnet tags)
-- a `regulated-on-demand` NodePool that allows only `on-demand` capacity (no `spot`)
+- a `regulated-on-demand` NodePool declared as `resource "kubectl_manifest" "karpenter_regulated_nodepool"` that allows only `on-demand` capacity (no `spot`)
+- the regulated NodePool and its `EC2NodeClass` co-located as multi-document YAML (`---` separator) inside that resource's `yaml_body` heredoc (not a separate `kubectl_manifest`)
 
 ### scheduling_report.json schema
 
@@ -73,7 +74,7 @@ Keep Terraform module `version` pins.
 
 ## Milestone 5 — plan.json schema
 
-`/app/fixtures/plan.json` must pass `/app/scripts/plan_guard.py`. Protected resources must not be deleted or replaced:
+`/app/fixtures/plan.json` must pass `/app/scripts/plan_guard`. Protected resources must not be deleted or replaced:
 
 - `module.eks.aws_eks_cluster.this[0]`
 - `module.eks.aws_security_group.cluster[0]`
@@ -90,4 +91,4 @@ Root module outputs in `configuration.root_module.outputs` must include:
 - `managed_node_group_names`
 - `addon_irsa_role_arns`
 
-Broad node admin attachments (`node_addon_admin`) must be removed from Terraform and must not appear as `create` actions in the plan.
+Broad node admin attachments (`node_addon_admin`) must be removed from Terraform and must not appear as `create` actions in the plan. The literal string `AdministratorAccess` must not appear in `/app/fixtures/plan.json`. The `moved` block pairing `node_addon_admin` to `module.ebs_csi_irsa` must remain in `outputs.tf`.

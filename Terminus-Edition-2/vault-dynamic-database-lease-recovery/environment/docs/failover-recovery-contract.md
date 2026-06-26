@@ -1,0 +1,7 @@
+# Failover and protocol recovery contract
+
+Only the runtime's current active Vault node and epoch may commit issuance. An issuance retry first reconciles the stable request ID against runtime users, leases, and the durable request journal. A user created before a lost response may be adopted; a committed lease is returned; duplicate artifacts are disabled and revoked. A stale node cannot commit after epoch change. Different request IDs and pods must remain independent.
+
+Protocol version 1 response fields are exactly `lease_id`, `username`, `password_reference`, `expires_at`, and `renewable`. Protocol version 2 adds `request_id`, `issued_at`, `max_expires_at`, `generation`, and `owner_pod_uid`. Versions may coexist. Lease ownership is scoped to the issuing pod UID. A pod cannot renew, revoke, or claim another pod's lease. Restart reconciliation selects one valid active pool generation per pod and is idempotent when repeated.
+
+Version 2 issuance and rotation require a non-empty `pod_uid` on the request; an empty owner is rejected with `MISSING_OWNER`. A valid token cannot submit issuance or rotation for a different pod UID than the authenticated workload; that mismatch is rejected with `WORKLOAD_OWNERSHIP_DENIED`. Renewing or revoking another pod's lease is rejected with `LEASE_OWNERSHIP_DENIED`. After rotation replaces a pool generation, renewing the superseded lease is rejected with `SUPERSEDED_LEASE` or `LEASE_REVOKED`.

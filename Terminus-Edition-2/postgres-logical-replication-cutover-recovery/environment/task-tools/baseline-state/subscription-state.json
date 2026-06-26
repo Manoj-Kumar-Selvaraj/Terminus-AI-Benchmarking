@@ -1,0 +1,9 @@
+{
+  "applied_transaction_ids": [],
+  "failed_transactions": [],
+  "last_applied_lsn": "0/500",
+  "last_received_lsn": "0/500",
+  "name": "profile_migration_sub",
+  "publication_name": "profile_migration_pub",
+  "slot_name": "profile_migration_slot"
+}

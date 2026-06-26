@@ -14,8 +14,16 @@ COMPILE_TIMEOUT = 45
 RUN_TIMEOUT = 15
 
 
+def fmt_amount(amount: int) -> str:
+    if amount < 0:
+        return f"-{abs(amount):09d}"
+    return f"{amount:010d}"
+
+
 def fmt_usage(account: str, batch: str, seq: str, amount: int, service: str = "SVC1") -> str:
-    line = f"U{account}{batch}{seq}{amount:010d}{service}"
+    amount_field = fmt_amount(amount)
+    line = f"U{account}{batch}{seq}{amount_field}{service}"
+    assert len(amount_field) == 10, amount_field
     assert len(line) <= 52, line
     return line.ljust(52)
 
@@ -81,6 +89,28 @@ def assert_output_record_widths() -> None:
             assert line[1:9].strip(), "Trace account field missing"
             assert line[9:17].strip(), "Trace stage field missing"
             assert line[17:].strip(), "Trace result field missing"
+
+
+def assert_checkpoint_layout(text: str | None = None) -> None:
+    """Verify the 138-byte checkpoint record matches record_layouts.md."""
+    raw = text if text is not None else CHECKPOINT.read_text()
+    line = raw.splitlines()[0] if raw.splitlines() else raw
+    line = line.rstrip("\n")[:138]
+    assert len(line) == 138, f"checkpoint must be 138 bytes, got {len(line)}"
+    assert line[0:2].strip().isdigit(), "manifest file number at offset 1"
+    assert line[2:8].strip().isdigit(), "record number at offset 3"
+    assert line[8:16].strip(), "pending account at offset 9"
+    assert line[16:26].strip().isdigit(), "pending account total at offset 17"
+    assert line[26:32].strip().isdigit(), "pending usage count at offset 27"
+    assert line[32:42].strip().isdigit(), "last committed invoice number at offset 33"
+    assert line[42:48].strip().isdigit(), "processed row count at offset 43"
+    assert line[48:54].strip().isdigit(), "total usage rows at offset 49"
+    assert line[54:60].strip().isdigit(), "invoices posted at offset 55"
+    assert line[60:72].strip().isdigit(), "total billed cents at offset 61"
+    assert line[72:78].strip().isdigit(), "duplicate batches blocked at offset 73"
+    assert line[78:80].strip().isdigit(), "pending batch count at offset 79"
+    last_amt = line[80:90].strip()
+    assert last_amt.lstrip("-").isdigit(), "last usage amount at offset 81"
 
 
 def compile_program() -> None:

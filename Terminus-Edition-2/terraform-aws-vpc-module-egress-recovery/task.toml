@@ -8,10 +8,10 @@ category = "system-administration"
 subcategories = ["tool_specific"]
 number_of_milestones = 5
 codebase_size = "minimal"
-languages = ["terraform", "python", "bash"]
+languages = ["terraform", "go", "bash"]
 tags = ["terraform", "aws", "modules", "offline-simulator", "production-incident"]
-expert_time_estimate_min = 120
-junior_time_estimate_min = 360
+expert_time_estimate_min = 180
+junior_time_estimate_min = 480
 
 [environment]
 allow_internet = false

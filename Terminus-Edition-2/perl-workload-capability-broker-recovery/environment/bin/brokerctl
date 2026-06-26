@@ -1,0 +1,16 @@
+#!/usr/bin/env perl
+use strict; use warnings; use FindBin; use lib "$FindBin::Bin/../lib"; use JSON::PP (); use Broker::App; use Broker::Util qw(read_json);
+sub out { print JSON::PP->new->canonical(1)->encode($_[0]),"\n"; }
+my $cmd=shift(@ARGV)//''; my %a; while(@ARGV){ my $k=shift @ARGV; die "bad option $k" unless $k=~s/^--//; $a{$k}=shift @ARGV; }
+my $ok=eval{
+ if($cmd eq 'verify'){ out(Broker::App::verify_assertion($a{assertion},0+$a{now},$a{audience}//'profile-export')); }
+ elsif($cmd eq 'authorize'){ my $claims=read_json($a{claims},{}); my $scopes=JSON::PP::decode_json($a{scopes}); out(Broker::App::authorize($claims,$scopes,$a{audience})); }
+ elsif($cmd eq 'exchange'){ out(Broker::App::exchange(read_json($a{request},{}),0+$a{now})); }
+ elsif($cmd eq 'recover'){ out(Broker::App::recover()); }
+ elsif($cmd eq 'rotate'){ out(Broker::App::rotate(read_json($a{request},{}),0+$a{now})); }
+ elsif($cmd eq 'rotation-rollback'){ out(Broker::App::rollback_rotation($a{'operation-id'})); }
+ elsif($cmd eq 'inspect'){ out(Broker::App::inspect($a{what})); }
+ else { die 'unknown command'; }
+ 1;
+};
+if(!$ok){ my $e=$@; $e=~s/\s+at\s+\S+\s+line\s+\d+.*$//s; my $code=$e=~/INJECTED:/?75:2; out({status=>'error',error=>$e}); exit $code; }

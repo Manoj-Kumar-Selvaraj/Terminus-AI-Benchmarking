@@ -1,0 +1,58 @@
+version = "2.0"
+multi_step_reward_strategy = "mean"
+
+[metadata]
+author_name = "anonymous"
+author_email = "anonymous"
+difficulty = "hard"
+category = "security"
+subcategories = ["api_integration", "db_interaction", "tool_specific"]
+number_of_milestones = 5
+codebase_size = "small"
+languages = ["go", "python", "bash"]
+tags = ["vault", "kubernetes-auth", "postgresql", "dynamic-credentials", "failover", "concurrency"]
+expert_time_estimate_min = 480
+junior_time_estimate_min = 1200
+
+[environment]
+allow_internet = false
+build_timeout_sec = 1200.0
+cpus = 4
+memory_mb = 6144
+storage_mb = 12288
+workdir = "/app"
+
+[[steps]]
+name = "milestone_1"
+[steps.agent]
+timeout_sec = 1800.0
+[steps.verifier]
+timeout_sec = 1500.0
+
+[[steps]]
+name = "milestone_2"
+[steps.agent]
+timeout_sec = 1800.0
+[steps.verifier]
+timeout_sec = 1500.0
+
+[[steps]]
+name = "milestone_3"
+[steps.agent]
+timeout_sec = 1800.0
+[steps.verifier]
+timeout_sec = 1500.0
+
+[[steps]]
+name = "milestone_4"
+[steps.agent]
+timeout_sec = 1800.0
+[steps.verifier]
+timeout_sec = 1500.0
+
+[[steps]]
+name = "milestone_5"
+[steps.agent]
+timeout_sec = 1800.0
+[steps.verifier]
+timeout_sec = 1800.0

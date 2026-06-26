@@ -10,7 +10,10 @@ if [ "$PWD" = "/" ]; then
     exit 1
 fi
 
-python3 -m pytest /tests/test_m3.py -rA
+mkdir -p /app/bin
+/usr/local/go/bin/go build -o /app/bin/vpcsim /app/cmd/vpcsim
+
+pytest -q -rA --disable-warnings /tests/test_m3.py
 
 if [ $? -eq 0 ]; then
     echo 1 > /logs/verifier/reward.txt

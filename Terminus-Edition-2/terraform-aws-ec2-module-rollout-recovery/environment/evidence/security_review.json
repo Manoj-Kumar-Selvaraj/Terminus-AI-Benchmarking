@@ -1,0 +1,12 @@
+{
+  "metadata_options": {
+    "http_tokens": "optional",
+    "http_put_response_hop_limit": 2
+  },
+  "policy_findings": [
+    "wildcard action grants administrator-equivalent access",
+    "artifact read is not scoped to the release bucket",
+    "KMS decrypt is not scoped to the payments data key",
+    "metric publication is not restricted to the payments namespace"
+  ]
+}

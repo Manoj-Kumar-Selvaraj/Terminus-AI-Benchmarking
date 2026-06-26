@@ -1,0 +1,8 @@
+{
+  "bundle_hash": "bundle-42-a8d9",
+  "operation_id": "rotate-42",
+  "overlap_until": 1900000300,
+  "policy_generation": 42,
+  "target_generation": 42,
+  "target_key": "broker-v2"
+}

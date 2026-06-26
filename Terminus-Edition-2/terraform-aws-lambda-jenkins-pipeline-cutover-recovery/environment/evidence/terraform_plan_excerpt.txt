@@ -1,0 +1,14 @@
+Terraform will perform the following actions:
+
+  # module.pipeline_stage["intake"] will be created
+  # module.pipeline_stage["verify_manifest"] will be created
+  # module.pipeline_stage["fetch_inputs"] will be created
+  # module.pipeline_stage["validate_inputs"] will be created
+  # module.pipeline_stage["transform_records"] will be created
+  # module.pipeline_stage["write_ledger"] will be created
+  # module.pipeline_stage["notify_partner"] will be created
+  # module.pipeline_stage["archive_batch"] will be created
+
+Plan: 8 to add, 0 to change, 0 to destroy.
+
+Operator note: Jenkinsfile contains twelve named stages. The apply output did not explain why the fleet inventory contained fewer functions.

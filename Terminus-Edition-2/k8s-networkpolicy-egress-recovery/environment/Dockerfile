@@ -4,13 +4,15 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
+        asciinema \
         bash \
         ca-certificates \
         coreutils \
         findutils \
+        gawk \
         grep \
         sed \
-        gawk \
+        tmux \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.lock /tmp/requirements.lock
@@ -18,5 +20,9 @@ RUN pip3 install --no-cache-dir --break-system-packages --require-hashes --no-de
     && rm -f /tmp/requirements.lock
 
 WORKDIR /app
-COPY . /app
+COPY config/ /app/config/
+COPY docs/ /app/docs/
+COPY evidence/ /app/evidence/
+COPY k8s/ /app/k8s/
+COPY scripts/ /app/scripts/
 RUN mkdir -p /app/out /logs/verifier

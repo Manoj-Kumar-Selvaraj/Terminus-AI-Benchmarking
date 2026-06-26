@@ -1,0 +1,11 @@
+{
+  "cutover_epoch": "2026-06-24T09:30:00Z",
+  "accepted_event_versions": [
+    1,
+    2
+  ],
+  "required_operation": "ledger_credit",
+  "active_source_queue_arn": "arn:aws:sqs:us-east-1:111122223333:payments-ledger-v2",
+  "legacy_source_queue_arn": "arn:aws:sqs:us-east-1:111122223333:payments-ledger-old",
+  "conflict_policy": "FAIL_CLOSED"
+}

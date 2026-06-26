@@ -1,0 +1,5 @@
+security_ticket=SEC-4412
+approved_cidr=10.44.0.0/24
+blocked_host=10.44.0.200/32
+service_port=9443
+sample_endpoint=10.44.0.55

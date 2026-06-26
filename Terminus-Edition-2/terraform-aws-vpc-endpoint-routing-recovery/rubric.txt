@@ -1,0 +1,28 @@
+# Rubric 1
+Agent inspects reachability evidence and route-table fixtures before changing module routing, +2
+Agent restores private subnet to private route table associations without public tier drift, +5
+Agent keeps NAT default routes on every private route table and off public route tables, +5
+Agent preserves stable VPC subnet route table and NAT gateway identities, +3
+Agent replaces network resources or edits incident fixtures to hide routing drift, -5
+# Rubric 2
+Agent preserves milestone 1 route-table recovery while fixing gateway endpoint coverage, +3
+Agent attaches S3 and DynamoDB gateway endpoints to all private route tables only, +5
+Agent keeps gateway endpoints off public route tables and preserves endpoint IDs, +3
+Agent uses NAT default routes as a substitute for missing gateway endpoint coverage, -5
+Agent deletes gateway endpoints to silence plan churn, -5
+# Rubric 3
+Agent reviews endpoint design and network module contract before changing security manifests, +2
+Agent places required interface endpoints in private subnets with private DNS enabled, +5
+Agent writes endpoint_security_group_rules ingress with exact source_security_group_ids key, +5
+Agent permits TCP 443 only from documented application security groups or private CIDRs, +3
+Agent preserves milestones 1 and 2 route and gateway endpoint behavior, +3
+Agent uses security_groups security_group_ids or source_security_group_id alias keys, -5
+Agent opens endpoint security group ingress to 0.0.0.0/0 or ::/0, -5
+# Rubric 4
+Agent reviews migration constraints and output contract docs before restoring module outputs, +2
+Agent restores module_output_contract entries with shape and value for every legacy output name, +5
+Agent keeps required network and endpoint_ids aggregates in manifest and output blocks, +5
+Agent adds explicit moved metadata and completes the migration release note, +3
+Agent preserves milestones 1 through 3 routing endpoint and security behavior, +3
+Agent removes legacy output names or omits required network or endpoint_ids aggregates, -5
+Agent replaces module with output-only stubs or edits downstream fixtures, -5

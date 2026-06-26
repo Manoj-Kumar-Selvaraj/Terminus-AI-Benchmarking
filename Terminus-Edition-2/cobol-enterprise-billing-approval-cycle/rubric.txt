@@ -1,39 +1,45 @@
 # Rubric 1
-Agent keeps the effective implementation in COBOL and compiles it through `/app/scripts/compile.sh`, +3
+Agent reviews `/app/evidence/batch_incident.log`, `/app/docs/record_layouts.md`, `/app/config/approval_matrix.txt`, and the copybooks before editing COBOL, +2
+Agent keeps the effective implementation in `/app/src/billing_approval.cbl` and compiles through `/app/scripts/compile.sh` to `/app/build/batch`, +3
 Agent computes approval tier from the completed account-level billing total instead of the last usage line amount, +5
-Agent routes aggregate totals below regional threshold to AUTO, regional totals to REGIONAL, and dual-threshold totals to DUAL using `/app/config/approval_matrix.txt`, +5
-Agent resets aggregate state between accounts while preserving input order and sequential invoice numbers, +3
-Agent includes the final account at end-of-file and writes the exact AUTO, REGIONAL, and milestone-1 DUAL invoice stage and trace combinations, +3
-Agent writes exact 72-byte invoice and 40-byte trace records plus all five stable billing summary keys with later-milestone counters at zero, +5
-Agent hardcodes invoice or summary artifacts instead of repairing billing approval logic, -5
-Agent tampers with verifier inputs, tests, solution files, or runtime scripts to force a pass, -5
-Agent bases approval tier on individual line values, leaks account totals across account boundaries, or changes required output schemas, -5
+Agent applies `regional_cents=500000` and `dual_cents=2000000` from `/app/config/approval_matrix.txt` so totals below regional route to AUTO, regional-range totals to REGIONAL, and dual-threshold totals to DUAL, +5
+Agent resets aggregate state at every account break while preserving manifest order and sequential invoice numbers, +3
+Agent includes the final account at end-of-file and flushes it with the same tier, stage, and trace rules as interior accounts, +3
+Agent excludes non-positive usage amounts from the account aggregate while still routing tier selection from the completed positive total, +3
+Agent writes exact 72-byte invoice and 40-byte trace records plus all five summary keys (`invoices_posted`, `total_billed_cents`, `usage_rows`, `duplicate_batches_blocked`, `checkpoint_commits`) with later-milestone counters at zero, +5
+Agent emits milestone-1 DUAL invoices with `approval_tier=DUAL`, `stages=REGIONAL`, and one `REGIONAL` trace with result `PASS`; AUTO invoices use `stages=AUTO` with no trace, +3
+Agent hardcodes `/app/out/invoice_register.dat`, `/app/out/approval_trace.dat`, or `/app/out/billing_summary.txt` instead of repairing billing approval logic, -5
+Agent tampers with verifier inputs, tests, solution files, runtime scripts, or ledger fixtures to force a pass, -5
+Agent bases approval tier on individual line values, leaks account totals across account boundaries, or changes required output schemas or record widths, -5
 # Rubric 2
 Agent preserves milestone 1 aggregate approval behavior while adding prior-ledger idempotency, +3
-Agent reads `/app/config/prior_ledger.dat` at runtime and blocks billing only when both account and batch id match a previously posted ledger row, +5
-Agent allows new batches and same-batch rows for different accounts to post normally, +5
-Agent records duplicate-batch blocks in `duplicate_batches_blocked` without emitting invoice or approval trace rows for blocked accounts, +3
-Agent preserves invoice order, summary keys, and COBOL compilation through the provided batch path, +3
-Agent hardcodes known duplicate batches or ignores the prior ledger file, -5
+Agent reads the 40-byte `/app/config/prior_ledger.dat` at runtime and blocks billing only when both full `account_id` and full `batch_id` match a previously posted ledger row, +5
+Agent allows new batches for an account already present in the ledger and the same batch id on a different account to post normally, +5
+Agent performs the composite duplicate check after the account aggregate is complete but before tier selection, invoice numbering, or approval trace output, +3
+Agent records duplicate-batch blocks in `duplicate_batches_blocked` exactly once per blocked account without emitting invoice or approval trace rows, +3
+Agent does not advance the invoice counter when a duplicate account is blocked and checks every distinct pending batch collected for that account against the prior ledger, +3
+Agent preserves invoice order, summary keys, 72-byte invoice width, 40-byte trace width, and COBOL compilation through `/app/scripts/compile.sh`, +3
+Agent hardcodes known duplicate batches, edits `/app/config/prior_ledger.dat` at runtime, or ignores the prior ledger file, -5
 Agent blocks by batch alone without account identity or posts duplicate prior-ledger charges, -5
-Agent regresses aggregate tier selection, output schemas, or positive totals while adding duplicate protection, -3
+Agent regresses aggregate tier selection, output schemas, positive totals, or milestone-1 stage labels while adding duplicate protection, -3
 # Rubric 3
-Agent preserves aggregate approval and duplicate protection while repairing multi-stage approval tracing, +3
-Agent emits REGIONAL and FINANCE trace rows with `PASS` results for DUAL approvals in the required order, +5
-Agent writes `REGIONAL+FINANCE` for DUAL invoices, keeps REGIONAL invoices single-stage, and keeps AUTO invoices at `AUTO` without trace rows, +5
-Agent preserves exact 72-byte invoice and 40-byte trace record widths and documented field positions, +3
-Agent keeps invoice posting and summary totals stable while adding the second approval stage, +3
-Agent preserves prior-ledger duplicate blocking before any approval trace is emitted, +3
-Agent stops DUAL approval after the regional stage or omits the finance trace, -5
-Agent emits finance approval for REGIONAL or AUTO accounts, -5
+Agent preserves milestones 1 and 2 aggregate approval and duplicate protection while repairing multi-stage approval tracing, +3
+Agent emits exactly two approval trace rows for DUAL accounts in order: stage `REGIONAL` with result `PASS`, then stage `FINANCE` with result `PASS`, +5
+Agent writes `REGIONAL+FINANCE` literally in the invoice `stages` field for DUAL accounts, keeps REGIONAL invoices at `stages=REGIONAL` with one trace, and keeps AUTO invoices at `stages=AUTO` without trace rows, +5
+Agent preserves exact 72-byte invoice and 40-byte trace record widths and documented field positions from `/app/docs/record_layouts.md`, +3
+Agent keeps invoice posting, invoice numbering, aggregate totals, and all five summary keys stable while adding the finance approval stage, +3
+Agent preserves prior-ledger duplicate blocking before any invoice number or approval trace is emitted, +3
+Agent stops DUAL approval after the regional stage, omits the finance trace, or emits finance approval for REGIONAL or AUTO accounts, -5
+Agent changes DUAL milestone-1 `stages=REGIONAL` behavior for non-DUAL tiers or shifts trace field offsets, -3
 Agent regresses prior duplicate-ledger or aggregate-tier behavior while changing the approval chain, -3
 # Rubric 4
 Agent preserves milestones 1 through 3 while adding checkpoint restart behavior, +3
-Agent honors `BILLING_ABEND_AFTER` by writing `/app/out/checkpoint.dat` before simulated ABEND and exiting non-zero, +5
-Agent checkpoints the input cursor, pending account aggregate and batches, invoice counter, and accumulated summary state needed for continuation, +5
-Agent resumes with `BILLING_RESTART=1` by retaining committed outputs, skipping saved rows, and completing the pending account exactly once, +5
-Agent produces invoice, approval trace, and billing summary outputs identical to an uninterrupted multi-account and multi-file manifest run, +5
-Agent preserves invoice order and numbers, approval tiers, trace order and results, duplicate accounting, and usage totals across restart, +3
+Agent honors `BILLING_ABEND_AFTER` by processing the requested number of valid usage rows, writing the 138-byte `/app/out/checkpoint.dat` layout from `/app/docs/record_layouts.md`, and exiting with status `99`, +5
+Agent checkpoints manifest file number, record number within that file, pending account id, aggregate total, usage count, distinct batches, last usage amount, invoice counter, and accumulated summary counters needed for continuation, +5
+Agent does not emit a partial invoice for the pending account before ABEND and fails closed when `BILLING_RESTART=1` is requested without checkpoint evidence, +3
+Agent resumes with `BILLING_RESTART=1` by retaining committed invoice and trace rows, skipping saved manifest files and rows through the checkpoint cursor, and completing the pending account exactly once, +5
+Agent produces invoice, approval trace, and billing summary outputs identical byte for byte to an uninterrupted run, including ABEND inside a second manifest file and restart after an earlier account was already committed, +5
+Agent preserves invoice order and numbers, `REGIONAL+FINANCE`, duplicate counts, usage totals, positive billed totals, and exact 72-byte and 40-byte record widths across restart, +3
 Agent emits partial invoices before account completion or double-counts usage rows on restart, -5
-Agent ignores the checkpoint cursor, replays completed rows, loses pending state, or rewrites prior committed invoices incorrectly, -5
+Agent ignores the checkpoint cursor, replays completed rows, loses pending state, rewrites prior committed invoices, or succeeds on restart without `/app/out/checkpoint.dat`, -5
 Agent regresses aggregate approval, duplicate protection, or dual-stage approval while adding restart logic, -3

@@ -1,0 +1,7 @@
+{
+  "observed": [
+    {"volume_id":"vol-payments-api-0-app-data","slot":0,"attached_instance_id":"i-payments-api-1-wrong","attachment_generation":3},
+    {"volume_id":"vol-payments-api-2-app-data","slot":2,"orphaned":true}
+  ],
+  "expected": "one stable encrypted volume per logical slot with fenced attachment ownership"
+}

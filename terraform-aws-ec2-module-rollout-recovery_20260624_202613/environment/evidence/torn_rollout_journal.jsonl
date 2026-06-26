@@ -1,0 +1,3 @@
+{"event":"pilot_committed","operation_id":"rollout-example","seq":1}
+{"event":"wave_committed","operation_id":"rollout-example","seq":2}
+{"event":"rollout_completed","operation_id":"rollout-example"

@@ -1,0 +1,16 @@
+{
+  "nodes": {
+    "broker-a": {
+      "bundle_hash": "gen41",
+      "generation": 41
+    },
+    "broker-b": {
+      "bundle_hash": "gen41",
+      "generation": 41
+    },
+    "broker-c": {
+      "bundle_hash": "gen41",
+      "generation": 41
+    }
+  }
+}

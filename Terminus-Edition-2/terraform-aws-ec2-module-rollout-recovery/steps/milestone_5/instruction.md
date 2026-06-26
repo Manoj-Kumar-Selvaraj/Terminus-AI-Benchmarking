@@ -1,14 +1,20 @@
-# Enforce IMDSv2, SSM support, least-privilege IAM, and drift reporting
+# Reconcile imported state, hardening, journal damage, and manual drift
 
-You are recovering a Terraform AWS EC2 module rollout for the payments API fleet. This is offline: do not call AWS and do not require Terraform. Use `/app/tools/ec2sim.py`, `/app/docs/module_contract.md`, and `/app/evidence`.
+Service recovery exposed four remaining problems: legacy imports proposed destructive replacement, a torn final journal write blocked restart, manual instance drift was scheduled for repair instead of audit, and the instance profile still allowed unsafe metadata and broad permissions.
 
-Require IMDSv2, remove wildcard-admin policy, keep SSM/artifact/KMS/metrics permissions scoped, and report drift without replacement.
+Preserve milestones 1–4. Use `/app/docs/recovery_contract.md`, `/app/docs/module_contract.md`, `/app/evidence/import_plan_excerpt.txt`, `/app/evidence/security_review.json`, and `/app/evidence/torn_rollout_journal.jsonl`.
 
-## Success criteria
+## Required behavior
 
-- Preserve milestones 1–4 behavior.
-- `launch_template.metadata_options` has `http_tokens: required` and `http_put_response_hop_limit: 1`.
-- IAM policy must not include `"Action": ["*"]`; serialized policy must include `ssm:UpdateInstanceInformation`, `s3:GetObject`, `kms:Decrypt`, and `cloudwatch:PutMetricData`.
-- Drift on `launch_template_version` is reported with `action: report_only` without reducing instance count.
+- Require IMDSv2 with the documented endpoint and hop limit.
+- Render the exact least-privilege IAM statement Sids, actions, resources, and restrictive conditions documented in `/app/docs/recovery_contract.md`; `Effect: "Allow"` is permitted, any other effect is not, and wildcard actions are forbidden.
+- Declare every documented legacy Terraform move in `state_migrations.tf`.
+- Recover missing stable slots from legacy `Slot` tags and preserve imported instance IDs when release and capacity are unchanged.
+- Unchanged imported state has no destructive or rolling replacement actions.
+- Missing or invalid legacy slot provenance fails closed with an error containing `missing Slot tag`.
+- Report launch-template, public-IP, subnet, and security-group drift independently as `report_only` using the exact drift entry schema in `/app/docs/recovery_contract.md`, preserving actual instance state.
+- Truncate only an invalid final JSONL journal record while preserving all valid records; invalid interior corruption fails closed with an error containing `invalid interior journal record`.
+- Resume fenced in-progress rollout state idempotently after restart; a different owner fails closed with an error containing `stale rollout owner`.
+- Preserve public Terraform labels, outputs, and all earlier recovery behavior.
 
-Compatibility constraints: keep `/app/infra/modules/ec2`, all labels in `main.tf`, all outputs in `outputs.tf`, and CLI flags `plan`, `apply`, `validate`, `--config`, `--prior-state`, `--out`, `--state`. Do not hardcode sample JSON or edit verifier fixtures.
+Do not add hidden feature toggles, fabricate trusted state, erase history, auto-repair report-only drift, persist credentials, or replace imported resources to avoid migration handling.

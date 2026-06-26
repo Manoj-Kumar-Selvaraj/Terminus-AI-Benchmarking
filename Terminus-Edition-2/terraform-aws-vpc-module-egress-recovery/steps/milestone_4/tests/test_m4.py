@@ -1,12 +1,11 @@
 import json
 import os
 import subprocess
-import sys
 import tempfile
 from pathlib import Path
 
 APP = Path(os.environ.get("APP_DIR", "/app"))
-SIM = APP / "tools/vpcsim.py"
+SIM = APP / "bin" / "vpcsim"
 CFG = APP / "infra/envs/prod/vpc_config.json"
 MODULE = APP / "infra/modules/vpc"
 
@@ -21,7 +20,14 @@ def plan(c):
         out = Path(td) / "o.json"
         cp.write_text(json.dumps(c))
         r = subprocess.run(
-            [sys.executable, str(SIM), "plan", "--config", str(cp), "--out", str(out)],
+            [
+                str(SIM),
+                "plan",
+                "--config",
+                str(cp),
+                "--out",
+                str(out),
+            ],
             text=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -40,11 +46,16 @@ class TestMilestone4:
         assert fl["traffic_type"] == "ALL"
         assert fl["destination"] == c["flow_log"]["destination"]
         assert set(fl["subnet_ids"]) == {x["id"] for x in s["subnets"]}
-        assert fl["iam_policy"]["Resource"] != "*"
+        policy = fl["iam_policy"]
+        assert "Action" in policy and isinstance(policy["Action"], list)
+        assert len(policy["Action"]) > 0
+        assert "Statement" not in policy
+        assert policy["Resource"] != "*"
+        assert c["flow_log"]["log_group_arn"] in policy["Resource"]
         assert "${interface-id}" in fl["log_format"]
 
     def test_resolver_sg_only_allows_dns_from_corporate_cidrs(self):
-        """Resolver SG ingress must be TCP/UDP 53 from configured corporate CIDRs only."""
+        """Resolver SG ingress is TCP/UDP 53 from corporate CIDRs only."""
         c = cfg()
         s = plan(c)
         rules = s["resolver_security_group"]["ingress"]

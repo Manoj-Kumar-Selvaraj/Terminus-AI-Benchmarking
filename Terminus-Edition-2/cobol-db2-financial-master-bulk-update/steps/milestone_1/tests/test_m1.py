@@ -86,6 +86,9 @@ class TestMilestone1:
         assert len(rejects) == 1
         assert rejects[0]["account"] == "ACMISSING001"
         assert rejects[0]["sqlcode"] == 100
+        applied = state.get("applied_events", {})
+        assert f"{batch}|000002" not in applied
+        assert state["checkpoint"].get(batch) == 3
         assert summary["applied"] == 2
         assert summary["rejected"] == 1
 

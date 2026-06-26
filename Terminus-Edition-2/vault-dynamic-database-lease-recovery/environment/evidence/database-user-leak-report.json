@@ -1,0 +1,15 @@
+{
+  "captured_at": "2026-06-23T09:42:00Z",
+  "cross_tenant_sessions": 0,
+  "orphaned_by_request": {
+    "req-failover-17": [
+      "v_pay_341",
+      "v_pay_342"
+    ]
+  },
+  "static_fallback_sessions": 3,
+  "vault_revoked_database_active": [
+    "v_pay_330",
+    "v_pay_332"
+  ]
+}

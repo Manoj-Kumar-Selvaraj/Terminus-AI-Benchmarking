@@ -1,0 +1,7 @@
+{
+  "audience": "vault.payment-ledger.internal",
+  "issuer": "https://kubernetes.default.svc.cluster.local",
+  "namespace": "payments",
+  "service_account": "payment-ledger-api",
+  "vault_role": "payment-ledger-k8s"
+}

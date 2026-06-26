@@ -1,0 +1,51 @@
+# Rubric 1
+Agent reviews `/app/evidence/verification-trace.log`, `/app/evidence/incident-timeline.md`, `/app/docs/assertion-contract.md`, and `/app/config/issuers.json` before editing Perl verification logic, +2
+Agent repairs `/app/lib/Broker/Assertion.pm` (and related broker modules) while keeping `/app/bin/brokerctl` and the compact `SWA1` token format intact, +3
+Agent verifies legitimate `profile-ci` assertions for audience `profile-export` while preserving the claim issuer in verifier output, +5
+Agent rejects partner signing material that collides on `kid` but claims production issuer `profile-ci` or tenant `acme` without issuer binding, +5
+Agent enforces exact audience membership so `profile-export-admin` does not satisfy a request for `profile-export`, +5
+Agent accepts only `HS256` assertions and rejects unsupported algorithms such as `HS512`, +3
+Agent rejects retired issuer keys such as `legacy-1` and enforces issuer-scoped tenant and `source_epoch` minimum rules, including below-minimum epoch rejection, +3
+Agent applies configured clock skew symmetrically to `nbf`, `iat`, and `exp`, accepting exact boundary cases inside skew and rejecting outside skew for each field, +3
+Agent verifies signatures against the original compact bytes without reserializing claims and leaves `/app/state/broker-keys.json`, replay state, and journals unchanged across repeated verification, +3
+Agent disables signatures, weakens expiry or tenant checks, rewrites claim bytes before verification, or edits `/opt/task-tools` or protected manifests, -5
+Agent tampers with verifier inputs, tests, solution files, or `/opt/task-tools/capability-lab` to force a pass, -5
+Agent uses prefix or substring audience matching, globally unique KID trust, or mutates broker signer or journal identities during verification, -5
+# Rubric 2
+Agent preserves milestone 1 assertion verification while repairing tenant-scoped authorization in `/app/lib/Broker/Policy.pm` and related modules, +3
+Agent reviews `/app/evidence/policy-cache-snapshot.json` and `/app/docs/authorization-contract.md` before changing policy or cache behavior, +2
+Agent grants direct subjects only the exact requested scopes present in allow and absent from deny, +5
+Agent enforces subject deny over allow so `svc-support` cannot receive `profile:export` even when a parent allow exists, +5
+Agent isolates tenant decisions in cache so `acme` and `globex` authorization outcomes do not bleed across tenants, +5
+Agent accepts documented delegation chains such as `svc-root` to `svc-orchestrator` and returns the full actor list under `actors` while rejecting cycles, unknown principals, excessive depth, invalid edges, and non-array `act`, +5
+Agent invalidates stale cached decisions when `/app/runtime/config/policy.json` generation advances, +3
+Agent emits stable `cache_key` and canonical scope ordering so `profile:export,profile:read` and `profile:read,profile:export` share one semantic decision, +3
+Agent records the literal assertion_fingerprint claim value and policy_generation provenance in `/app/state/audit.jsonl` without signing secrets or full assertions, +3
+Agent weakens assertion checks, returns partial capabilities for unauthorized scopes, or omits `cache_key` or audit provenance fields, -5
+Agent caches decisions without tenant, actor chain, audience, exact scope set, or policy generation in the cache identity, -5
+Agent edits `/opt/task-tools`, verifier fixtures, or protected policy baselines instead of repairing broker authorization logic, -5
+# Rubric 3
+Agent preserves milestones 1 and 2 while repairing one-time exchange and replay recovery in `/app/lib/Broker/Replay.pm` and related modules, +3
+Agent reviews `/app/evidence/replay-restart.log` and `/app/docs/replay-contract.md` before changing exchange or journal behavior, +2
+Agent verifies incoming assertions against `profile-export` and mints exactly one independently verifiable capability token for the requested downstream audience on the first valid exchange tied to assertion `jti`, +5
+Agent returns the exact same token on retry of the same `operation_id` and semantic request, +5
+Agent fails closed when rebinding an `operation_id` to different scopes or reusing a `jti` under another operation, +5
+Agent converges concurrent exchange processes on one minted token and advances `next_serial` from **1001** by **1** per mint without arbitrary inflation, +5
+Agent resumes injected failures after reservation, mint, or commit without duplicate serials or tokens, calling `maybe_fail` at `AFTER_REPLAY_RESERVE`, `AFTER_TOKEN_MINT`, and `AFTER_EXCHANGE_COMMIT`, +3
+Agent reconstructs replay state from `/app/state/exchange-journal.jsonl` via `broker recover`, using checksum-bearing records, tolerating only a torn final line, and rejecting valid-JSON interior content drift, +5
+Agent double-mints capability serials, reuses assertion `jti` across operations, or skips durable reservation, mint, and commit phases, -5
+Agent ignores the checksum journal, accepts interior journal corruption on recover, or advances serials without actual mints, -5
+Agent regresses assertion verification, policy authorization, or protected `/opt/task-tools` runtime while adding replay protection, -3
+# Rubric 4
+Agent preserves milestones 1 through 3 while repairing security-generation rotation in `/app/lib/Broker/Rotation.pm` and related modules, +3
+Agent reviews `/app/evidence/rotation-rehearsal.log` and `/app/docs/rotation-contract.md` before changing rotation state or journals, +2
+Agent completes rotation only when both required verifier nodes acknowledge the exact target generation and bundle hash (for example generation `42` with `bundle-42-a8d9`), +5
+Agent ignores stale-generation or wrong-bundle acknowledgements so rotation stays blocked and `broker-v1` remains active until valid quorum, +5
+Agent switches to exactly one `active` signer (`broker-v2`), keeps the former signer `verify_only` during overlap, and `retired` afterward, +5
+Agent resumes the same `operation_id` after injected failures at `AFTER_ROTATION_PREPARE`, `AFTER_QUORUM`, `AFTER_SIGNER_SWITCH`, or `AFTER_ROTATION_JOURNAL` without split signers or lost phase, +3
+Agent returns the same committed rotation result after a lost response and reconstructs durable rotation phase and generation after `broker recover`, +3
+Agent rolls back safely to idle before signer switch and returns `forward_recovery_required` after switch without resurrecting a revoked key such as `broker-v1`, +5
+Agent preserves end-to-end assertion verification, authorization, replay idempotency, and CLI contracts across exchange plus rotation workflows, +3
+Agent activates a target signer on partial or stale quorum, reactivates revoked keys after forward recovery, or allows conflicting rotation operations to join active state, -5
+Agent edits `/opt/task-tools`, protected manifests, verifier fixtures, or rotation journals to spoof quorum or signer state, -5
+Agent regresses milestone 1-3 verification, cache isolation, one-time exchange ownership, or monotonic serial allocation while adding rotation recovery, -3

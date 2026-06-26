@@ -1,12 +1,11 @@
 import json
 import os
 import subprocess
-import sys
 import tempfile
 from pathlib import Path
 
 APP = Path(os.environ.get("APP_DIR", "/app"))
-SIM = APP / "tools/vpcsim.py"
+SIM = APP / "bin" / "vpcsim"
 CFG = APP / "infra/envs/prod/vpc_config.json"
 
 
@@ -19,7 +18,7 @@ def run(c, prior=None):
         cp = Path(td) / "c.json"
         out = Path(td) / "o.json"
         cp.write_text(json.dumps(c))
-        cmd = [sys.executable, str(SIM), "plan", "--config", str(cp), "--out", str(out)]
+        cmd = [str(SIM), "plan", "--config", str(cp), "--out", str(out)]
         if prior:
             pp = Path(td) / "p.json"
             pp.write_text(json.dumps(prior))
@@ -35,6 +34,13 @@ class TestMilestone3:
         """CIDR overlap must fail closed."""
         c = cfg()
         c["subnets"][4]["cidr"] = c["subnets"][3]["cidr"]
+        r, o = run(c)
+        assert r.returncode != 0 and "overlaps" in o["error"]
+
+    def test_partial_cidr_overlap_is_rejected(self):
+        """Partial subnet overlap must fail closed, not only identical CIDR strings."""
+        c = cfg()
+        c["subnets"][0]["cidr"] = "10.42.0.0/23"
         r, o = run(c)
         assert r.returncode != 0 and "overlaps" in o["error"]
 

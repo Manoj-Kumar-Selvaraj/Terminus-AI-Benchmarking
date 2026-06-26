@@ -1,0 +1,9 @@
+#!/bin/bash
+echo 0 > /logs/verifier/reward.txt
+pytest --ctrf /logs/verifier/ctrf.json /tests/test_m2.py -rA
+status=$?
+if [ $status -eq 0 ]; then
+  echo 1 > /logs/verifier/reward.txt
+else
+  echo 0 > /logs/verifier/reward.txt
+fi

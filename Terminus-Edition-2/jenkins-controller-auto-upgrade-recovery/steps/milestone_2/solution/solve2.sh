@@ -73,8 +73,12 @@ def m5():
         if item.get('id') not in seen:
             seen.add(item.get('id')); items.append(item)
     byid={i['id']:i for i in items}
-    byid.setdefault('q-1001', {'id':'q-1001','job':'payments-ledger/main','cause':'SCM','state':'waiting'})
-    byid.setdefault('q-1002', {'id':'q-1002','job':'shared-library/test','cause':'timer','state':'blocked'})
+    required={
+      'q-1001':{'id':'q-1001','job':'payments-ledger/main','cause':'SCM','state':'waiting'},
+      'q-1002':{'id':'q-1002','job':'shared-library/test','cause':'timer','state':'blocked'},
+    }
+    for qid,item in required.items():
+      cur=byid.get(qid,{}); cur.update(item); byid[qid]=cur
     save('jenkins_home/queue.json', {'items':[byid['q-1001'], byid['q-1002']]})
 
 m2()

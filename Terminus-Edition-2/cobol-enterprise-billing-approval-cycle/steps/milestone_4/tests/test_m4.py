@@ -9,6 +9,7 @@ from billing_test_helpers import (  # noqa: E402
     INV,
     SUMMARY,
     TRACE,
+    assert_checkpoint_layout,
     compile_program,
     fmt_usage,
     parse_invoices,
@@ -43,12 +44,16 @@ def run_abend_restart(
     write_manifest(manifest_paths)
     _, trace_clean, summary_clean = run_full()
     invoices_clean = parse_invoices(INV.read_text())
+    inv_bytes_clean = INV.read_bytes()
+    trace_bytes_clean = TRACE.read_bytes()
+    sum_bytes_clean = SUMMARY.read_bytes()
 
     clean_outputs()
     compile_program()
     abend = run_batch({"BILLING_ABEND_AFTER": str(abend_after)})
     assert abend.returncode == 99, abend.stderr or abend.stdout
     assert CHECKPOINT.exists()
+    assert_checkpoint_layout()
 
     SUMMARY.unlink(missing_ok=True)
     compile_program()
@@ -57,9 +62,12 @@ def run_abend_restart(
     invoices_final = parse_invoices(INV.read_text())
     trace_final = parse_trace(TRACE.read_text())
     summary_final = parse_summary(SUMMARY.read_text())
-    assert summary_final == summary_clean
+    assert INV.read_bytes() == inv_bytes_clean, "invoice file not identical"
+    assert TRACE.read_bytes() == trace_bytes_clean, "trace file not identical"
+    assert SUMMARY.read_bytes() == sum_bytes_clean, "summary not identical"
     assert invoices_final == invoices_clean
     assert trace_final == trace_clean
+    assert summary_final == summary_clean
     assert_output_record_widths()
     return invoices_clean, trace_clean, summary_clean
 
@@ -127,3 +135,37 @@ class TestMilestone4:
         assert [row["approval_tier"] for row in invoices] == ["AUTO", "REGIONAL"]
         assert summary["usage_rows"] == 3
         assert trace == [{"account_id": "ACCT6001", "stage": "REGIONAL", "result": "PASS"}]
+
+    def test_abend_after_first_row_writes_checkpoint(self):
+        """ABEND on the first processed row still emits a valid checkpoint."""
+        run1 = APP / "data" / "run01.usg"
+        write_prior([])
+        write_manifest(["/app/data/run01.usg"])
+        write_usage(
+            run1,
+            [
+                fmt_usage("ACCT7001", "BATCH7", "0001", 120000),
+                fmt_usage("ACCT7001", "BATCH7", "0002", 130000),
+            ],
+        )
+        from billing_test_helpers import clean_outputs
+
+        clean_outputs()
+        compile_program()
+        abend = run_batch({"BILLING_ABEND_AFTER": "1"})
+        assert abend.returncode == 99
+        assert_checkpoint_layout()
+        assert CHECKPOINT.read_text()[8:16].strip() == "ACCT7001"
+
+    def test_restart_without_checkpoint_fails_closed(self):
+        """Restart must not succeed when checkpoint evidence is missing."""
+        run1 = APP / "data" / "run01.usg"
+        write_prior([])
+        write_manifest(["/app/data/run01.usg"])
+        write_usage(run1, [fmt_usage("ACCT8001", "BATCH8", "0001", 150000)])
+        from billing_test_helpers import clean_outputs
+
+        clean_outputs()
+        compile_program()
+        resumed = run_batch({"BILLING_RESTART": "1"})
+        assert resumed.returncode != 0

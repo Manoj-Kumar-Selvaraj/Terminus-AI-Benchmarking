@@ -6,21 +6,12 @@ import yaml
 
 APP = Path("/app")
 POL = APP / "k8s" / "networkpolicy.yaml"
-NAMESPACES = {
-    "payments": {"kubernetes.io/metadata.name": "payments", "name": "payments"},
-    "kube-system": {"kubernetes.io/metadata.name": "kube-system", "name": "kube-system"},
-    "ledger": {"kubernetes.io/metadata.name": "ledger", "name": "ledger"},
-    "identity": {"kubernetes.io/metadata.name": "identity", "name": "identity"},
-    "default": {"kubernetes.io/metadata.name": "default", "name": "default"},
-}
-PODS = {
-    "payment-adapter": ("payments", {"app": "payment-adapter", "component": "invoice-batch"}),
-    "kube-dns": ("kube-system", {"k8s-app": "kube-dns"}),
-    "ledger-api": ("ledger", {"app": "ledger-api"}),
-    "token-service": ("identity", {"app": "token-service"}),
-    "internet-proxy": ("default", {"app": "proxy"}),
-}
-IPS = {"audit-endpoint": "10.44.0.55", "blocked-audit": "10.44.0.200", "external": "8.8.8.8"}
+TOPOLOGY = APP / "config" / "simulator" / "topology.yaml"
+
+
+def load_topology():
+    data = yaml.safe_load(TOPOLOGY.read_text())
+    return data["namespaces"], data["pods"], data["ips"]
 
 
 def match_labels(labels, sel):
@@ -31,7 +22,6 @@ def match_labels(labels, sel):
 
 
 def cidr_contains(cidr, ip):
-    # tiny fixture-aware matcher sufficient for tests
     return (
         cidr == "0.0.0.0/0"
         or (cidr == "10.44.0.0/24" and ip.startswith("10.44.0."))
@@ -39,13 +29,13 @@ def cidr_contains(cidr, ip):
     )
 
 
-def allowed(dest, proto, port):
+def allowed(dest, proto, port, namespaces, pods, ips):
     doc = yaml.safe_load(POL.read_text())
     if doc.get("kind") != "NetworkPolicy":
         return False
     if doc.get("metadata", {}).get("namespace") != "payments":
         return False
-    if not match_labels(PODS["payment-adapter"][1], doc.get("spec", {}).get("podSelector", {})):
+    if not match_labels(pods["payment-adapter"]["labels"], doc.get("spec", {}).get("podSelector", {})):
         return False
     for rule in doc.get("spec", {}).get("egress", []) or []:
         port_ok = any(
@@ -55,18 +45,19 @@ def allowed(dest, proto, port):
         if not port_ok:
             continue
         for to in rule.get("to", []) or []:
-            if dest in PODS:
-                ns, labels = PODS[dest]
+            if dest in pods:
+                ns = pods[dest]["namespace"]
+                labels = pods[dest]["labels"]
                 ns_ok = (
-                    match_labels(NAMESPACES[ns], to.get("namespaceSelector"))
+                    match_labels(namespaces[ns], to.get("namespaceSelector"))
                     if "namespaceSelector" in to
                     else (ns == "payments")
                 )
                 pod_ok = match_labels(labels, to.get("podSelector")) if "podSelector" in to else True
                 if ns_ok and pod_ok:
                     return True
-            if dest in IPS and "ipBlock" in to:
-                ip = IPS[dest]
+            if dest in ips and "ipBlock" in to:
+                ip = ips[dest]
                 block = to["ipBlock"]
                 if cidr_contains(block.get("cidr", ""), ip) and all(
                     not cidr_contains(exc, ip) for exc in block.get("except", []) or []
@@ -79,7 +70,8 @@ def main():
     if len(sys.argv) != 4:
         print("usage: simulate_egress.py DEST PROTO PORT", file=sys.stderr)
         return 2
-    print("ALLOW" if allowed(sys.argv[1], sys.argv[2], int(sys.argv[3])) else "DENY")
+    namespaces, pods, ips = load_topology()
+    print("ALLOW" if allowed(sys.argv[1], sys.argv[2], int(sys.argv[3]), namespaces, pods, ips) else "DENY")
 
 
 if __name__ == "__main__":

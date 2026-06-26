@@ -1,6 +1,6 @@
 # Restore same-AZ app egress and isolated data routes
 
-You are on the network platform rotation for a failed Terraform AWS VPC module rollout. This is offline: do not call AWS and do not require Terraform. Use `/app/tools/vpcsim.py`, `/app/docs/module_contract.md`, and `/app/evidence` to diagnose the incident.
+You are on the network platform rotation for a failed Terraform AWS VPC module rollout. This is offline: do not call AWS and do not require Terraform. Use `/app/bin/vpcsim`, `/app/docs/module_contract.md`, and `/app/evidence` to diagnose the incident. Repair logic in `/app/infra/modules/vpc/module.go` and rebuild with `go build -o /app/bin/vpcsim /app/cmd/vpcsim`.
 
 ## Requirements
 

@@ -153,11 +153,14 @@ Oracle solutions should be deterministic, idempotent when practical, and scoped 
 
 For milestone tasks:
 
-- `solve.sh` should be a thin wrapper that uses `SCRIPT_DIR`
-- `solveN.sh` should contain the milestone N repair
-- avoid wrappers that depend on absolute local repository paths
-- ensure oracle scripts are present in the current milestone's mounted solution directory
+- `solve.sh` should be a thin wrapper that uses `SCRIPT_DIR` and calls only local `solveN.sh`
+- each `solveN.sh` must be a **standalone cumulative** fix for milestones 1 through N from the broken starter codebase
+- do **not** chain prior milestone solves inside `solveN.sh` (for example `solve3.sh` calling `solve2.sh`)
+- avoid wrappers that depend on absolute local repository paths or `/steps/milestone_*` paths
+- validate both cumulative oracle and isolated per-milestone `/solution` mounts before submission
 - keep hidden oracle code out of the Docker image
+
+See `documentation/MILESTONE_ORACLE_SOLUTION_RULES.md` for the full portal-safe pattern.
 
 If an oracle embeds substantial source code, prefer separate source files copied by the solve script when that matches the local convention.
 

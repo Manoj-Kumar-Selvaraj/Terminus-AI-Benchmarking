@@ -231,7 +231,7 @@ bash /steps/milestone_1/solution/solve1.sh          # bad
 bash "$SCRIPT_DIR/../../milestone_1/solution/solve1.sh"  # bad
 ```
 
-Use `$SCRIPT_DIR/solveN.sh` in each milestone's `solve.sh`. Do **not** chain prior milestones inside `solveN.sh`; the container filesystem persists across steps, so each oracle step applies only that milestone's delta.
+Use `$SCRIPT_DIR/solveN.sh` in each milestone's `solve.sh`. Each `solveN.sh` must be a **standalone cumulative** fix for milestones 1 through N from the broken starter codebase. Do **not** call prior milestone `solve*.sh` scripts from inside `solveN.sh`. See [MILESTONE_ORACLE_SOLUTION_RULES.md](MILESTONE_ORACLE_SOLUTION_RULES.md).
 
 ### Dead oracle replacements
 

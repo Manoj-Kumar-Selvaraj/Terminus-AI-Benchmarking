@@ -1,31 +1,41 @@
 # Rubric 1
-Agent inspects upgrade evidence and the platform contract before changing EKS topology, +2
-Agent restores private EKS module with private subnet IDs and disabled public endpoint, +5
-Agent splits eks_managed_node_groups into system, apps, and batch with nodepool labels, +5
-Agent applies CriticalAddonsOnly NO_SCHEDULE taint on the system node group, +3
-Agent removes the collapsed default managed node group, +3
-Agent leaves public subnet wiring or a single default worker pool in place, -5
+Agent inspects `/app/evidence/upgrade_failure.log` and `/app/docs/platform_upgrade_contract.md` before editing EKS topology, +2
+Agent restores private EKS access with `cluster_endpoint_public_access = false`, `cluster_endpoint_private_access = true`, and a real `subnet_ids` assignment to `var.private_subnet_ids`, +5
+Agent retains the pinned EKS module version `20.0.0` and keeps `cluster_name = var.cluster_name` without changing cluster identity, +5
+Agent splits `eks_managed_node_groups` into `system`, `apps`, and `batch` with matching `nodepool` labels inside each group entry, +5
+Agent applies the `CriticalAddonsOnly` / `true` / `NO_SCHEDULE` taint only inside the `system` managed-node-group entry, +3
+Agent preserves unrelated Terraform files `addons.tf`, `karpenter.tf`, `outputs.tf`, and `variables.tf` for later milestones, +2
+Agent leaves public subnet wiring, a collapsed `default` worker pool, or comment-only node-group shortcuts in place, -5
+Agent edits verifier fixtures, tests, solution files, or removes later-milestone Terraform files to force a pass, -5
 # Rubric 2
-Agent preserves milestone 1 private topology while fixing add-on IAM boundaries, +3
-Agent version-pins vpc-cni, coredns, kube-proxy, and aws-ebs-csi-driver with resolve_conflicts_on_update, +5
-Agent wires EBS CSI and ALB Controller through IRSA service account modules, +5
-Agent binds kube-system:ebs-csi-controller-sa and kube-system:aws-load-balancer-controller with role-arn annotations, +3
-Agent attaches AdministratorAccess, node_addon_admin, or wildcard IAM to node roles, -5
+Agent preserves milestone 1 private topology while repairing add-on IAM boundaries, +3
+Agent connects `cluster_addons` to the `module "eks"` block and version-pins `vpc-cni`, `coredns`, `kube-proxy`, and `aws-ebs-csi-driver` with `resolve_conflicts_on_update = "PRESERVE"`, +5
+Agent creates pinned `ebs_csi_irsa` and `alb_controller_irsa` modules using `iam-role-for-service-accounts-eks`, +5
+Agent binds `kube-system:ebs-csi-controller-sa` and `kube-system:aws-load-balancer-controller` with non-empty `eks.amazonaws.com/role-arn` values referencing real IAM roles, +3
+Agent removes `aws_iam_role_policy_attachment.node_addon_admin` and all `AdministratorAccess` references, +3
+Agent leaves add-ons unpinned, keeps `cluster_addons` disconnected from the EKS module, or uses empty role-arn annotations, -5
+Agent reintroduces `AdministratorAccess`, `node_addon_admin`, or wildcard IAM `Action` / `Resource` grants under any HCL whitespace formatting, -5
 # Rubric 3
-Agent preserves prior milestone EKS and IRSA fixes while correcting Karpenter placement, +3
-Agent provisions Karpenter interruption queue and private discovery selectors, +5
-Agent creates regulated-on-demand NodePool with on-demand capacity only, +5
-Agent updates scheduling_report.json with on-demand regulated workloads and keeps evidence entries, +3
-Agent deletes regulated workload evidence or leaves regulated workloads on spot/default pools, -5
+Agent preserves milestones 1 and 2 while correcting Karpenter placement in `/app/terraform/karpenter.tf`, +3
+Agent provisions a real `aws_sqs_queue` resource whose name contains `karpenter-interruption` and a pinned `karpenter_irsa` module, +5
+Agent defines `regulated-on-demand` with parsed on-demand-only `karpenter.sh/capacity-type` requirements and a private `nodeClassRef`, +5
+Agent configures private `subnetSelectorTerms` and `securityGroupSelectorTerms` using `karpenter.sh/discovery` tags without public subnet identifiers, +3
+Agent updates `/app/fixtures/scheduling_report.json` with nonempty `regulated_workloads`, keeps `settlement-ledger`, and preserves `addon_pods`, +3
+Agent satisfies Karpenter checks with comments or string literals instead of real queue, IRSA, and NodePool resources, -5
+Agent deletes regulated workload evidence or leaves `spot` references anywhere in the regulated resource, or leaves regulated workloads on default pools, -5
 # Rubric 4
-Agent preserves recovered cluster and add-on configuration while restoring compatibility outputs, +3
-Agent exposes all six legacy Terraform outputs with real module or var expressions, +5
-Agent adds addon_irsa_role_arns and removes cluster_endpoint_url-only rename, +3
-Agent includes moved block from node_addon_admin to module.ebs_csi_irsa, +5
-Agent writes empty-string output stubs or omits required legacy output names, -5
+Agent preserves recovered cluster, add-on, and Karpenter configuration while repairing `/app/terraform/outputs.tf`, +3
+Agent exposes all six legacy outputs with real `module.` or `var.` value expressions and removes `cluster_endpoint_url`, +5
+Agent makes `addon_irsa_role_arns` reference recovered module role ARNs for `ebs_csi`, `load_balancer`, and `karpenter`, +3
+Agent retains exact EKS module version pin `20.0.0` and records the paired `moved` block from `node_addon_admin` to `module.ebs_csi_irsa`, +3
+Agent keeps all `.tf` files structurally balanced with complete output blocks, +2
+Agent writes empty-string output stubs, omits required legacy output names, or reintroduces broad node administration, -5
+Agent regresses milestones 1 through 3 topology, IRSA, or Karpenter placement while restoring outputs, -5
 # Rubric 5
-Agent preserves recovered Terraform while applying final upgrade guardrails, +3
-Agent removes node_addon_admin and AdministratorAccess from Terraform sources, +5
-Agent updates plan.json so protected cluster, security group, and node groups are not replaced, +5
-Agent keeps all six legacy outputs in plan configuration and passes plan_guard.py, +5
-Agent edits plan.json without fixing Terraform or reintroduces broad node admin attachments, -5
+Agent preserves cumulative Terraform recovery across all prior milestones while finishing the plan guard, +3
+Agent keeps `system`, `apps`, and `batch` node groups in `eks.tf` with pinned add-ons and `PRESERVE` conflict handling, +3
+Agent retains structural Karpenter recovery with regulated on-demand placement and interruption queue evidence in Terraform, +3
+Agent updates `/app/fixtures/plan.json` so protected cluster, security group, and node groups use only `no-op`, `read`, or `update`, +5
+Agent keeps all six legacy outputs in plan configuration and makes `/app/scripts/plan_guard` exit zero with `{"ok": true}`, +5
+Agent edits `plan.json` without fixing Terraform, deletes protected resource evidence, or reintroduces `node_addon_admin` / `AdministratorAccess`, -5
+Agent regresses private endpoint settings, IRSA boundaries, regulated Karpenter placement, or compatibility outputs while passing the plan guard superficially, -5

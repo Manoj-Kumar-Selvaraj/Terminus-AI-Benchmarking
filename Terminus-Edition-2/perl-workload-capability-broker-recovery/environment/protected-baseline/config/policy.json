@@ -1,0 +1,93 @@
+{
+  "capability_audience": "profile-export-api",
+  "generation": 41,
+  "max_delegation_depth": 2,
+  "tenants": {
+    "acme": {
+      "delegations": [
+        {
+          "from": "svc-root",
+          "scopes": [
+            "profile:read",
+            "profile:export"
+          ],
+          "to": "svc-orchestrator"
+        },
+        {
+          "from": "svc-orchestrator",
+          "scopes": [
+            "profile:read",
+            "profile:export"
+          ],
+          "to": "svc-exporter"
+        },
+        {
+          "from": "svc-support",
+          "scopes": [
+            "profile:read"
+          ],
+          "to": "svc-exporter"
+        }
+      ],
+      "subjects": {
+        "svc-exporter": {
+          "allow": [
+            "profile:read",
+            "profile:export"
+          ],
+          "deny": []
+        },
+        "svc-orchestrator": {
+          "allow": [
+            "profile:read",
+            "profile:export"
+          ],
+          "deny": []
+        },
+        "svc-root": {
+          "allow": [
+            "profile:read",
+            "profile:export"
+          ],
+          "deny": []
+        },
+        "svc-support": {
+          "allow": [
+            "profile:read",
+            "profile:export"
+          ],
+          "deny": [
+            "profile:export"
+          ]
+        }
+      }
+    },
+    "globex": {
+      "delegations": [
+        {
+          "from": "svc-orchestrator",
+          "scopes": [
+            "profile:read"
+          ],
+          "to": "svc-exporter"
+        }
+      ],
+      "subjects": {
+        "svc-exporter": {
+          "allow": [
+            "profile:read"
+          ],
+          "deny": [
+            "profile:export"
+          ]
+        },
+        "svc-orchestrator": {
+          "allow": [
+            "profile:read"
+          ],
+          "deny": []
+        }
+      }
+    }
+  }
+}

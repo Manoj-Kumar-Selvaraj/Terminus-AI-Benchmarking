@@ -1,0 +1,31 @@
+{
+  "allowed_statuses": [
+    "ACTIVE",
+    "PAUSED",
+    "SUSPENDED",
+    "CLOSED"
+  ],
+  "compatibility_transformations": {
+    "account_status.status": {
+      "SUSPENDED_LEGACY": "SUSPENDED"
+    }
+  },
+  "foreign_keys": {
+    "account_status": "customer_id",
+    "communication_preference": "customer_id",
+    "contact_method": "customer_id",
+    "profile_audit": "customer_id"
+  },
+  "nullable_columns": [
+    "customer_profile.middle_name",
+    "contact_method.verified_at",
+    "communication_preference.quiet_hours_start",
+    "communication_preference.quiet_hours_end"
+  ],
+  "schema_version": 3,
+  "source_limits": {
+    "contact_method.value": 320,
+    "customer_profile.display_name": 120,
+    "profile_audit.payload": 2048
+  }
+}

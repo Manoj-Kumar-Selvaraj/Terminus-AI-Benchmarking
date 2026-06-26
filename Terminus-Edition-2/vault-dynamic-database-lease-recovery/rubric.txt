@@ -1,0 +1,51 @@
+# Rubric 1
+Agent reviews `/app/evidence/incident-timeline.md`, `/app/evidence/kubernetes-auth-denial.log`, and `/app/docs/identity-contract.md` before editing Go authentication logic, +2
+Agent repairs Kubernetes workload authentication in the Go lease agent while keeping `/app/build/lease-agent`, CLI flags, and JSON response envelopes compatible, +3
+Agent accepts only the documented payment workload identity `system:serviceaccount:payments:payment-ledger-api` with namespace `payments` and service account `payment-ledger-api`, +5
+Agent rejects similarly named workloads in other namespaces or with prefix-collision subjects using documented codes such as `WRONG_NAMESPACE` and `WRONG_SERVICE_ACCOUNT`, +5
+Agent enforces issuer, audience, signature, expiry, and required-claim validation with stable documented failure codes and no secret leakage in errors or logs, +5
+Agent derives the Vault role from `/app/config/kubernetes-auth.json` and rejects tokens that attempt to select a different database role or privileged Vault role, +3
+Agent leaves invalid authentication without creating a lease, database user, or connection pool and keeps repeated valid logins deterministic, +3
+Agent disables signature or claim checks, logs raw JWTs, authorizes from labels or request parameters, or edits `/opt/task-tools/vault-db-runtime` or protected fixtures, -5
+Agent tampers with verifier inputs, solution files, or evidence to force a pass instead of repairing Go authentication logic, -5
+# Rubric 2
+Agent preserves milestone 1 authentication while repairing lease renewal in Go credential modules, +3
+Agent reviews `/app/evidence/lease-expiry-trace.log`, `/app/evidence/renewal-loop.log`, and `/app/docs/lease-lifecycle-contract.md` before changing renewal behavior, +2
+Agent renews only inside the configured safety window, preserves lease ID, username, owner, and generation, and never issues another database user on renewal, +5
+Agent throttles renewal with `minimumRenewalIntervalSeconds` so attempts inside the window but sooner than 30 seconds after the last successful renewal return `NO_ACTION`, +5
+Agent clamps renewal targets to `max_expires_at`, returns `ROTATION_REQUIRED` when renewal is no longer legal, and keeps expired or revoked leases unusable, +5
+Agent retries transient renewal failures with bounded deterministic backoff while the still-valid lease remains usable, +3
+Agent rejects clock regression with `CLOCK_REGRESSION`, malformed durable timestamps with `MALFORMED_LEASE`, and reconstructs renewal state after process restart without `time.Sleep` or `time.Now`, +5
+Agent sleeps until expiry, extends TTLs beyond policy, substitutes static credentials, deletes lease state, or creates replacement database users during renewal retries, -5
+Agent regresses milestone 1 authentication or edits `/opt/task-tools` or protected runtime hashes instead of repairing renewal logic, -5
+# Rubric 3
+Agent preserves milestones 1 and 2 while repairing pool rotation, revocation, and database privilege enforcement in Go, +3
+Agent reviews `/app/evidence/connection-pool-errors.log`, `/app/evidence/revocation-failure.log`, `/app/evidence/database-user-leak-report.json`, and `/app/docs/connection-rotation-contract.md` before changing rotation behavior, +2
+Agent validates a candidate credential before pool swap and leaves the prior healthy generation active when validation or candidate creation fails, +5
+Agent atomically publishes one active generation per pod, blocks new work on retired generations, and honors the documented 45-second in-flight drain grace, +5
+Agent revokes the old lease after a successful swap and rejects new authentication for revoked database users while keeping failed revocations retryable and isolated, +5
+Agent enforces least privilege through the trusted runtime for allowed payment operations and denies `CREATE_ROLE`, `DROP_TABLE`, `ALTER_TABLE`, `GRANT_PRIVILEGES`, `SELECT_IDENTITY_SECRETS`, and cross-tenant access, +5
+Agent recovers restart during rotation to one valid active generation and never selects the static break-glass reference as an application fallback, +3
+Agent swaps pools before credential validation, grants wildcard privileges, marks revocation successful without a runtime operation, or globally serializes unrelated lifecycle work, -5
+Agent regresses authentication, renewal windows, or protected runtime integrity while adding rotation and revocation recovery, -3
+# Rubric 4
+Agent preserves milestones 1 through 3 while repairing issuance replay and failover reconciliation in Go, +3
+Agent reviews `/app/evidence/failover-issuance-trace.log` and `/app/docs/failover-recovery-contract.md` before changing issuance or recovery behavior, +2
+Agent treats each documented issuance operation as one logical credential across retry, lost response, process restart, and active-node failover, +5
+Agent returns or adopts the existing lease for identical replay, rejects conflicting reuse of the same `request_id`, and reconciles orphaned users or incomplete leases without privilege expansion, +5
+Agent commits issuance only on the current active Vault node and epoch and rejects stale-node or stale-epoch outcomes after failover, +5
+Agent isolates request-scoped failures so one stuck issuance does not block unrelated pods or request IDs and unrelated issuances can proceed concurrently without a process-wide lifecycle mutex, +5
+Agent tolerates a torn final journal tail during recovery, rejects malformed committed interior journal history, and keeps durable request history across repeated restarts, +3
+Agent mints a new database user on every retry, resets request history during failover, fabricates simulator state, or solves concurrency with a global issuance lock, -5
+Agent regresses milestone 1-3 authentication, renewal, rotation, or least-privilege behavior while adding failover recovery, -3
+# Rubric 5
+Agent preserves milestones 1 through 4 while completing mixed protocol rollout and ownership-safe recovery in Go, +3
+Agent reviews `/app/docs/failover-recovery-contract.md`, `/app/docs/connection-rotation-contract.md`, and the complete incident timeline before changing protocol or ownership behavior, +2
+Agent serves protocol version 1 with exactly the legacy response fields and protocol version 2 with extended issuance, generation, and owner metadata without cross-version credential sharing, +5
+Agent rejects empty request owners with `MISSING_OWNER`, blocks cross-pod issuance or rotation with `WORKLOAD_OWNERSHIP_DENIED`, and denies renew or revoke on another pod's lease with `LEASE_OWNERSHIP_DENIED`, +5
+Agent rejects renewal of superseded generations with `SUPERSEDED_LEASE` or `LEASE_REVOKED` and keeps each pod's lease ownership isolated across mixed-version fleets, +5
+Agent recovers restart during pool creation, swap, and old-lease cleanup by selecting one valid active generation, preserving a healthy old pool until replacement is ready, and finishing cleanup without availability gaps, +5
+Agent supports rollout from version 1 to version 2 and rollback to version 1 while a valid credential exists and makes repeated completed reconciliation idempotent with zero further durable changes, +3
+Agent persists only opaque `password_reference` values and keeps raw tokens and password material out of logs, journals, checkpoints, and application snapshots, +3
+Agent weakens ownership checks, exposes credentials across pods, uses break-glass static access in application workflows, or edits protected runtime or verifier fixtures to spoof recovery, -5
+Agent regresses milestone 1-4 authentication, renewal, rotation, failover replay, or concurrency safety while completing mixed-version rollout, -3

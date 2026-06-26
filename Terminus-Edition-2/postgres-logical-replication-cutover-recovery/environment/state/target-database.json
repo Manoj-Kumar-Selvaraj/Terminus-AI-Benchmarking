@@ -1,0 +1,256 @@
+{
+  "accepted_transaction_ids": [],
+  "cluster": "profile-primary-new",
+  "current_lsn": "0/500",
+  "rollback_applied_transaction_ids": [],
+  "schema": {
+    "schema_version": 3,
+    "tables": {
+      "account_status": {
+        "columns": {
+          "changed_at": {
+            "nullable": false,
+            "type": "TIMESTAMPTZ"
+          },
+          "customer_id": {
+            "nullable": false,
+            "type": "BIGINT"
+          },
+          "status": {
+            "length": 32,
+            "nullable": false,
+            "type": "VARCHAR"
+          },
+          "status_id": {
+            "nullable": false,
+            "type": "BIGINT"
+          }
+        },
+        "pk": "status_id",
+        "replica_identity": "primary_key"
+      },
+      "communication_preference": {
+        "columns": {
+          "channel": {
+            "length": 16,
+            "nullable": false,
+            "type": "VARCHAR"
+          },
+          "customer_id": {
+            "nullable": false,
+            "type": "BIGINT"
+          },
+          "enabled": {
+            "nullable": false,
+            "type": "BOOLEAN"
+          },
+          "preference_id": {
+            "nullable": false,
+            "type": "BIGINT"
+          },
+          "quiet_hours_end": {
+            "nullable": true,
+            "type": "TEXT"
+          },
+          "quiet_hours_start": {
+            "nullable": true,
+            "type": "TEXT"
+          }
+        },
+        "pk": "preference_id",
+        "replica_identity": "primary_key"
+      },
+      "contact_method": {
+        "columns": {
+          "contact_id": {
+            "nullable": false,
+            "type": "BIGINT"
+          },
+          "customer_id": {
+            "nullable": false,
+            "type": "BIGINT"
+          },
+          "kind": {
+            "length": 16,
+            "nullable": false,
+            "type": "VARCHAR"
+          },
+          "value": {
+            "length": 320,
+            "nullable": false,
+            "type": "VARCHAR"
+          },
+          "verified_at": {
+            "nullable": true,
+            "type": "TIMESTAMPTZ"
+          }
+        },
+        "pk": "contact_id",
+        "replica_identity": "primary_key"
+      },
+      "customer_profile": {
+        "columns": {
+          "customer_id": {
+            "nullable": false,
+            "type": "BIGINT"
+          },
+          "display_name": {
+            "length": 120,
+            "nullable": false,
+            "type": "VARCHAR"
+          },
+          "email": {
+            "nullable": false,
+            "type": "TEXT"
+          },
+          "middle_name": {
+            "length": 80,
+            "nullable": true,
+            "type": "VARCHAR"
+          }
+        },
+        "pk": "customer_id",
+        "replica_identity": "primary_key"
+      },
+      "migration_heartbeat": {
+        "columns": {
+          "heartbeat_id": {
+            "nullable": false,
+            "type": "BIGINT"
+          },
+          "observed_at": {
+            "nullable": false,
+            "type": "TIMESTAMPTZ"
+          }
+        },
+        "pk": "heartbeat_id",
+        "replica_identity": "primary_key"
+      },
+      "profile_audit": {
+        "columns": {
+          "audit_id": {
+            "nullable": false,
+            "type": "BIGINT"
+          },
+          "created_at": {
+            "nullable": false,
+            "type": "TIMESTAMPTZ"
+          },
+          "customer_id": {
+            "nullable": false,
+            "type": "BIGINT"
+          },
+          "event_type": {
+            "length": 32,
+            "nullable": false,
+            "type": "VARCHAR"
+          },
+          "payload": {
+            "length": 2048,
+            "nullable": false,
+            "type": "VARCHAR"
+          }
+        },
+        "pk": "audit_id",
+        "replica_identity": "primary_key"
+      },
+      "replication_probe": {
+        "columns": {
+          "payload": {
+            "nullable": false,
+            "type": "TEXT"
+          },
+          "probe_id": {
+            "nullable": false,
+            "type": "BIGINT"
+          }
+        },
+        "pk": "probe_id",
+        "replica_identity": "primary_key"
+      }
+    }
+  },
+  "sequences": {
+    "account_status_status_id_seq": 4001,
+    "communication_preference_preference_id_seq": 3001,
+    "contact_method_contact_id_seq": 2001,
+    "customer_profile_customer_id_seq": 1001,
+    "profile_audit_audit_id_seq": 5001
+  },
+  "source_epoch": 7,
+  "tables": {
+    "account_status": [
+      {
+        "changed_at": "2026-05-01T10:00:00Z",
+        "customer_id": 1001,
+        "status": "ACTIVE",
+        "status_id": 4001
+      },
+      {
+        "changed_at": "2026-05-02T10:00:00Z",
+        "customer_id": 1002,
+        "status": "PAUSED",
+        "status_id": 4002
+      }
+    ],
+    "communication_preference": [
+      {
+        "channel": "email",
+        "customer_id": 1001,
+        "enabled": true,
+        "preference_id": 3001,
+        "quiet_hours_end": null,
+        "quiet_hours_start": null
+      }
+    ],
+    "contact_method": [
+      {
+        "contact_id": 2001,
+        "customer_id": 1001,
+        "kind": "phone",
+        "value": "+15550000001",
+        "verified_at": null
+      },
+      {
+        "contact_id": 2002,
+        "customer_id": 1002,
+        "kind": "email",
+        "value": "daniel.alt@example.test",
+        "verified_at": "2026-06-01T09:00:00Z"
+      }
+    ],
+    "customer_profile": [
+      {
+        "customer_id": 1001,
+        "display_name": "Asha Rao",
+        "email": "asha@example.test",
+        "middle_name": null
+      },
+      {
+        "customer_id": 1002,
+        "display_name": "Daniel Cho",
+        "email": "daniel@example.test",
+        "middle_name": "K"
+      }
+    ],
+    "migration_heartbeat": [
+      {
+        "heartbeat_id": 1,
+        "observed_at": "2026-06-17T09:00:00Z"
+      }
+    ],
+    "profile_audit": [
+      {
+        "audit_id": 5001,
+        "created_at": "2026-05-01T10:00:00Z",
+        "customer_id": 1001,
+        "event_type": "PROFILE_CREATED",
+        "payload": "{\"actor\": \"seed\"}"
+      }
+    ],
+    "replication_probe": []
+  },
+  "target_write_sequence": 0,
+  "transaction_ledger": [],
+  "writable": false
+}

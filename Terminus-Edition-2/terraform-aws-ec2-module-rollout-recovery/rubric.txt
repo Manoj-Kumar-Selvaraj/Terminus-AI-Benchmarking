@@ -1,31 +1,47 @@
 # Rubric 1
-Agent inspects release artifact evidence and module contract before changing module logic, +2
-Agent pins launch template AMI user-data hash commit and build to release_artifact, +5
-Agent fails closed on every missing release_artifact field with named errors, +5
-Agent preserves instance CommitSha and BuildId tags from artifact provenance, +3
-Agent keeps ec2sim plan apply validate and prior-state state CLI compatibility, +3
-Agent hardcodes ami_catalog.latest or bypasses release_artifact validation, -5
+Agent repairs the Go simulator module at `/app/infra/modules/ec2/module.go` while preserving the `/app/tools/ec2sim` CLI and public Terraform labels, +2
+Agent uses the approved `release_artifact` identity instead of mutable AMI catalog aliases, +5
+Agent validates manifest digest, required fields, AMI owner, architecture, availability, and deprecation with field-specific failures, +5
+Agent produces deterministic launch-template versions, state digests, and release provenance tags including `ReleaseManifestSha256`, +5
+Agent preserves same-release launch-template and logical instance identity across replans, +3
+Agent hardcodes sample AMIs, edits `/app/tools/ec2sim`, calls AWS or Terraform, or fabricates output JSON, -5
+Agent lets missing, tampered, deprecated, wrong-owner, or unavailable release artifacts proceed, -5
+
 # Rubric 2
-Agent preserves milestone 1 artifact pinning while fixing placement and ingress, +3
-Agent keeps instances in private_app subnets with public_ip_associated false, +5
-Agent restricts security group ingress to ALB TCP 8080 only, +5
-Agent rejects non-private_app subnet tiers with private_app in validate errors, +3
-Agent reopens SSH or public admin ingress on the service security group, -5
+Agent preserves the Go simulator's milestone 1 release identity behavior while repairing private placement and security boundaries, +3
+Agent places all instances in eligible `private_app` subnets in the configured account with no public IPs, +5
+Agent balances capacity across unique eligible AZs and preserves logical slot placement through subnet reordering, AZ expansion, and scale-out, +5
+Agent renders exact ALB ingress and endpoint/resolver egress rule schemas from `/app/docs/network_contract.md`, +5
+Agent rejects duplicate or malformed subnet, AZ, security-group, prefix-list, and service-port inputs with field-specific errors, +5
+Agent uses list position for slot placement, broad public CIDRs, public subnets, or one-subnet serialization, -5
+Agent omits invalid service-port or malformed network identifier validation, -3
+
 # Rubric 3
-Agent preserves prior milestones while implementing safe instance refresh, +3
-Agent uses canary-then-batch strategy with min healthy percentage at least 90, +5
-Agent rolls back failed candidate health keeping prior capacity and instance IDs, +5
-Agent keeps plan idempotent with prior-state without duplicating instances, +3
-Agent uses terminate-first refresh that drops capacity on canary failure, -5
+Agent preserves the Go simulator's release and network guarantees while implementing fenced `pilot-then-wave` rollout, +3
+Agent enforces max-unavailable and healthy-capacity invariants for any valid desired capacity, +5
+Agent rolls back failed pilot or wave health to the complete prior fleet and records previous-capacity preservation, +5
+Agent writes durable in-progress state before lost-response failure and resumes at the first unfinished slot without duplicates, +5
+Agent derives operation identity from application, environment, source release, target release, and desired capacity, +5
+Agent fences stale owners and changed target releases during in-progress operations, -5
+Agent deletes durable progress, regenerates duplicate identities, or hides failures with sleeps or retries, -5
+
 # Rubric 4
-Agent preserves milestones 1-3 while attaching encrypted data volumes, +3
-Agent attaches non-orphaned KMS encrypted volumes per instance with ManagedBy tag, +5
-Agent keeps delete_on_termination false for stateful data volumes, +3
-Agent rejects unencrypted volume definitions with unencrypted in validate errors, +3
-Agent leaves instances without encrypted attached volumes or marks them orphaned, -5
+Agent preserves prior Go simulator release, network, and rollout behavior while adding stateful EBS continuity, +3
+Agent emits one encrypted non-orphaned retained volume per logical slot and configured logical volume definition, +5
+Agent derives volume IDs from application, slot, and logical name rather than transient instance IDs, +5
+Agent increments attachment generation exactly once on replacement and computes the documented deterministic attachment token, +5
+Agent preserves attachments on rollback and lost-response replay without double increments or orphaned volumes, +5
+Agent validates encryption, KMS alias/account, delete-on-termination, duplicate logical names, and cross-slot prior attachments, +5
+Agent silently repairs cross-slot ownership, deletes retained data, or derives volume identity from instance IDs, -5
+Agent omits exact EBS output fields or volume tags including `VolumeRole`, -3
+
 # Rubric 5
-Agent preserves milestones 1-4 while hardening metadata IAM and drift handling, +3
-Agent requires IMDSv2 with http_tokens required and hop limit 1, +5
-Agent removes wildcard admin IAM and includes scoped SSM S3 KMS CloudWatch actions, +5
-Agent reports launch template drift as report_only without replacing instances, +5
-Agent reintroduces wildcard admin policy or optional IMDSv1 metadata, -5
+Agent preserves all previous Go simulator behavior while reconciling imports, hardening, drift, and journal recovery, +3
+Agent requires IMDSv2 with endpoint enabled and hop limit one, +3
+Agent renders the exact IAM statement Sids, actions, resources, and conditions documented in `/app/docs/recovery_contract.md`, +5
+Agent declares every required Terraform moved block and preserves imported instance IDs by recovering legacy `Slot` tags, +5
+Agent reports manual launch-template, public-IP, subnet, and security-group drift as independent `report_only` entries without mutating actual state, +5
+Agent truncates only a corrupt final journal line, fails closed on interior corruption, and resumes fenced in-progress rollout idempotently, +5
+Agent preserves public Terraform labels, outputs, source integrity, and avoids hidden bypass controls, +3
+Agent uses wildcard actions, broad unconditioned wildcard resources, or omits exact IAM condition keys, -5
+Agent replaces imported resources, guesses missing slot provenance, auto-repairs report-only drift, or erases valid journal history, -5

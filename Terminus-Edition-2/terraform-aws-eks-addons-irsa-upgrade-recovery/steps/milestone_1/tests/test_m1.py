@@ -16,7 +16,8 @@ def all_tf():
 
 def braced_assignment(text, name):
     """Return one named HCL map entry using balanced braces."""
-    match = re.search(rf"\b{re.escape(name)}\s*=\s*\{{", text)
+    key_pattern = rf'(?:"{re.escape(name)}"|{re.escape(name)})\s*=\s*\{{'
+    match = re.search(key_pattern, text)
     assert match, f"{name} map entry not found"
     opening = text.find("{", match.start())
     depth = 0
@@ -31,16 +32,28 @@ def braced_assignment(text, name):
 
 
 class TestMilestone1:
+    def test_eks_module_version_and_identity_preserved(self):
+        """EKS module keeps its pinned version and cluster_name reference."""
+        text = read("eks.tf")
+        assert re.search(r'version\s*=\s*"20\.0\.0"', text), (
+            "EKS module version pin must be preserved"
+        )
+        assert re.search(r"cluster_name\s*=\s*var\.cluster_name", text), (
+            "cluster_name must reference var.cluster_name"
+        )
+
+    def test_unrelated_terraform_files_preserved(self):
+        """Later-milestone Terraform files must remain present."""
+        for filename in ["addons.tf", "karpenter.tf", "outputs.tf", "variables.tf"]:
+            assert (TF / filename).is_file(), f"{filename} must be preserved"
+
     def test_private_endpoint_private_subnets(self):
         """EKS module stays private and uses private subnets."""
         text = read("eks.tf")
         assert "terraform-aws-modules/eks/aws" in text
         assert re.search(r"cluster_endpoint_public_access\s*=\s*false", text)
         assert re.search(r"cluster_endpoint_private_access\s*=\s*true", text)
-        assert (
-            "subnet_ids = var.private_subnet_ids" in text
-            or "subnet_ids      = var.private_subnet_ids" in text
-        )
+        assert re.search(r"subnet_ids\s*=\s*var\.private_subnet_ids", text)
 
     def test_split_node_groups(self):
         """Node groups are split into system, apps, and batch with system tainting."""

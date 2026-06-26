@@ -1,0 +1,13 @@
+{
+  "aud": [
+    "vault.payment-ledger.internal"
+  ],
+  "exp": 1782216000,
+  "iat": 1782208500,
+  "iss": "https://kubernetes.default.svc.cluster.local",
+  "namespace": "payments",
+  "nbf": 1782208500,
+  "pod_uid": "pod-sample-001",
+  "service_account": "payment-ledger-api",
+  "sub": "system:serviceaccount:payments:payment-ledger-api"
+}

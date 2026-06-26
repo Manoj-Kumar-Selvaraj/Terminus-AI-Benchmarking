@@ -4,7 +4,7 @@ var Profile = Options{
 	StrictValidate:    true,
 	FailClosed:        true,
 	SkipApplied:       true,
-	RejectNotFound:    false,
+	RejectNotFound:    true,
 	RejectBusiness:    true,
 	LockAsPending:     true,
 	AtomicLimitUpdate: false,

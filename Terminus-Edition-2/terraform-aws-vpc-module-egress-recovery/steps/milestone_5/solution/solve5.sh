@@ -1,50 +1,325 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-bash "/steps/milestone_4/solution/solve4.sh"
 python3 - <<'PY'
 from pathlib import Path
-p = Path("/app/infra/modules/vpc/module.py")
+
+
+def replace_once(text: str, old: str, new: str, label: str) -> str:
+    if old in text:
+        return text.replace(old, new, 1)
+    if new in text or (label == "nat selection" and 'fmt.Sprint(n["az"]) == az' in text):
+        return text
+    raise SystemExit(label + " anchor missing")
+
+
+p = Path("/app/infra/modules/vpc/module.go")
 s = p.read_text()
-needle = '    except Exception as exc:\n        errs.append("invalid cidr configuration: " + str(exc))\n    for ep in c.get("gateway_endpoints", []):'
-insert = '''    except Exception as exc:
-        errs.append("invalid cidr configuration: " + str(exc))
-    nats = {n.get("az") for n in c.get("nat_gateways", [])}
-    app = {subnet.get("az") for subnet in c.get("subnets", []) if subnet.get("tier") == "app"}
-    missing = sorted(app - nats)
-    if missing:
-        errs.append("missing nat gateway for app azs: " + ",".join(missing))
-    for ep in c.get("gateway_endpoints", []):'''
-if needle not in s:
-    raise SystemExit("nat validation anchor missing")
-s = s.replace(needle, insert, 1)
-old_prior = '''    if prior_state:
-        if prior_state.get("vpc", {}).get("cidr") == vpc["cidr"]:
-            pass
-    else:'''
-new_prior = '''    if prior_state:
-        prior = {subnet.get("cidr"): subnet for subnet in prior_state.get("subnets", [])}
-        for subnet in subs:
-            old = prior.get(subnet["cidr"])
-            if old and old.get("id") != subnet["id"]:
-                actions.append(
-                    {
-                        "action": "moved",
-                        "from": old.get("address", old.get("id")),
-                        "to": subnet["address"],
-                    }
-                )
-        if prior_state.get("vpc", {}).get("cidr") == vpc["cidr"]:
-            pass
-    else:'''
-if old_prior not in s:
-    raise SystemExit("prior_state anchor missing")
-s = s.replace(old_prior, new_prior, 1)
-s = s.replace(
-    '"moved": [],',
-    '"moved": [\n'
-    '            {"from": "module.vpc.aws_subnet.private", "to": "module.vpc.aws_subnet.app"}\n'
-    "        ],",
+old_nat = '''func natGateway(c map[string]interface{}, az string) string {
+	nats, _ := c["nat_gateways"].([]interface{})
+	if len(nats) == 0 {
+		return ""
+	}
+	if n, ok := nats[0].(map[string]interface{}); ok {
+		return fmt.Sprint(n["id"])
+	}
+	return ""
+}'''
+new_nat = '''func natGateway(c map[string]interface{}, az string) string {
+	nats, _ := c["nat_gateways"].([]interface{})
+	for _, raw := range nats {
+		n, ok := raw.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		if fmt.Sprint(n["az"]) == az {
+			return fmt.Sprint(n["id"])
+		}
+	}
+	return ""
+}'''
+s = replace_once(s, old_nat, new_nat, "nat selection")
+data_block = ''' else if tier == "data" {
+			if nat := natGateway(c, az); nat != "" {
+				routes = append(routes, map[string]interface{}{
+					"destination": "0.0.0.0/0",
+					"target":      nat,
+				})
+			}
+		}'''
+if data_block in s:
+    s = s.replace(data_block, "", 1)
+if '"net"' not in s:
+    s = s.replace(
+        'import (\n\t"fmt"\n\t"sort"\n\t"strings"\n)',
+        'import (\n\t"fmt"\n\t"net"\n\t"sort"\n\t"strings"\n)',
+        1,
+    )
+needle = '''	for _, t := range []string{"public", "app", "data"} {
+		if !tiers[t] {
+			errs = append(errs, "missing "+t+" tier")
+		}
+	}
+	if len(errs) > 0 {'''
+insert_m2 = '''	for _, t := range []string{"public", "app", "data"} {
+		if !tiers[t] {
+			errs = append(errs, "missing "+t+" tier")
+		}
+	}
+	for _, ep := range sliceOfMaps(c["gateway_endpoints"]) {
+		svc := fmt.Sprint(ep["service"])
+		if svc != "s3" && svc != "dynamodb" {
+			errs = append(errs, "unsupported gateway endpoint service: "+svc)
+		}
+	}
+	if len(errs) > 0 {'''
+if "unsupported gateway endpoint service" not in s:
+    s = replace_once(s, needle, insert_m2, "m2 validate")
+needle = '''	for _, ep := range sliceOfMaps(c["gateway_endpoints"]) {
+		svc := fmt.Sprint(ep["service"])
+		if svc != "s3" && svc != "dynamodb" {
+			errs = append(errs, "unsupported gateway endpoint service: "+svc)
+		}
+	}
+	if len(errs) > 0 {'''
+insert_m3 = '''	for _, ep := range sliceOfMaps(c["gateway_endpoints"]) {
+		svc := fmt.Sprint(ep["service"])
+		if svc != "s3" && svc != "dynamodb" {
+			errs = append(errs, "unsupported gateway endpoint service: "+svc)
+		}
+	}
+	if _, vpcNet, err := net.ParseCIDR(fmt.Sprint(c["vpc_cidr"])); err != nil {
+		errs = append(errs, "invalid cidr configuration: "+err.Error())
+	} else {
+		seen := []struct {
+			name string
+			net  *net.IPNet
+		}{}
+		for _, subnet := range sliceOfMaps(c["subnets"]) {
+			_, sn, err := net.ParseCIDR(fmt.Sprint(subnet["cidr"]))
+			if err != nil {
+				errs = append(errs, "invalid cidr configuration: "+err.Error())
+				continue
+			}
+			if !cidrSubnetOf(sn, vpcNet) {
+				errs = append(errs, "subnet "+fmt.Sprint(subnet["name"])+" outside vpc_cidr")
+			}
+			for _, prev := range seen {
+				if cidrOverlaps(sn, prev.net) {
+					errs = append(errs, "subnet "+fmt.Sprint(subnet["name"])+" overlaps "+prev.name)
+				}
+			}
+			seen = append(seen, struct {
+				name string
+				net  *net.IPNet
+			}{fmt.Sprint(subnet["name"]), sn})
+		}
+	}
+	natAZs := map[string]bool{}
+	for _, raw := range sliceOfMaps(c["nat_gateways"]) {
+		natAZs[fmt.Sprint(raw["az"])] = true
+	}
+	appAZs := map[string]bool{}
+	for _, subnet := range sliceOfMaps(c["subnets"]) {
+		if fmt.Sprint(subnet["tier"]) == "app" {
+			appAZs[fmt.Sprint(subnet["az"])] = true
+		}
+	}
+	var missing []string
+	for az := range appAZs {
+		if !natAZs[az] {
+			missing = append(missing, az)
+		}
+	}
+	if len(missing) > 0 {
+		sort.Strings(missing)
+		errs = append(errs, "missing nat gateway for app azs: "+strings.Join(missing, ","))
+	}
+	if len(errs) > 0 {'''
+if "missing nat gateway for app azs" not in s:
+    if "outside vpc_cidr" in s:
+        needle_nat = '''		}
+	}
+	if len(errs) > 0 {'''
+        if needle_nat in s:
+            s = s.replace(needle_nat, insert_m3.split("if len(errs) > 0 {")[0] + "if len(errs) > 0 {", 1)
+        else:
+            raise SystemExit("nat validation anchor missing")
+    else:
+        s = replace_once(s, needle, insert_m3, "m3 validate")
+s = replace_once(
+    s,
+    '''	for _, rt := range rts {
+		eligible = append(eligible, fmt.Sprint(rt["id"]))
+	}''',
+    '''	for _, rt := range rts {
+		if fmt.Sprint(rt["tier"]) == "app" {
+			eligible = append(eligible, fmt.Sprint(rt["id"]))
+		}
+	}''',
+    "endpoint attachment",
 )
+old_prior = '''	if priorState != nil {
+		actions = append(actions, map[string]interface{}{
+			"action":   "replace",
+			"resource": "aws_route_table.private",
+			"reason":   "legacy index drift",
+		})
+	} else {'''
+m3_prior = '''	if priorState != nil {
+		if vpc, ok := priorState["vpc"].(map[string]interface{}); ok {
+			if fmt.Sprint(vpc["cidr"]) == fmt.Sprint(vpcObj["cidr"]) {
+				// unchanged imported VPC CIDR: no destructive replacements
+			}
+		}
+	} else {'''
+final_prior = '''	if priorState != nil {
+		priorByCIDR := map[string]map[string]interface{}{}
+		for _, subnet := range sliceOfMaps(priorState["subnets"]) {
+			priorByCIDR[fmt.Sprint(subnet["cidr"])] = subnet
+		}
+		for _, subnet := range subs {
+			old, ok := priorByCIDR[fmt.Sprint(subnet["cidr"])]
+			if !ok {
+				continue
+			}
+			if fmt.Sprint(old["id"]) != fmt.Sprint(subnet["id"]) {
+				from := fmt.Sprint(old["address"])
+				if from == "" {
+					from = fmt.Sprint(old["id"])
+				}
+				actions = append(actions, map[string]interface{}{
+					"action": "moved",
+					"from":   from,
+					"to":     subnet["address"],
+				})
+			}
+		}
+		if vpc, ok := priorState["vpc"].(map[string]interface{}); ok {
+			if fmt.Sprint(vpc["cidr"]) == fmt.Sprint(vpcObj["cidr"]) {
+				// unchanged imported VPC CIDR: no destructive replacements
+			}
+		}
+	} else {'''
+if '"action": "moved"' not in s:
+    if old_prior in s:
+        s = s.replace(old_prior, final_prior, 1)
+    elif m3_prior in s:
+        s = s.replace(m3_prior, final_prior, 1)
+    else:
+        raise SystemExit("prior_state anchor missing")
+flow_needle = "\toutputs := map[string]interface{}{"
+flow_block = '''	flowLog := map[string]interface{}{
+		"id":            id("fl", env, "vpc"),
+		"traffic_type":  "ALL",
+		"destination":   mapString(c, "flow_log", "destination"),
+		"iam_policy": map[string]interface{}{
+			"Action": []string{
+				"logs:CreateLogStream",
+				"logs:PutLogEvents",
+				"logs:DescribeLogGroups",
+			},
+			"Resource": mapString(c, "flow_log", "log_group_arn"),
+		},
+		"log_format": "${version} ${account-id} ${interface-id} ${srcaddr} ${dstaddr} ${action}",
+		"subnet_ids": sortedAllSubnetIDs(subs),
+	}
+	cidrs := stringSlice(mapMap(c, "resolver"), "allowed_cidrs")
+	var ingress []map[string]interface{}
+	for _, proto := range []string{"tcp", "udp"} {
+		ingress = append(ingress, map[string]interface{}{
+			"protocol":    proto,
+			"from_port":   53,
+			"to_port":     53,
+			"cidr_blocks": append([]string(nil), cidrs...),
+		})
+	}
+	resolverSG := map[string]interface{}{
+		"id": id("sg", env, "resolver-inbound"),
+		"ingress": ingress,
+		"egress": []map[string]interface{}{
+			{
+				"protocol":    "-1",
+				"from_port":   0,
+				"to_port":     0,
+				"cidr_blocks": []string{fmt.Sprint(c["vpc_cidr"])},
+			},
+		},
+	}
+	outputs := map[string]interface{}{'''
+if '"traffic_type":  "ALL"' not in s and flow_needle in s:
+    s = s.replace(flow_needle, flow_block, 1)
+    s = s.replace('"flow_log":                  nil,', '"flow_log":                  flowLog,')
+    s = s.replace('"resolver_security_group":   nil,', '"resolver_security_group":   resolverSG,')
+helpers = '''
+
+func mapString(c map[string]interface{}, section, key string) string {
+	if sec, ok := c[section].(map[string]interface{}); ok {
+		return fmt.Sprint(sec[key])
+	}
+	return ""
+}
+
+func mapMap(c map[string]interface{}, section string) map[string]interface{} {
+	if sec, ok := c[section].(map[string]interface{}); ok {
+		return sec
+	}
+	return map[string]interface{}{}
+}
+
+func stringSlice(m map[string]interface{}, key string) []string {
+	raw, _ := m[key].([]interface{})
+	out := make([]string, 0, len(raw))
+	for _, item := range raw {
+		out = append(out, fmt.Sprint(item))
+	}
+	return out
+}
+
+func sortedAllSubnetIDs(subs []map[string]interface{}) []string {
+	ids := make([]string, 0, len(subs))
+	for _, s := range subs {
+		ids = append(ids, fmt.Sprint(s["id"]))
+	}
+	sort.Strings(ids)
+	return ids
+}
+
+func cidrSubnetOf(child, parent *net.IPNet) bool {
+	if child == nil || parent == nil {
+		return false
+	}
+	cp := parent.Mask
+	pp := parent.IP
+	if len(child.Mask) == len(cp) {
+		for i := range cp {
+			if child.Mask[i] < cp[i] {
+				return false
+			}
+		}
+	}
+	for i := range child.IP {
+		if child.IP[i]&cp[i] != pp[i]&cp[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func cidrOverlaps(a, b *net.IPNet) bool {
+	if a == nil || b == nil {
+		return false
+	}
+	onesA, _ := a.Mask.Size()
+	onesB, _ := b.Mask.Size()
+	if onesA < onesB {
+		return a.Contains(b.IP)
+	}
+	return b.Contains(a.IP)
+}
+'''
+if "func cidrSubnetOf" not in s:
+    s += helpers
 p.write_text(s)
 PY
+/usr/local/go/bin/gofmt -w /app/infra/modules/vpc/module.go
+/usr/local/go/bin/go build -o /app/bin/vpcsim /app/cmd/vpcsim

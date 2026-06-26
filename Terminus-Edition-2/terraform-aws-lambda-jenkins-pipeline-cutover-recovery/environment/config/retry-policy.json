@@ -1,0 +1,7 @@
+{
+  "max_attempts": 3,
+  "base_delay_seconds": 5,
+  "max_delay_seconds": 30,
+  "dlq_after_attempts": 3,
+  "deterministic_clock": true
+}

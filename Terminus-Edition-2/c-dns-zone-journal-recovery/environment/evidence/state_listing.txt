@@ -1,0 +1,5 @@
+-rw-r----- 1 atlas atlas  27 Apr 18 03:08 manifest
+-rw-r----- 1 atlas atlas 611 Apr 18 03:08 snapshot.11.tsv
+-rw-r----- 1 atlas atlas 652 Apr 18 03:08 snapshot.12.tsv
+-rw-r----- 1 atlas atlas   0 Apr 18 03:08 journal.log
+manifest contents: 11<TAB>snapshot.11.tsv

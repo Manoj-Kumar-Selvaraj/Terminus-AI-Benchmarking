@@ -6,7 +6,7 @@ import json
 root=Path('/app/terraform')
 root.joinpath('eks.tf').write_text("""module "eks" {
   source = "terraform-aws-modules/eks/aws"
-  version = "20.31.6"
+  version = "20.0.0"
   cluster_name = var.cluster_name
   vpc_id = var.vpc_id
   subnet_ids = var.private_subnet_ids

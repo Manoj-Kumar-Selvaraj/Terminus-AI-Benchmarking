@@ -1,47 +1,186 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-bash "/steps/milestone_2/solution/solve2.sh"
 python3 - <<'PY'
 from pathlib import Path
-p = Path("/app/infra/modules/vpc/module.py")
+
+
+def replace_once(text: str, old: str, new: str, label: str) -> str:
+    if old in text:
+        return text.replace(old, new, 1)
+    if new in text or (label == "nat selection" and 'fmt.Sprint(n["az"]) == az' in text):
+        return text
+    raise SystemExit(label + " anchor missing")
+
+
+p = Path("/app/infra/modules/vpc/module.go")
 s = p.read_text()
-if "import ipaddress" not in s:
-    s = "import ipaddress\n\n" + s
-needle = '            errs.append(f"missing {t} tier")\n    for ep in c.get("gateway_endpoints", []):'
-insert = '''            errs.append(f"missing {t} tier")
-    try:
-        v = ipaddress.ip_network(c["vpc_cidr"])
-        seen = []
-        for subnet in c.get("subnets", []):
-            n = ipaddress.ip_network(subnet["cidr"])
-            if not n.subnet_of(v):
-                errs.append(f"subnet {subnet.get('name')} outside vpc_cidr")
-            for name, prev in seen:
-                if n.overlaps(prev):
-                    errs.append(f"subnet {subnet.get('name')} overlaps {name}")
-            seen.append((subnet.get("name"), n))
-    except Exception as exc:
-        errs.append("invalid cidr configuration: " + str(exc))
-    for ep in c.get("gateway_endpoints", []):'''
-if needle not in s:
-    raise SystemExit("validate_config anchor missing")
-s = s.replace(needle, insert, 1)
-old_prior = '''    if prior_state:
-        actions.append(
-            {
-                "action": "replace",
-                "resource": "aws_route_table.private",
-                "reason": "legacy index drift",
-            }
-        )
-    else:'''
-new_prior = '''    if prior_state:
-        if prior_state.get("vpc", {}).get("cidr") == vpc["cidr"]:
-            pass
-    else:'''
-if old_prior not in s:
-    raise SystemExit("prior_state anchor missing")
-s = s.replace(old_prior, new_prior, 1)
+old_nat = '''func natGateway(c map[string]interface{}, az string) string {
+	nats, _ := c["nat_gateways"].([]interface{})
+	if len(nats) == 0 {
+		return ""
+	}
+	if n, ok := nats[0].(map[string]interface{}); ok {
+		return fmt.Sprint(n["id"])
+	}
+	return ""
+}'''
+new_nat = '''func natGateway(c map[string]interface{}, az string) string {
+	nats, _ := c["nat_gateways"].([]interface{})
+	for _, raw := range nats {
+		n, ok := raw.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		if fmt.Sprint(n["az"]) == az {
+			return fmt.Sprint(n["id"])
+		}
+	}
+	return ""
+}'''
+s = replace_once(s, old_nat, new_nat, "nat selection")
+data_block = ''' else if tier == "data" {
+			if nat := natGateway(c, az); nat != "" {
+				routes = append(routes, map[string]interface{}{
+					"destination": "0.0.0.0/0",
+					"target":      nat,
+				})
+			}
+		}'''
+if data_block in s:
+    s = s.replace(data_block, "", 1)
+if '"net"' not in s:
+    s = s.replace(
+        'import (\n\t"fmt"\n\t"sort"\n\t"strings"\n)',
+        'import (\n\t"fmt"\n\t"net"\n\t"sort"\n\t"strings"\n)',
+        1,
+    )
+needle = '''	for _, t := range []string{"public", "app", "data"} {
+		if !tiers[t] {
+			errs = append(errs, "missing "+t+" tier")
+		}
+	}
+	if len(errs) > 0 {'''
+insert_m2 = '''	for _, t := range []string{"public", "app", "data"} {
+		if !tiers[t] {
+			errs = append(errs, "missing "+t+" tier")
+		}
+	}
+	for _, ep := range sliceOfMaps(c["gateway_endpoints"]) {
+		svc := fmt.Sprint(ep["service"])
+		if svc != "s3" && svc != "dynamodb" {
+			errs = append(errs, "unsupported gateway endpoint service: "+svc)
+		}
+	}
+	if len(errs) > 0 {'''
+if "unsupported gateway endpoint service" not in s:
+    s = replace_once(s, needle, insert_m2, "m2 validate")
+needle = '''	for _, ep := range sliceOfMaps(c["gateway_endpoints"]) {
+		svc := fmt.Sprint(ep["service"])
+		if svc != "s3" && svc != "dynamodb" {
+			errs = append(errs, "unsupported gateway endpoint service: "+svc)
+		}
+	}
+	if len(errs) > 0 {'''
+insert_m3 = '''	for _, ep := range sliceOfMaps(c["gateway_endpoints"]) {
+		svc := fmt.Sprint(ep["service"])
+		if svc != "s3" && svc != "dynamodb" {
+			errs = append(errs, "unsupported gateway endpoint service: "+svc)
+		}
+	}
+	if _, vpcNet, err := net.ParseCIDR(fmt.Sprint(c["vpc_cidr"])); err != nil {
+		errs = append(errs, "invalid cidr configuration: "+err.Error())
+	} else {
+		seen := []struct {
+			name string
+			net  *net.IPNet
+		}{}
+		for _, subnet := range sliceOfMaps(c["subnets"]) {
+			_, sn, err := net.ParseCIDR(fmt.Sprint(subnet["cidr"]))
+			if err != nil {
+				errs = append(errs, "invalid cidr configuration: "+err.Error())
+				continue
+			}
+			if !cidrSubnetOf(sn, vpcNet) {
+				errs = append(errs, "subnet "+fmt.Sprint(subnet["name"])+" outside vpc_cidr")
+			}
+			for _, prev := range seen {
+				if cidrOverlaps(sn, prev.net) {
+					errs = append(errs, "subnet "+fmt.Sprint(subnet["name"])+" overlaps "+prev.name)
+				}
+			}
+			seen = append(seen, struct {
+				name string
+				net  *net.IPNet
+			}{fmt.Sprint(subnet["name"]), sn})
+		}
+	}
+	if len(errs) > 0 {'''
+if "outside vpc_cidr" not in s:
+    s = replace_once(s, needle, insert_m3, "m3 validate")
+s = replace_once(
+    s,
+    '''	for _, rt := range rts {
+		eligible = append(eligible, fmt.Sprint(rt["id"]))
+	}''',
+    '''	for _, rt := range rts {
+		if fmt.Sprint(rt["tier"]) == "app" {
+			eligible = append(eligible, fmt.Sprint(rt["id"]))
+		}
+	}''',
+    "endpoint attachment",
+)
+old_prior = '''	if priorState != nil {
+		actions = append(actions, map[string]interface{}{
+			"action":   "replace",
+			"resource": "aws_route_table.private",
+			"reason":   "legacy index drift",
+		})
+	} else {'''
+new_prior = '''	if priorState != nil {
+		if vpc, ok := priorState["vpc"].(map[string]interface{}); ok {
+			if fmt.Sprint(vpc["cidr"]) == fmt.Sprint(vpcObj["cidr"]) {
+				// unchanged imported VPC CIDR: no destructive replacements
+			}
+		}
+	} else {'''
+s = replace_once(s, old_prior, new_prior, "prior_state")
+if "func cidrSubnetOf" not in s:
+    s += '''
+
+func cidrSubnetOf(child, parent *net.IPNet) bool {
+	if child == nil || parent == nil {
+		return false
+	}
+	cp := parent.Mask
+	pp := parent.IP
+	if len(child.Mask) == len(cp) {
+		for i := range cp {
+			if child.Mask[i] < cp[i] {
+				return false
+			}
+		}
+	}
+	for i := range child.IP {
+		if child.IP[i]&cp[i] != pp[i]&cp[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func cidrOverlaps(a, b *net.IPNet) bool {
+	if a == nil || b == nil {
+		return false
+	}
+	onesA, _ := a.Mask.Size()
+	onesB, _ := b.Mask.Size()
+	if onesA < onesB {
+		return a.Contains(b.IP)
+	}
+	return b.Contains(a.IP)
+}
+'''
 p.write_text(s)
 PY
+/usr/local/go/bin/gofmt -w /app/infra/modules/vpc/module.go
+/usr/local/go/bin/go build -o /app/bin/vpcsim /app/cmd/vpcsim

@@ -28,10 +28,19 @@ class TestMilestone4:
         assert result.returncode == 0, result.stderr + result.stdout
         payload = json.loads(result.stdout)
         assert payload["ok"]
+        jobs_data = json.loads(read("jenkins_jobs.json"))["jobs"]
         assert len(payload["jobs"]) >= 6
-        assert any(job.startswith("payments-") for job in payload["jobs"])
-        assert any(job.startswith("risk-") for job in payload["jobs"])
-        assert any(job.startswith("platform-") for job in payload["jobs"])
+        assert len(jobs_data) >= 6
+        assert set(payload["jobs"]) == set(jobs_data)
+        per_controller = {
+            "payments-controller": 0,
+            "risk-controller": 0,
+            "platform-controller": 0,
+        }
+        for job_name, spec in jobs_data.items():
+            per_controller[spec["controller"]] += 1
+        for controller, count in per_controller.items():
+            assert count >= 2, f"{controller} needs at least two declared jobs"
 
     def test_trace_no_cross_controller_runs(self):
         """Run trace must not hide failed or cross-controller executions."""

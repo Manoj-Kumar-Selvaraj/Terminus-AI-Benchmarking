@@ -1,0 +1,19 @@
+{
+  "cache_key": "svc-exporter",
+  "decision": {
+    "policy_generation": 40,
+    "scopes": [
+      "profile:export"
+    ],
+    "subject": "svc-exporter",
+    "tenant": "acme"
+  },
+  "next_request": {
+    "policy_generation": 41,
+    "requested_scopes": [
+      "profile:export"
+    ],
+    "subject": "svc-exporter",
+    "tenant": "globex"
+  }
+}

@@ -6,7 +6,7 @@ import json
 root=Path('/app/terraform')
 root.joinpath('eks.tf').write_text("""module "eks" {
   source = "terraform-aws-modules/eks/aws"
-  version = "20.31.6"
+  version = "20.0.0"
   cluster_name = var.cluster_name
   vpc_id = var.vpc_id
   subnet_ids = var.private_subnet_ids
@@ -104,7 +104,7 @@ output "cluster_security_group_id" { value = module.eks.cluster_security_group_i
 output "oidc_provider_arn" { value = module.eks.oidc_provider_arn }
 output "private_subnet_ids" { value = var.private_subnet_ids }
 output "managed_node_group_names" { value = keys(module.eks.eks_managed_node_groups) }
-output "addon_irsa_role_arns" { value = { ebs_csi = module.ebs_csi_irsa.iam_role_arn alb = module.alb_controller_irsa.iam_role_arn karpenter = module.karpenter_irsa.iam_role_arn } }
+output "addon_irsa_role_arns" { value = { ebs_csi = module.ebs_csi_irsa.iam_role_arn load_balancer = module.alb_controller_irsa.iam_role_arn karpenter = module.karpenter_irsa.iam_role_arn } }
 moved { from = aws_iam_role_policy_attachment.node_addon_admin to = module.ebs_csi_irsa }
 """)
 

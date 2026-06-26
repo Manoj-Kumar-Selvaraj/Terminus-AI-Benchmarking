@@ -1,0 +1,9 @@
+{
+  "writer_modes": [
+    "jenkins",
+    "lambda"
+  ],
+  "shadow_mode_read_only": true,
+  "pin_generation_per_execution": true,
+  "rollback_preserves_checkpoints": true
+}

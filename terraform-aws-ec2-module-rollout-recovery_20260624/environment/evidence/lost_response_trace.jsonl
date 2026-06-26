@@ -1,0 +1,6 @@
+{"seq":1,"event":"pilot_launched","slot":0,"request_id":"req-a"}
+{"seq":2,"event":"pilot_healthy","slot":0,"request_id":"req-a"}
+{"seq":3,"event":"pilot_committed","slot":0,"request_id":"req-a"}
+{"seq":4,"event":"control_plane_response_lost","request_id":"req-a"}
+{"seq":5,"event":"operator_retry_started","request_id":"req-b"}
+{"seq":6,"event":"duplicate_slot_detected","slot":0,"request_id":"req-b"}

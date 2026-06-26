@@ -52,6 +52,34 @@ def control_raw(path, payload):
     path.write_text(json.dumps(payload))
     return path
 
+IMMUTABLE_KEYS = (
+    "master", "risk", "ledger", "audit", "checkpoint",
+    "applied_events", "pending_locks", "rejects", "control_totals",
+)
+
+EMPTY_DB_DEFAULTS = {
+    "master": {},
+    "risk": {},
+    "ledger": [],
+    "audit": [],
+    "checkpoint": {},
+    "applied_events": {},
+    "pending_locks": [],
+    "rejects": [],
+    "control_totals": {},
+}
+
+def assert_db_unchanged(before, after):
+    for key in IMMUTABLE_KEYS:
+        assert after.get(key, EMPTY_DB_DEFAULTS[key]) == before.get(key, EMPTY_DB_DEFAULTS[key]), key
+
+def assert_failed_closed_outputs(out, batch):
+    summary = json.loads((out / f"summary_{batch}.json").read_text())
+    assert summary["status"] == "FAILED_CLOSED"
+    assert (out / f"rejects_{batch}.dat").is_file()
+    assert (out / f"pending_locks_{batch}.json").is_file()
+    json.loads((out / f"pending_locks_{batch}.json").read_text())
+
 class TestMilestone5:
     def test_control_source_mismatch_fails_before_mutation(self, tmp_path):
         """A control manifest source mismatch must fail closed before balances or ledger state change."""
@@ -64,10 +92,8 @@ class TestMilestone5:
         result = run_job(inp, db, out, ctl, batch)
         after = json.loads(db.read_text())
         assert result.returncode != 0
-        assert after["master"] == before["master"]
-        assert after["ledger"] == before["ledger"]
-        assert json.loads((tmp_path / "out" / f"summary_{batch}.json").read_text())["status"] == "FAILED_CLOSED"
-        assert json.loads((out / f"summary_{batch}.json").read_text())["status"] == "FAILED_CLOSED"
+        assert_db_unchanged(before, after)
+        assert_failed_closed_outputs(out, batch)
 
     def test_control_business_date_mismatch_fails_before_mutation(self, tmp_path):
         """A control manifest date mismatch must fail before any DB state changes."""
@@ -85,9 +111,27 @@ class TestMilestone5:
         result = run_job(inp, db, tmp_path / "out", ctl, batch)
         after = json.loads(db.read_text())
         assert result.returncode != 0
-        assert after["master"] == before["master"]
-        assert after["ledger"] == before["ledger"]
-        assert json.loads((tmp_path / "out" / f"summary_{batch}.json").read_text())["status"] == "FAILED_CLOSED"
+        assert_db_unchanged(before, after)
+        assert_failed_closed_outputs(tmp_path / "out", batch)
+
+    def test_control_batch_id_mismatch_fails_before_mutation(self, tmp_path):
+        """A control manifest batch id mismatch must fail closed before mutation."""
+        batch = "T5BATCHMS"
+        db = copy_seed(tmp_path)
+        before = json.loads(db.read_text())
+        inp = write_batch(tmp_path / "batch.fb", batch, [(1, "AC1000000001", "BAL", "+", 15)])
+        ctl = control_raw(tmp_path / "control.json", {
+            "batch_id": "OTHERBATCH",
+            "business_date": "20260618",
+            "source": "VERIFY",
+            "expected_detail_count": 1,
+            "expected_financial_total": 15,
+        })
+        result = run_job(inp, db, tmp_path / "out", ctl, batch)
+        after = json.loads(db.read_text())
+        assert result.returncode != 0
+        assert_db_unchanged(before, after)
+        assert_failed_closed_outputs(tmp_path / "out", batch)
 
     def test_control_detail_count_mismatch_fails_before_mutation(self, tmp_path):
         """A control manifest detail-count mismatch must fail before mutation."""
@@ -99,9 +143,8 @@ class TestMilestone5:
         result = run_job(inp, db, tmp_path / "out", ctl, batch)
         after = json.loads(db.read_text())
         assert result.returncode != 0
-        assert after["master"] == before["master"]
-        assert after["ledger"] == before["ledger"]
-        assert json.loads((tmp_path / "out" / f"summary_{batch}.json").read_text())["status"] == "FAILED_CLOSED"
+        assert_db_unchanged(before, after)
+        assert_failed_closed_outputs(tmp_path / "out", batch)
 
     def test_control_financial_total_mismatch_fails_before_mutation(self, tmp_path):
         """A control manifest financial-total mismatch must fail before mutation."""
@@ -113,8 +156,23 @@ class TestMilestone5:
         result = run_job(inp, db, tmp_path / "out", ctl, batch)
         after = json.loads(db.read_text())
         assert result.returncode != 0
-        assert after["master"] == before["master"]
-        assert after["ledger"] == before["ledger"]
+        assert_db_unchanged(before, after)
+        assert_failed_closed_outputs(tmp_path / "out", batch)
+
+    def test_malformed_control_manifest_fails_closed(self, tmp_path):
+        """An unparseable control manifest must fail closed before any DB mutation."""
+        batch = "T5BADCTL"
+        db = copy_seed(tmp_path)
+        before = json.loads(db.read_text())
+        inp = write_batch(tmp_path / "badctl.fb", batch, [(1, "AC1000000001", "BAL", "+", 14)])
+        ctl = tmp_path / "control.json"
+        ctl.write_text("not valid json {{{")
+        out = tmp_path / "out"
+        result = run_job(inp, db, out, ctl, batch)
+        after = json.loads(db.read_text())
+        assert result.returncode != 0
+        assert_db_unchanged(before, after)
+        assert_failed_closed_outputs(out, batch)
 
     def test_successful_control_total_record_is_persisted(self, tmp_path):
         """A successful controlled batch must persist settlement provenance and input hash."""
@@ -129,6 +187,9 @@ class TestMilestone5:
         assert entry["status"] == "SETTLED"
         assert entry["detail_count"] == 1
         assert entry["financial_total"] == 25
+        assert entry["batch_id"] == batch
+        assert entry["business_date"] == "20260618"
+        assert entry["source"] == "VERIFY"
         assert len(entry["input_sha256"]) == 64
 
     def test_same_batch_id_with_different_payload_is_rejected(self, tmp_path):
@@ -144,9 +205,8 @@ class TestMilestone5:
         result = run_job(inp2, db, tmp_path / "out2", ctl2, batch)
         after = json.loads(db.read_text())
         assert result.returncode != 0
-        assert after["master"] == before["master"]
-        assert after["control_totals"][batch]["input_sha256"] == before["control_totals"][batch]["input_sha256"]
-        assert json.loads((tmp_path / "out2" / f"summary_{batch}.json").read_text())["status"] == "FAILED_CLOSED"
+        assert_db_unchanged(before, after)
+        assert_failed_closed_outputs(tmp_path / "out2", batch)
 
     def test_same_batch_id_with_same_payload_is_idempotent(self, tmp_path):
         """A settled batch may rerun with the same payload without double-applying balances."""

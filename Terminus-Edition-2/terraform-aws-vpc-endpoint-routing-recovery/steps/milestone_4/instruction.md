@@ -20,6 +20,10 @@ Complete the recovery so that:
 
 ## Module output contract manifest
 
-The inspector validates `module_output_contract` in `/app/modules/network/outputs.tf`, not only Terraform `output` blocks. Update that `jsondecode` local to a flat map keyed by output name where each entry has `shape` and `value` keys. Restore every legacy output name listed in `/app/fixtures/expected_outputs.json` with the correct semantic IDs. New aggregate outputs `network` and `endpoint_ids` may remain alongside the legacy names.
+The inspector validates `module_output_contract` in `/app/modules/network/outputs.tf`, not only Terraform `output` blocks. See `/app/docs/network_module_contract.md` for the full schema, per-output `shape` values, and example manifest.
+
+Update that `jsondecode` local to a flat map keyed by output name where each entry has `shape` and `value` keys. Restore every legacy output name listed in `/app/fixtures/expected_outputs.json` with the correct semantic IDs in each entry's `value` field.
+
+The aggregate outputs `network` and `endpoint_ids` **must remain** in `module_output_contract` and as Terraform `output` blocks alongside all legacy names. They are required compatibility outputs, not optional replacements.
 
 Keep all prior route, endpoint, security, and DNS behavior intact.

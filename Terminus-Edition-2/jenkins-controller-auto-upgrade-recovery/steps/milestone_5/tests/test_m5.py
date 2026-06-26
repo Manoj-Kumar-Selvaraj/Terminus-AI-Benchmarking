@@ -103,8 +103,9 @@ class TestMilestone5:
         ids = [i["id"] for i in items]
         assert len(ids) == len(set(ids))
         assert {"q-1001", "q-1002"} <= set(ids)
-        jobs = {i["job"] for i in items}
-        assert {"payments-ledger/main", "shared-library/test"} <= jobs
+        by_id = {i["id"]: i["job"] for i in items}
+        assert by_id["q-1001"] == "payments-ledger/main"
+        assert by_id["q-1002"] == "shared-library/test"
 
     def test_diagnostics_output_matches_ready_status(self):
         """Controller diagnostics and final status output must agree on readiness."""

@@ -80,6 +80,9 @@ validate_task() {
     if [[ ! -e "$dir/$test_file" && -e "$dir/steps/milestone_${i}/tests/test_m${i}.rb" ]]; then
       test_file="steps/milestone_${i}/tests/test_m${i}.rb"
     fi
+    if [[ ! -e "$dir/$test_file" && -e "$dir/steps/milestone_${i}/tests/test_m${i}.t" ]]; then
+      test_file="steps/milestone_${i}/tests/test_m${i}.t"
+    fi
     for req in \
       "steps/milestone_${i}/instruction.md" \
       "steps/milestone_${i}/tests/test.sh" \

@@ -1,0 +1,5 @@
+After tail recovery was restored, a failover replayed a previously committed change and advanced the zone serial a second time. A later operator retry reused the same transaction ID for different content. Review `/app/evidence/incident_timeline.log`, `/app/docs/replay_contract.md`, and `/app/docs/system_contract.md`.
+
+Make transaction replay idempotent and conflict-safe while retaining all milestone 1 behavior. Durable transaction identity must survive recovery and snapshots. An identical replay must be a successful no-op; a conflicting reuse must fail without changing the active state and must write an operator-facing stderr message containing `conflict`. An invalid serial chain must also fail without changing active state. Preserve modulo-2^32 serial succession and the published command interface.
+
+The verifier covers same-ID replay before and after restart, conflicting reuse, stale and skipped serial chains, delete idempotence, independent transactions, journal retention on rejection, and serial wrap boundaries.

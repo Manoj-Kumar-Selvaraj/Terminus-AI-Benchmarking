@@ -296,18 +296,16 @@ In the final answer, cite:
 
 For milestone tasks, later `solve.sh` files must not depend on cross-milestone
 paths such as `$TASK_ROOT/milestone_1/solution/solve1.sh`. Portal mounts
-solution scripts under per-step directories; those relative paths often break.
+only the current milestone's `/solution` directory.
 
-**Required pattern:**
+**Required pattern** (full detail: [MILESTONE_ORACLE_SOLUTION_RULES.md](MILESTONE_ORACLE_SOLUTION_RULES.md)):
 
-- Each milestone's `solution/` directory contains every `solveN.sh` it needs
-  (`solve1.sh` copied into M2/M3, `solve2.sh` copied into M3, etc.)
-- Each milestone's `solve.sh` chains only `"$SCRIPT_DIR/solveN.sh"` scripts
-  present in that same directory
+- Each milestone's `solution/` contains only `solve.sh` and `solveN.sh` for that milestone
+- `solve.sh` dispatches only to `"$SCRIPT_DIR/solveN.sh"`
+- Each `solveN.sh` is a **standalone cumulative** fix for milestones 1 through N from the broken starter codebase
+- Do **not** chain `solve3.sh` → `solve2.sh` → `solve1.sh` inside later milestones
 
-This matches fixes that already worked on COBOL, Ruby, Go, and Kubernetes
-revision tasks. Idempotent re-runs on Harbor are acceptable; broken paths are
-not.
+Validate both cumulative oracle and isolated per-milestone mounts before submission.
 
 ## Validation Order
 

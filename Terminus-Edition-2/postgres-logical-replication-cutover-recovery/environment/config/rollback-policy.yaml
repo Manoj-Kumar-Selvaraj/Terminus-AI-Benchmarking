@@ -1,0 +1,6 @@
+{
+  "conflict_policy": "reject",
+  "duplicate_identity_field": "transaction_id",
+  "pre_activation_recovery": "reopen_source",
+  "transfer_target_only_writes": true
+}

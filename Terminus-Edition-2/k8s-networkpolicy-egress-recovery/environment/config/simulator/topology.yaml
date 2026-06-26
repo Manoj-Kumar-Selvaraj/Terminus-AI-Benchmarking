@@ -1,0 +1,46 @@
+namespaces:
+  payments:
+    kubernetes.io/metadata.name: payments
+    name: payments
+  kube-system:
+    kubernetes.io/metadata.name: kube-system
+    name: kube-system
+  ledger:
+    kubernetes.io/metadata.name: ledger
+    name: ledger
+  identity:
+    kubernetes.io/metadata.name: identity
+    name: identity
+  default:
+    kubernetes.io/metadata.name: default
+    name: default
+pods:
+  payment-adapter:
+    namespace: payments
+    labels:
+      app: payment-adapter
+      component: invoice-batch
+  kube-dns:
+    namespace: kube-system
+    labels:
+      k8s-app: kube-dns
+  ledger-api:
+    namespace: ledger
+    labels:
+      app: ledger-api
+  ledger-internal:
+    namespace: ledger
+    labels:
+      app: ledger-internal
+  token-service:
+    namespace: identity
+    labels:
+      app: token-service
+  internet-proxy:
+    namespace: default
+    labels:
+      app: proxy
+ips:
+  audit-endpoint: 10.44.0.55
+  blocked-audit: 10.44.0.200
+  external: 8.8.8.8

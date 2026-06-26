@@ -1,0 +1,31 @@
+{
+  "append_only_tables": [
+    "profile_audit"
+  ],
+  "excluded_tables": [
+    "migration_heartbeat",
+    "replication_probe"
+  ],
+  "publication_name": "profile_migration_pub",
+  "replica_identity": {
+    "account_status": "primary_key",
+    "communication_preference": "primary_key",
+    "contact_method": "primary_key",
+    "customer_profile": "primary_key",
+    "profile_audit": "primary_key"
+  },
+  "required_operations": [
+    "insert",
+    "update",
+    "delete"
+  ],
+  "required_tables": [
+    "customer_profile",
+    "contact_method",
+    "communication_preference",
+    "account_status",
+    "profile_audit"
+  ],
+  "slot_name": "profile_migration_slot",
+  "subscription_name": "profile_migration_sub"
+}

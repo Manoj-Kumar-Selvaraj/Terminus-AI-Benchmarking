@@ -251,9 +251,35 @@ RUN mkdir -p /app/out /logs/verifier
     ]:
         (ROOT / task / "environment/Dockerfile").write_text(python_simple, encoding="utf-8")
 
-    # k8s-networkpolicy with yaml in lock
+    # k8s-networkpolicy needs tmux/asciinema preinstalled so terminus-2 agent setup
+    # does not hang on runtime apt-get inside Daytona sandboxes.
     (ROOT / "k8s-networkpolicy-egress-recovery/environment/Dockerfile").write_text(
-        python_simple,
+        f"""FROM {ECR_PYTHON}
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update \\
+    && apt-get install -y --no-install-recommends \\
+        asciinema \\
+        bash \\
+        ca-certificates \\
+        coreutils \\
+        findutils \\
+        grep \\
+        sed \\
+        gawk \\
+        tmux \\
+    && rm -rf /var/lib/apt/lists/*
+
+{pip_install_block()}
+WORKDIR /app
+COPY config/ /app/config/
+COPY docs/ /app/docs/
+COPY evidence/ /app/evidence/
+COPY k8s/ /app/k8s/
+COPY scripts/ /app/scripts/
+RUN mkdir -p /app/out /logs/verifier
+""",
         encoding="utf-8",
     )
 

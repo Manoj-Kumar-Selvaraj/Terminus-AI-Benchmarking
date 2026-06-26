@@ -1,0 +1,5 @@
+{
+  "workers": 3,
+  "lease_seconds": 30,
+  "status_schema_version": 2
+}

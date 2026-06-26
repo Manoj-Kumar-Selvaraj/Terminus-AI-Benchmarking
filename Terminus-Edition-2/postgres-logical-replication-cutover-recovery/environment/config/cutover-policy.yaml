@@ -1,0 +1,7 @@
+{
+  "max_replication_lag_bytes": 32,
+  "require_exact_fence": true,
+  "single_writer_required": true,
+  "slot_retention_block_bytes": 512,
+  "slot_retention_warning_bytes": 128
+}

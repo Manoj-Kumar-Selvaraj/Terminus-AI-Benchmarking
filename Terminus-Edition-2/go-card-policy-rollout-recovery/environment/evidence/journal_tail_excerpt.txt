@@ -1,0 +1,5 @@
+The storage snapshot showed 16 newline-terminated JSON records followed by these 61 bytes with no newline:
+
+{"version":2,"type":"claimed","rollout_id":"fr-184","reg
+
+The operator copied the volume before attempting any repair. Earlier records parse successfully and include generations 183 and 184.

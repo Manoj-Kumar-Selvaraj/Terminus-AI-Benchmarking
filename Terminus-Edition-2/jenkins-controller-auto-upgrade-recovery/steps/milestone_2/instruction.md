@@ -40,7 +40,25 @@ Backup files are stored under:
 /app/backups/pre-upgrade-20260618/
 ```
 
-`controller_state.json` must remain JSON and include the target version, home schema, upgrade status, and restore snapshot evidence.
+`/app/jenkins_home/controller_state.json` must remain valid JSON. After a successful M2 restore it must record the recovered target home and the backup snapshot used. The verifier and simulator expect these exact keys and values:
+
+```json
+{
+  "previous_version": "2.426.3",
+  "target_version": "2.462.3",
+  "home_schema": "recovered-target",
+  "upgrade_status": "RESTORED",
+  "restored_from_snapshot": "pre-upgrade-20260618"
+}
+```
+
+- `previous_version` — Jenkins release before the failed auto-upgrade (`2.426.3`).
+- `target_version` — incident target controller release (`2.462.3`); must match `config.xml` and the cluster contract.
+- `home_schema` — recovered home marker required by the simulator (`recovered-target`, not `partial-upgrade`).
+- `upgrade_status` — post-restore lifecycle marker (`RESTORED`, not `FAILED_BOOT`).
+- `restored_from_snapshot` — backup directory name under `/app/backups/` (`pre-upgrade-20260618`).
+
+Additional keys such as `last_successful_boot` may remain if already present, but the fields above are required.
 
 ## Expected result
 
@@ -52,7 +70,7 @@ After M2, diagnostics must no longer stop at phase `HOME_CORRUPT`. Later phases 
 2. `config.xml`, `credentials.xml`, and `queue.xml` are valid XML.
 3. `config.xml` records the target Jenkins version `2.462.3`.
 4. Failed boot upgrade locks are not left active in live Jenkins home.
-5. `controller_state.json` records a recovered target home schema and restore snapshot evidence.
+5. `controller_state.json` records `home_schema` `recovered-target`, `upgrade_status` `RESTORED`, `target_version` `2.462.3`, and `restored_from_snapshot` `pre-upgrade-20260618`.
 6. Required jobs `payments-ledger/main`, `shared-library/test`, and `platform-smoke/healthcheck` remain present.
 7. Required credential IDs from the backup are preserved.
 8. The task does not pass by deleting the home directory or replacing it with a minimal fake config.

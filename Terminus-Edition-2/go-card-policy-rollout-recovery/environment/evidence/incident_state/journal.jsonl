@@ -1,0 +1,5 @@
+{"version":2,"type":"queued","rollout_id":"fr-183","generation":183,"policy":"{\"deny_mcc\":[7995]}","policy_sha256":"49a6790e8e964bfca65338a745c782d3639d7b55c90db6a2e93283c321d3c5a3","regions":["ap-south"]}
+{"version":2,"type":"queued","rollout_id":"fr-184","generation":184,"policy":"{\"deny_mcc\":[4829,7995]}","policy_sha256":"c2f126d83a90d7721e62097935d1d25ca2b1384a8a6d18bea558f997063b01e8","regions":["ap-south","eu-west","us-east"]}
+{"version":2,"type":"claimed","rollout_id":"fr-184","region":"us-east","command_id":"attempt-251-1718745189001000000","worker_id":"drain-a","lease_until":1718745219,"claim_token":1}
+{"version":2,"type":"acked","rollout_id":"fr-184","region":"us-east","command_id":"attempt-251-1718745189001000000","gateway_sequence":1,"claim_token":1}
+{"version":2,"type":"claimed","rollout_id":"fr-184","reg

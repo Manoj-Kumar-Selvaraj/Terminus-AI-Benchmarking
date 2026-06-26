@@ -1,0 +1,21 @@
+{
+  "active_signer": "broker-v1",
+  "keys": {
+    "broker-compromised": {
+      "generation": 40,
+      "secret": "compromised-secret",
+      "status": "revoked"
+    },
+    "broker-v1": {
+      "generation": 41,
+      "secret": "broker-v1-signing-secret",
+      "status": "active"
+    },
+    "broker-v2": {
+      "generation": 42,
+      "secret": "broker-v2-signing-secret",
+      "status": "staged"
+    }
+  },
+  "security_generation": 41
+}

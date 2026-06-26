@@ -1,0 +1,12 @@
+--- /app/lib/Broker/Assertion.pm
++++ /app/lib/Broker/Assertion.pm
+@@ -1,6 +1,6 @@
+ package Broker::Assertion;
+ use strict; use warnings;
+-use Broker::Util qw(runtime_config read_json parse_token b64u_enc secure_eq);
+-use Digest::SHA qw(hmac_sha256);
+-sub verify { my($token,$now,$wanted_aud)=@_; my($h,$c,$input,$sig)=parse_token($token); my $cfg=read_json(runtime_config('issuers.json'),{}); my %global; for my $iss (@{$cfg->{issuers}||[]}){ for my $k (@{$iss->{keys}||[]}){ $global{$k->{kid}}=$k; } } my $k=$global{$h->{kid}} or die 'unknown key'; my $expect=hmac_sha256($input,$k->{secret}); die 'bad signature' unless secure_eq($sig,$expect); die 'expired assertion' if ($c->{exp}//0)<$now; my $joined=join(',',@{$c->{aud}||[]}); die 'wrong audience' unless index($joined,$wanted_aud)>=0; return $c; }
++use Broker::Util qw(runtime_config read_json parse_token secure_eq);
++use Digest::SHA qw(hmac_sha256 sha256_hex);
++sub verify { my($token,$now,$wanted_aud)=@_; my($h,$c,$input,$sig)=parse_token($token); my $cfg=read_json(runtime_config('issuers.json'),{}); die 'unsupported assertion algorithm' unless ($h->{alg}//'') eq 'HS256'; die 'wrong assertion type' unless ($h->{typ}//'') eq ($cfg->{assertion_type}//'SWA1'); for my $f (qw(iss sub tenant jti exp nbf iat source_epoch)){ die "missing claim $f" unless exists $c->{$f}; } die 'audience must be an array' unless ref($c->{aud}) eq 'ARRAY'; die 'scope must be an array' unless ref($c->{scope}) eq 'ARRAY'; my($issuer)=grep{($_->{issuer}//'') eq $c->{iss}} @{$cfg->{issuers}||[]}; die 'unknown issuer' unless $issuer; die 'tenant not bound to issuer' unless grep{$_ eq $c->{tenant}} @{$issuer->{allowed_tenants}||[]}; die 'source epoch is stale' if ($c->{source_epoch}//0)<($issuer->{minimum_source_epoch}//0); my($k)=grep{($_->{kid}//'') eq ($h->{kid}//'')} @{$issuer->{keys}||[]}; die 'unknown issuer key' unless $k; die 'issuer key is not valid for verification' unless ($k->{status}//'') eq 'active' || ($k->{status}//'') eq 'retiring'; my $expect=hmac_sha256($input,$k->{secret}); die 'bad signature' unless secure_eq($sig,$expect); my $skew=$cfg->{clock_skew_seconds}//0; die 'assertion not yet valid' if ($c->{nbf}//0)>$now+$skew; die 'assertion issued in future' if ($c->{iat}//0)>$now+$skew; die 'expired assertion' if ($c->{exp}//0)<$now-$skew; my %aud=map{$_=>1}@{$c->{aud}}; die 'wrong audience' unless $aud{$wanted_aud}; $c->{assertion_fingerprint}=sha256_hex($input); return $c; }
+ 1;

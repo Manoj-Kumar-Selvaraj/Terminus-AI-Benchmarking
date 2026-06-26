@@ -1,0 +1,1 @@
+The runtime can reset mutable state, mint adversarial assertions, verify capabilities independently, acknowledge rotation bundles, and inject deterministic failures. Evidence is symptom-first; the contracts under `/app/docs` are the authority for externally visible behavior. Preserve the synthetic issuer and signer identities so audit comparisons remain meaningful.

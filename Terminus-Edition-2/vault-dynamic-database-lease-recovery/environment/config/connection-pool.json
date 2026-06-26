@@ -1,0 +1,6 @@
+{
+  "drainGraceSeconds": 45,
+  "emergencyStaticCredentialReference": "secret/static/payment-ledger-breakglass",
+  "maximumRetiredPools": 8,
+  "validationOperation": "SELECT_PAYMENT_STATUS"
+}

@@ -48,4 +48,4 @@ After M3, diagnostics must no longer stop at phase `PLUGIN_INCOMPATIBLE`. Later 
 5. Plugin compatibility is aligned with the configured Java runtime and target Jenkins version.
 6. Optional noisy plugins do not need to drive recovery unless they block simulator readiness; keep `monitoring-theme` present if it already exists in the home snapshot.
 7. The solution does not pass by removing essential plugin names from the version contract.
-8. Jenkins home recovery evidence remains intact after plugin recovery.
+8. Jenkins home recovery evidence remains intact after plugin recovery (`controller_state.json` keeps `home_schema` `recovered-target` and `restored_from_snapshot` `pre-upgrade-20260618`).

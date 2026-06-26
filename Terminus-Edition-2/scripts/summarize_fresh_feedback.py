@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Create a compact revision brief from All-New-Feedbacks/<task>.
+"""Create a complete revision brief from All-New-Feedbacks/<task>.
 
-The brief is intentionally deterministic: it copies short, relevant sections
-from the curated fresh reports so agents can work from one small file instead
-of rereading large report outputs.
+The brief is intentionally deterministic and copy-friendly: it collects the
+curated fresh report files into one markdown document without truncating
+actionable feedback. This keeps the agent prompt focused on one file while
+avoiding missed issues from clipped summaries.
 """
 from __future__ import annotations
 
@@ -24,7 +25,7 @@ REPORT_ORDER = [
     "code_quality_check_results.txt",
 ]
 
-MAX_SECTION_CHARS = 2500
+MAX_SECTION_CHARS = 10_000_000
 
 ACTION_PATTERNS = (
     "CRITICAL ISSUES",
@@ -94,6 +95,11 @@ def clean_excerpt(text: str) -> str:
             continue
         cleaned.append(stripped)
     return "\n".join(cleaned).strip()
+
+
+def full_report_text(text: str) -> str:
+    """Normalize line endings and blank runs while preserving report content."""
+    return "\n".join(normalize_lines(text)).strip()
 
 
 def extract_revision_notes(text: str, max_lines: int = 80) -> str:
@@ -327,21 +333,7 @@ def build_brief(task: str, feedback_dir: Path) -> str:
         if not text:
             continue
         all_text.append(text)
-        if report_name == "notes.txt":
-            body = extract_revision_notes(text)
-        elif report_name == "human_reviewer_feedback.txt":
-            body = "\n".join(normalize_lines(text)[:80]).strip()
-        elif report_name == "difficulty_check_latest.txt":
-            body = extract_difficulty_summary(text)
-        elif report_name == "code_quality_check_results.txt":
-            body = extract_code_quality(text)
-        elif report_name in {"quality_report.txt", "test_quality_judge_report.txt"}:
-            body = extract_quality_report(text)
-        else:
-            body = extract_actionable_blocks(text)
-        if len(body) > MAX_SECTION_CHARS:
-            body = body[:MAX_SECTION_CHARS].rstrip() + "\n...[section truncated by summarizer]"
-        body = clean_excerpt(body)
+        body = full_report_text(text)
         body_key = re.sub(r"\s+", " ", body).strip()[:3000]
         if body_key and body_key in seen_bodies:
             continue
@@ -353,10 +345,7 @@ def build_brief(task: str, feedback_dir: Path) -> str:
     mentions = collect_file_mentions("\n".join(all_text))
     if mentions:
         sections.extend(["## Mentioned Files", ""])
-        shown_mentions = mentions[:40]
-        sections.extend(f"- `{mention}`" for mention in shown_mentions)
-        if len(mentions) > len(shown_mentions):
-            sections.append(f"- ... {len(mentions) - len(shown_mentions)} more mentions omitted")
+        sections.extend(f"- `{mention}`" for mention in mentions)
         sections.append("")
 
     sources = read_text(feedback_dir / "report_sources.txt")

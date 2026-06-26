@@ -1,0 +1,23 @@
+# Rubric 1
+Agent restores kube-dns egress using namespace and pod selectors with both UDP and TCP port 53, +5
+Agent selects the payment adapter pods with the deployment labels instead of a namespace-wide podSelector, +3
+Agent denies unrelated external and internal service egress while fixing DNS, +3
+Agent edits /app/k8s/networkpolicy.yaml in place without replacing the workload manifests, +3
+Agent opens broad Internet egress or namespace-wide peers to pass DNS checks, -5
+# Rubric 2
+Agent preserves milestone 1 DNS behavior while adding ledger API egress, +3
+Agent allows only ledger-api pods on TCP 443 using paired namespace and pod selectors, +5
+Agent keeps kube-dns UDP and TCP 53 allowed and denies proxy or unrelated ledger pods, +3
+Agent pairs every namespaceSelector with a podSelector to avoid namespace-wide escape hatches, +3
+Agent broadens ledger access to the entire ledger namespace or removes DNS rules, -5
+# Rubric 3
+Agent preserves DNS and ledger egress while adding the identity token path, +3
+Agent allows token-service pods in the identity namespace on TCP 8443 only, +5
+Agent rejects 0.0.0.0/0, empty selectors, and namespace-wide egress peers, +3
+Agent regresses ledger or DNS behavior while adding identity egress, -5
+# Rubric 4
+Agent preserves milestones 1 through 3 while adding the private audit CIDR rule, +3
+Agent allows TCP 9443 to 10.44.0.0/24 with an explicit except entry for 10.44.0.200/32, +5
+Agent keeps blocked audit host and general Internet egress denied while allowing the approved endpoint, +3
+Agent applies the same anti-wildcard selector discipline to the final policy, +3
+Agent replaces prior rules with 0.0.0.0/0 or drops the blocked-host exception, -5

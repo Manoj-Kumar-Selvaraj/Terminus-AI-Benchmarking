@@ -1,0 +1,4 @@
+{"case": "kid-collision", "claim_issuer": "profile-ci", "kid": "rot-17", "signing_issuer": "partner-ci"}
+{"audience": ["profile-export-admin"], "case": "audience-prefix"}
+{"actors": ["svc-support"], "case": "delegated-deny", "scope": "profile:export", "subject": "svc-exporter", "tenant": "acme"}
+{"case": "lost-response", "failure": "AFTER_EXCHANGE_COMMIT"}

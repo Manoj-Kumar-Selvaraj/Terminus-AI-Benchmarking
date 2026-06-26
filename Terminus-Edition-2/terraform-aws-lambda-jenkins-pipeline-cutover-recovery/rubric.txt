@@ -1,0 +1,46 @@
+# Rubric 1
+Agent restores the complete twelve-stage Lambda deployment in the documented Jenkins-equivalent order, +5
+Agent preserves the pinned Terraform AWS Lambda module source and version, published package identities, versioned live aliases, and distinct function identity for every stage, +5
+Agent enforces the exact documented timeout, memory, reserved concurrency, runtime, and least-privilege permission contract for each stage, +5
+Agent preserves execution, batch, item, and artifact identity through a normal end-to-end batch run, +3
+Agent rejects missing, duplicated, or reordered stage names, wrong module/runtime choices, wildcard actions, wildcard principals, and shared or unversioned stage resources before recording a deployment, +5
+Agent edits the trusted runtime, writes runtime state directly, invokes `$LATEST`, or replaces the fleet with one shared Lambda to force success, -5
+Agent accepts duplicated stage names, wildcard permissions, changed stage resources, or an incomplete stage graph, -5
+Agent loses request identity or hardcodes successful runtime output instead of repairing the deployment loader and Terraform contract, -5
+# Rubric 2
+Agent preserves milestone 1 deployment, identity, resource, and permission behavior while adding durable retry recovery, +5
+Agent resumes from the first unfinished stage after transient failures, lost responses, process rebuilds, and persisted checkpoints, +5
+Agent uses stable operation identities and idempotency keys so ledger, report, archive, and partner effects are not duplicated, +5
+Agent records bounded retry exhaustion as `RETRY_PENDING` with the correct `next_stage` and later resumes safely, +5
+Agent uses the trusted deterministic clock and avoids sleeps, unbounded retry loops, regenerated execution IDs, or regenerated effect keys, +3
+Agent replays completed external work, starts recovery from `intake`, or treats completed execution reruns as new work, -5
+Agent disables failure injection, suppresses errors, or fabricates checkpoints rather than preserving durable progress, -5
+Agent regresses the Lambda stage graph, permissions, runtime contract, or identity preservation from milestone 1, -5
+# Rubric 3
+Agent preserves prior deployment and retry behavior while isolating permanently invalid items from valid siblings, +5
+Agent gives poison items exactly three validation attempts, writes them to the trusted DLQ, and prevents those items from creating ledger effects, +5
+Agent lets valid sibling items continue through ledger publication and emits accurate full-success or partial-completion batch status, +5
+Agent enforces one execution owner per batch while allowing unrelated batches to acquire independent per-batch locks, +5
+Agent releases locks after successful and partial completion and keeps repeated partial submissions idempotent, +3
+Agent deletes invalid records, marks every item successful, or blocks valid siblings behind poison work, -5
+Agent uses one global lock, disables concurrency, or allows a second execution owner to publish the same batch, -5
+Agent regresses durable retry checkpoints, idempotency, deployment identity, or prior output contracts, -5
+# Rubric 4
+Agent preserves milestones 1-3 behavior while making generation selection stable for each execution, +5
+Agent keeps in-flight work pinned to its original Lambda generation while alias cutover and rollback affect only new executions, +5
+Agent reconciles lost cutover responses from committed runtime state without duplicating, reversing, or corrupting the alias transition, +5
+Agent keeps Jenkins observation-only after Lambda becomes primary and prevents Jenkins shadow work from creating external effects, +5
+Agent preserves version-specific Terraform package hashes, aliases, rollback behavior, and exactly-once effects across cutover and rollback, +5
+Agent pins all traffic permanently to one generation, disables rollback, or disables the Jenkins comparison path to hide the cutover issue, -5
+Agent lets one execution report stages from multiple generations or lets both Jenkins and Lambda write after cutover, -5
+Agent regresses partial batch, DLQ, per-batch ownership, retry, or deployment-contract behavior, -5
+# Rubric 5
+Agent preserves all prior release-safety, retry, fanout, cutover, rollback, and exactly-once behavior while adding restart reconciliation, +5
+Agent preserves valid journal records when the final JSONL record is incomplete and repairs confirmed active-generation drift from saved deployment state, +5
+Agent resumes pending executions from durable checkpoints and makes repeated reconciliation idempotent without duplicating effects, +5
+Agent supports version 1 events with owner exactly `legacy-jenkins/<batch_id>` and version 2 events with required explicit owner preservation, +5
+Agent rejects unsupported protocols and conflicting execution-id reuse with different batch, owner, or artifact digest before adding invocations or effects, +5
+Agent fences stale workers and preserves completed execution history, deployment identity, artifact metadata, and security constraints after reconciliation, +3
+Agent erases state, rotates execution IDs, fabricates runtime output, or rewrites completed histories to force a clean result, -5
+Agent accepts stale workers, unsupported event versions, missing version 2 owners, or conflicting execution reuse after side effects begin, -5
+Agent persists credentials, adds static Jenkins or AWS secrets, writes trusted runtime state directly, or regresses earlier milestone behavior, -5

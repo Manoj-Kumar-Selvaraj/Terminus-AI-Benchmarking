@@ -1,37 +1,19 @@
-# EC2 module contract
+# EC2 module compatibility contract
 
-Offline simulator only. Preserve `/app/infra/modules/ec2`, resource labels in `main.tf`, output keys in `outputs.tf`, and `tools/ec2sim.py plan|apply|validate` CLI flags (`--config`, `--prior-state`, `--out`, `--state`).
+This is an offline simulator. Do not call AWS and do not require Terraform.
 
-## Release artifact pinning (Milestone 1)
+Preserve:
 
-- `launch_template.ami_id`, `user_data_sha256`, `provenance.commit_sha`, and `provenance.build_id` must come from `release_artifact`, not `ami_catalog.latest`.
-- `validate` must fail closed when any of `ami_id`, `commit_sha`, `build_id`, or `user_data_sha256` is missing; errors must name the field as `release_artifact.<field>`.
-- Instance tags must include `CommitSha` and `BuildId` from the artifact.
-- `apply` must accept `--prior-state` and `--state` alongside `--config` and `--out`.
+- `/app/infra/modules/ec2`
+- every Terraform resource label in `main.tf`
+- every output key in `outputs.tf`
+- `tools/ec2sim` commands `plan`, `apply`, and `validate`
+- flags `--config`, `--prior-state`, `--out`, `--state`, and `--journal`
 
-## Private placement and ingress (Milestone 2)
+Top-level output schema is `ec2sim.aws.2`. Required sections are `release_identity`, `launch_template`, `security_group`, `autoscaling_group`, `instances`, `ebs_volumes`, `iam_role`, `drift_report`, `import_report`, `plan_actions`, `journal_repair`, and `outputs`.
 
-- Every instance has `public_ip_associated: false` and lands only in configured `private_app` subnets.
-- `security_group.ingress` must be exactly one ALB rule: TCP `from_port`/`to_port` 8080 with `source_security_group_id` from config.
-- `validate` must reject subnets whose `tier` is not `private_app`; errors must mention `private_app`.
+Nested schemas are part of the contract. `launch_template` includes `id`, `version`, `ami_id`, `architecture`, `instance_type`, `user_data_sha256`, `metadata_options`, `provenance`, and `tags`. `security_group` includes `id`, exact `ingress`, and exact `egress` rule arrays. Each instance includes `id`, `slot`, `az`, `subnet_id`, `public_ip_associated`, `security_group_id`, `launch_template_version`, `ami_id`, `state`, `health`, and `tags`. `autoscaling_group.instance_refresh.status` is one of `completed`, `rolled_back`, or `in_progress` — never informal values such as `stable`. `outputs` includes `launch_template_id`, `launch_template_version`, `autoscaling_group_name`, `instance_ids`, `volume_ids`, `rollout_operation_id`, and `drift_report`.
 
-## Instance refresh (Milestone 3)
+The simulator CLI is part of the harness contract. Repair the module implementation rather than replacing the CLI, fabricating output files, or hardcoding the provided production sample.
 
-- Passing refresh uses `strategy: canary-then-batch`, `min_healthy_percentage >= 90`, and `min_healthy_instances >= 5`.
-- Failed `candidate_health` rolls back with `status: rolled_back`, event `kept_previous_capacity`, and prior instance IDs preserved.
-- Re-running `plan` with `--prior-state` must not duplicate instance IDs.
-
-## Encrypted EBS (Milestone 4)
-
-- Each instance gets a non-orphaned encrypted volume with `kms_key_alias`, `ManagedBy: terraform-aws-ec2-module`, and `delete_on_termination: false`.
-- `validate` rejects unencrypted or unscoped volumes; errors must contain `unencrypted`.
-
-## IMDSv2, IAM, and drift (Milestone 5)
-
-- `launch_template.metadata_options` requires `http_tokens: required` and `http_put_response_hop_limit: 1`.
-- IAM policy must not contain wildcard admin `"Action": ["*"]`; it must include `ssm:UpdateInstanceInformation`, `s3:GetObject`, `kms:Decrypt`, and `cloudwatch:PutMetricData`.
-- Drift on `launch_template_version` is `action: report_only` without replacing instances.
-
-## ec2sim output schema
-
-Top-level `schema_version` is `ec2sim.aws.1`. Key fields: `launch_template`, `security_group`, `autoscaling_group.instance_refresh`, `instances`, `ebs_volumes`, `iam_role`, `drift_report`, `outputs`.
+For `apply`, atomically replace `--state` and append one JSONL record to `--journal`, or to `${state}.journal.jsonl` when `--journal` is omitted. Every journal record contains `operation_id`, `release_manifest_sha256`, `refresh_status`, and `state_digest`. `release_manifest_sha256` is the rendered approved release identity's manifest digest, and `state_digest` is the digest of the state written by that apply.

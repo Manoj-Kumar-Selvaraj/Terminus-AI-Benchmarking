@@ -1,0 +1,8 @@
+{
+  "database_role": "payment-ledger",
+  "pod_uid": "pod-sample-001",
+  "protocol_version": 2,
+  "request_id": "req-sample-001",
+  "requested_at": "2026-06-23T10:00:00Z",
+  "vault_role": "payment-ledger-k8s"
+}

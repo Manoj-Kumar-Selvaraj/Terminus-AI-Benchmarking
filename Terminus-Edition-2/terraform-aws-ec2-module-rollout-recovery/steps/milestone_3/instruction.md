@@ -1,14 +1,22 @@
-# Make instance refresh safe under pilot failure
+# Make the rollout restart-safe and capacity-safe
 
-You are recovering a Terraform AWS EC2 module rollout for the payments API fleet. This is offline: do not call AWS and do not require Terraform. Use `/app/tools/ec2sim.py`, `/app/docs/module_contract.md`, and `/app/evidence`.
+The first replacement was retired before its pilot was healthy. A later control-plane response was lost after pilot progress had already committed, and the operator retry created duplicate identities.
 
-Implement pilot-then-batch behavior that preserves old capacity on failed candidate health and is idempotent.
+Preserve milestones 1–2. Use `/app/docs/rollout_contract.md`, `/app/evidence/asg_refresh_capture.json`, and `/app/evidence/lost_response_trace.jsonl`.
 
-## Success criteria
+## Required behavior
 
-- Preserve milestones 1–2 placement and ingress behavior.
-- Passing refresh uses the pilot-then-batch `strategy` from `/app/docs/module_contract.md` with `min_healthy_percentage >= 90` and `min_healthy_instances >= 5`.
-- Failed `candidate_health` rolls back with `status: rolled_back`, event `kept_previous_capacity`, and prior instance IDs unchanged.
-- Re-running `plan` with `--prior-state` does not duplicate instance IDs.
+- Release changes use the documented fenced `pilot-then-wave` operation and ordered event contract.
+- For post-pilot work, emit `wave_launched`, `wave_healthy`, and `wave_committed` once per wave group, never once per slot. Every event in that three-event group carries the same `wave` number and `slots` list. For remaining slots `[1,2,3,4,5]` with `wave_size=2`, emit one trio for `[1,2]`, then one trio for `[3,4]`, then one trio for `[5]`.
+- The healthy-capacity floor and `max_unavailable` invariant hold at every event for any valid desired capacity.
+- Pilot or wave health failure rolls back to the exact prior fleet and records that previous capacity was preserved.
+- When `rollout.candidate_health` is `fail_pilot`, emit events `pilot_launched`, `pilot_unhealthy`, `previous_capacity_preserved`, set refresh `status` to `rolled_back`, and leave prior `instances` and `outputs.instance_ids` unchanged.
+- When `rollout.candidate_health` is `fail_wave`, complete the pilot, fail the first wave health check, end with `previous_capacity_preserved`, set refresh `status` to `rolled_back`, and leave prior `instances` and `outputs.instance_ids` unchanged.
+- Operation identity is deterministic for source release, target release, environment, application, and desired capacity.
+- A lost response after committed pilot progress writes durable `in_progress` state before returning failure.
+- Restart resumes from the first unfinished slot without duplicate instance IDs or repeated pilot events.
+- A stale owner fails closed with an error containing `stale rollout owner`. A changed target release fails closed with an error containing `target release changed`.
+- Replanning a completed target release is a no-op.
+- Preserve private placement, security boundaries, and immutable release provenance.
 
-Compatibility constraints: keep `/app/infra/modules/ec2`, all labels in `main.tf`, all outputs in `outputs.tf`, and CLI flags `plan`, `apply`, `validate`, `--config`, `--prior-state`, `--out`, `--state`. Do not hardcode sample JSON or edit verifier fixtures.
+Do not bypass injected failures, delete durable progress, regenerate operation identity, or implement unbounded retries or fixed sleeps.

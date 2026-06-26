@@ -1,0 +1,10 @@
+{
+  "max_overlap_seconds": 300,
+  "quorum": 2,
+  "required_nodes": [
+    "broker-a",
+    "broker-b",
+    "broker-c"
+  ],
+  "rotation_journal_schema": 1
+}

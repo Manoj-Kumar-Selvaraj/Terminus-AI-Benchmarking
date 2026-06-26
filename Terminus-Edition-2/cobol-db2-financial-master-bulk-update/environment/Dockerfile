@@ -33,5 +33,5 @@ COPY scripts/ /app/scripts/
 COPY tools/ /app/tools/
 
 RUN chmod +x /app/bin/run_finbulk.sh /app/scripts/reset_lab.sh /app/tools/*.py \
-    && mkdir -p /app/out /app/build /logs/verifier \
+    && mkdir -p /app/out /app/build \
     && go build -o /app/build/finbulk /app/cmd/finbulk

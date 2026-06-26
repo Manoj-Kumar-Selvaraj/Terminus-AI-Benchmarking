@@ -1,0 +1,9 @@
+{
+  "journalTailRecovery": true,
+  "maximumIssueAttempts": 4,
+  "nodes": [
+    "active-a",
+    "standby-b"
+  ],
+  "requestLockTimeoutSeconds": 5
+}

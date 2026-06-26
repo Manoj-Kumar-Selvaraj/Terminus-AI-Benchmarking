@@ -20,6 +20,7 @@ Important files include:
 - `documentation/MILESTONES_GUIDE.md`
 - `documentation/WRITING_TESTS_GUIDE.md`
 - `documentation/ORACLE_SOLUTION_GUIDE.md`
+- `documentation/MILESTONE_ORACLE_SOLUTION_RULES.md`
 - `documentation/RUBRICS_GUIDE.md`
 - `documentation/SUBMISSION_CHECKLIST.md`
 - `documentation/CI_CHECKS_REFERENCE.md`

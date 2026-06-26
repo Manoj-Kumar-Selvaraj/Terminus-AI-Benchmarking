@@ -1,0 +1,13 @@
+{
+  "schema_version": "ec2sim.aws.1",
+  "resource_addresses": [
+    "aws_launch_template.payments",
+    "aws_autoscaling_group.payments",
+    "aws_security_group.payments_instance",
+    "aws_iam_role.payments_instance",
+    "aws_ebs_volume.payments_data",
+    "aws_volume_attachment.payments_data"
+  ],
+  "instance_key_source": "tags.Slot",
+  "expected_action": "preserve imported IDs and declare moved resources"
+}

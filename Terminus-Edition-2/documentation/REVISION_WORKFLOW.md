@@ -21,6 +21,21 @@ Or use the single startup wrapper:
 bash scripts/start_revision.sh --task <task-name> --submission <submission-id>
 ```
 
+By default, `start_revision.sh` also cleans the fresh feedback workspace so
+only the requested `All-New-Feedbacks/<task-name>/` folder remains. It removes
+other task-named folders under `All-New-Feedbacks/` only; it does not remove
+task source folders. Keep additional fresh feedback folders with:
+
+```bash
+bash scripts/start_revision.sh \
+  --task <task-name> \
+  --submission <submission-id> \
+  --keep-task <task-to-preserve>
+```
+
+Use `--keep-task` multiple times, `--keep-tasks a,b,c`, or
+`--no-clean-feedback-folders` when you intentionally need the old behavior.
+
 This leaves `Auto-Eval-Logs/` untouched as report history. It refreshes only
 `All-New-Feedbacks/<task-name>/`, then runs `scripts/pull_auto_eval_logs.sh` and
 post-processes the folder into a latest-only view. The fresh folder keeps the
@@ -40,6 +55,10 @@ Generate the compact brief:
 ```bash
 python scripts/summarize_fresh_feedback.py --task <task-name>
 ```
+
+The generated `REVISION_BRIEF.md` is intentionally copy-friendly: it includes
+the full curated fresh report files in one markdown document and does not
+truncate sections or omit extra file mentions.
 
 Start with the newest or most specific report sections:
 

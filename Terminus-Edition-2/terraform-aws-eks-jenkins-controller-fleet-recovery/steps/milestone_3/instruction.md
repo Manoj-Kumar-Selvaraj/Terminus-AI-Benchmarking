@@ -36,4 +36,4 @@ Do not use `latest` or `updates.jenkins.io`.
 
 JCasC must preserve restricted authorization (`matrix` or `roleBased`) and set `allowsSignup: false`. Each controller needs a seed job; JOC must not directly own production jobs.
 
-Every entry in the `jobs` object must have a nonblank `controller`, a nonblank `folder`, and a nonempty `required_plugins` array. Every listed plugin must be one of the eight pinned catalog IDs.
+Every entry in the `jobs` object must have a nonblank `controller`, a nonblank `folder`, and a nonempty `required_plugins` array. Every listed plugin must be one of the eight pinned catalog IDs. Declare at least six production jobs with at least two assigned to each controller.

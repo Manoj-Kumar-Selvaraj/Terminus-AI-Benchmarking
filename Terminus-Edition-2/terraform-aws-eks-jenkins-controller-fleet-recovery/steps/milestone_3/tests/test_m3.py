@@ -48,8 +48,8 @@ class TestMilestone3:
             "risk-controller",
             "platform-controller",
         }
-        for controller in jobs["controllers"]:
-            assert jobs["controllers"][controller].get("seed_job")
+        job_entries = jobs.get("jobs", {})
+        assert len(job_entries) >= 6, "Fleet requires at least six production jobs"
         approved_plugins = {
             "configuration-as-code",
             "kubernetes",
@@ -60,11 +60,31 @@ class TestMilestone3:
             "matrix-auth",
             "cloudbees-casc-client",
         }
+        allowed_controllers = {
+            "payments-controller",
+            "risk-controller",
+            "platform-controller",
+        }
+        for controller, cdata in jobs["controllers"].items():
+            assert cdata.get("seed_job") and str(cdata["seed_job"]).strip()
+            assert isinstance(cdata.get("jobs"), list) and len(cdata["jobs"]) > 0, (
+                f"{controller} must declare a non-empty jobs list"
+            )
+            for job_name in cdata["jobs"]:
+                assert job_name in job_entries, f"{job_name} missing from jobs object"
+        per_controller = {name: 0 for name in allowed_controllers}
         controllers = set()
-        for job in jobs.get("jobs", {}).values():
+        for job_name, job in job_entries.items():
             assert isinstance(job.get("folder"), str) and job["folder"].strip()
             assert isinstance(job.get("required_plugins"), list)
             assert job["required_plugins"]
             assert set(job["required_plugins"]) <= approved_plugins
-            controllers.add(job.get("controller"))
+            ctrl = job.get("controller", "")
+            assert ctrl in allowed_controllers, f"Invalid controller for {job_name}: {ctrl}"
+            assert ctrl.lower() != "joc"
+            controllers.add(ctrl)
+            per_controller[ctrl] += 1
+        for controller, count in per_controller.items():
+            assert count >= 2, f"{controller} needs at least two production jobs"
+        assert controllers == allowed_controllers
         assert "joc" not in controllers

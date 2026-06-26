@@ -1,17 +1,18 @@
-# No canonical COBOL image is available; digest-pinned Debian supplies GnuCOBOL
-# and the required Terminal-Bench session and Python test tooling.
-FROM public.ecr.aws/docker/library/debian:bookworm-slim@sha256:4724b8cc51e33e398f0e2e15e18d5ec2851ff0c2280647e1310bc1642182655d
+# Canonical Python base for pytest verifiers; GnuCOBOL comes from Debian apt.
+# Single-stage build is intentional: agents recompile COBOL at runtime (static-check carve-out).
+FROM public.ecr.aws/docker/library/python:3.13-slim-bookworm@sha256:01f42367a0a94ad4bc17111776fd66e3500c1d87c15bbd6055b7371d39c124fb
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    COB_LS_FIXED=Y
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        asciinema \
+        asciinema=2.2.0-1 \
         bash \
         ca-certificates \
         gnucobol \
         make \
-        python3 \
-        python3-pip \
-        tmux \
+        tmux=3.3a-3 \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.lock /tmp/requirements.lock
@@ -19,8 +20,6 @@ RUN pip3 install --no-cache-dir --break-system-packages --require-hashes --no-de
     && rm -f /tmp/requirements.lock
 
 WORKDIR /app
-
-ENV COB_LS_FIXED=Y
 
 COPY src/ /app/src/
 COPY copybooks/ /app/copybooks/
@@ -30,5 +29,5 @@ COPY docs/ /app/docs/
 COPY evidence/ /app/evidence/
 COPY scripts/ /app/scripts/
 
-RUN mkdir -p /app/out /app/build \
+RUN mkdir -p /app/out /app/build /logs/verifier \
     && chmod +x /app/scripts/*.sh

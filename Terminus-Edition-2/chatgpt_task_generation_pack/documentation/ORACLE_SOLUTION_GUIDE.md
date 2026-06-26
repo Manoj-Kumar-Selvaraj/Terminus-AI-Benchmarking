@@ -104,18 +104,20 @@ curl -s http://localhost:8080/health | grep -q "ok"
 - solving only what visible tests check
 - making a solution that cannot run multiple times
 - calling `/steps/milestone_N/...` or `../../milestone_N/solution/` from `solveN.sh` (Harbor mounts only the current milestone at `/solution/`)
-- chaining prior milestone solves inside `solveN.sh` (filesystem persists across milestones; each step should apply only its own delta)
+- chaining prior milestone solves inside `solveN.sh` (for example `solve3.sh` calling `solve2.sh`)
 - `text.replace(...)` lines that no longer match starter source (dead replacements)
 
 ### Milestone oracle layout
 
+See **[MILESTONE_ORACLE_SOLUTION_RULES.md](MILESTONE_ORACLE_SOLUTION_RULES.md)** for the full portal-safe pattern.
+
 ```bash
 # steps/milestone_N/solution/solve.sh
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-bash "$SCRIPT_DIR/solveN.sh"
+exec bash "${SCRIPT_DIR}/solveN.sh"
 ```
 
-`solveN.sh` patches `/app` source assuming earlier milestones are already fixed in the shared container. Do not re-run `solve1.sh` from milestone 3.
+Each `solveN.sh` must be a **standalone cumulative** fix for milestones 1 through N starting from the broken starter codebase. Do not call prior milestone `solve*.sh` scripts from inside `solveN.sh`.
 
 See [COMMON_ERRORS.md](COMMON_ERRORS.md#platform-qc-and-harbor-pitfalls-2026-0506) for the full recent QC checklist.
 

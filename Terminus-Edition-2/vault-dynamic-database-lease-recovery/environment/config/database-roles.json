@@ -1,0 +1,14 @@
+{
+  "roles": {
+    "payment-ledger": {
+      "privileges": [
+        "SELECT_PAYMENT_STATUS",
+        "INSERT_LEDGER_EVENT",
+        "UPDATE_RETRY_METADATA",
+        "EXECUTE_APPROVED_PROCEDURE"
+      ],
+      "tenant": "payments",
+      "vault_role": "payment-ledger-k8s"
+    }
+  }
+}

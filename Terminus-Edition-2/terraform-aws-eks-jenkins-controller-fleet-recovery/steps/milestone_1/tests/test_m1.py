@@ -41,7 +41,8 @@ class TestMilestone1:
 
         assert "terraform-aws-modules/eks/aws" in text
         assert re.search(r"cluster_endpoint_public_access\s*=\s*false", text)
-        assert "subnet_ids" in text
+        assert re.search(r"cluster_endpoint_private_access\s*=\s*true", text)
+        assert re.search(r"subnet_ids\s*=\s*var\.private_subnet_ids", text)
         assert "public_subnet" not in text.lower()
 
         groups = braced_block(
@@ -85,7 +86,16 @@ class TestMilestone1:
                 r'workload:\s*jenkins-controller|workload\s*=\s*"jenkins-controller"',
                 section,
             ), f"{release_name} must target jenkins-controller node group"
-            assert "topologySpreadConstraints" in section or "podAntiAffinity" in section
+            assert re.search(
+                r"tolerations:\s*\n\s*-\s+key:\s*dedicated[\s\S]*?"
+                r"(?:NoSchedule|NO_SCHEDULE)",
+                section,
+            ), f"{release_name} must tolerate the dedicated Jenkins taint"
+            tsc = re.search(r"topologySpreadConstraints:\s*\n\s*-\s", section)
+            paa = re.search(r"podAntiAffinity:\s*\n\s+\w", section)
+            assert tsc or paa, (
+                f"{release_name} needs real topology spread or pod anti-affinity"
+            )
 
         joc = braced_block(
             text,

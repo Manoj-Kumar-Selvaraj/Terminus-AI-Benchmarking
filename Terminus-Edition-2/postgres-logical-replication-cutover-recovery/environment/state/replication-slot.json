@@ -1,0 +1,9 @@
+{
+  "active": true,
+  "confirmed_flush_lsn": "0/500",
+  "creation_id": "slot-created-20260617",
+  "name": "profile_migration_slot",
+  "restart_lsn": "0/500",
+  "retained_wal_bytes": 0,
+  "source_epoch": 7
+}

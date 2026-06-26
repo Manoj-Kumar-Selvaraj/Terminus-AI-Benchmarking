@@ -39,3 +39,37 @@ class TestMilestone2:
         invoices, _, summary = run_full()
         assert summary["invoices_posted"] == 1
         assert summary["duplicate_batches_blocked"] == 0
+
+    def test_duplicate_does_not_advance_invoice_number(self):
+        """Blocking a duplicate must not consume the next invoice number."""
+        run1 = APP / "data" / "run01.usg"
+        write_prior(["PACCT1001BATCH1INV000000010000050000"])
+        write_manifest(["/app/data/run01.usg"])
+        write_usage(
+            run1,
+            [
+                fmt_usage("ACCT1001", "BATCH1", "0001", 50000),
+                fmt_usage("ACCT2001", "BATCH9", "0001", 80000),
+            ],
+        )
+        invoices, _, summary = run_full()
+        assert summary["invoices_posted"] == 1
+        assert summary["duplicate_batches_blocked"] == 1
+        assert invoices[0]["account_id"] == "ACCT2001"
+        assert invoices[0]["invoice_no"] == 1
+
+    def test_any_distinct_batch_match_blocks_account(self):
+        """Any collected batch id matching the ledger blocks the account."""
+        run1 = APP / "data" / "run01.usg"
+        write_prior(["PACCT1001BATCH2INV000000010000050000"])
+        write_manifest(["/app/data/run01.usg"])
+        write_usage(
+            run1,
+            [
+                fmt_usage("ACCT1001", "BATCH1", "0001", 50000),
+                fmt_usage("ACCT1001", "BATCH2", "0001", 70000),
+            ],
+        )
+        invoices, _, summary = run_full()
+        assert summary["duplicate_batches_blocked"] == 1
+        assert invoices == []

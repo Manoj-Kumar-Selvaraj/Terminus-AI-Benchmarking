@@ -1,0 +1,361 @@
+#!/usr/bin/env python3
+import argparse, base64, datetime as dt, fcntl, hashlib, hmac, json, os, pathlib, re, sys, tempfile
+
+SECRET = b"vault-db-runtime-signing-key-v1"
+DEFAULT_DIR = pathlib.Path("/var/lib/vault-db-runtime")
+ALLOWED = {"SELECT_PAYMENT_STATUS", "INSERT_LEDGER_EVENT", "UPDATE_RETRY_METADATA", "EXECUTE_APPROVED_PROCEDURE"}
+
+class RuntimeErrorCode(Exception):
+    def __init__(self, code, message, retryable=False, exit_code=2):
+        super().__init__(message); self.code=code; self.message=message; self.retryable=retryable; self.exit_code=exit_code
+
+def runtime_dir(): return pathlib.Path(os.environ.get("VAULT_DB_RUNTIME_DIR", str(DEFAULT_DIR)))
+def state_path(): return runtime_dir()/"runtime.json"
+def lock_path(): return runtime_dir()/"runtime.lock"
+def iso(value):
+    if isinstance(value, dt.datetime): return value.astimezone(dt.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00","Z")
+    return parse_time(value).isoformat().replace("+00:00","Z")
+def parse_time(value):
+    if isinstance(value, dt.datetime): return value.astimezone(dt.timezone.utc)
+    if not value: raise RuntimeErrorCode("INVALID_TIME","time is required")
+    try: return dt.datetime.fromisoformat(str(value).replace("Z","+00:00")).astimezone(dt.timezone.utc)
+    except Exception: raise RuntimeErrorCode("INVALID_TIME",f"invalid timestamp {value!r}")
+def parse_duration(value):
+    m=re.fullmatch(r"([0-9]+)(s|m|h)", value or "")
+    if not m: raise RuntimeErrorCode("INVALID_DURATION", "duration must use s, m, or h")
+    n=int(m.group(1)); return n*{"s":1,"m":60,"h":3600}[m.group(2)]
+def canonical(obj): return json.dumps(obj,sort_keys=True,separators=(",",":"))
+def digest(*parts): return hashlib.sha256("|".join(map(str,parts)).encode()).hexdigest()
+def b64(data): return base64.urlsafe_b64encode(data).decode().rstrip("=")
+def unb64(data): return base64.urlsafe_b64decode(data + "="*((4-len(data)%4)%4))
+def emit(obj): print(json.dumps(obj,sort_keys=True,separators=(",",":")))
+def read_json(path):
+    try: return json.loads(pathlib.Path(path).read_text())
+    except Exception as e: raise RuntimeErrorCode("INVALID_REQUEST",f"cannot read request: {e}")
+def fresh_state(clock="2026-06-23T10:00:00Z"):
+    return {"clock":clock,"active_node":"active-a","epoch":1,"user_seq":0,"session_seq":0,
+            "users":{},"leases":{},"requests":{},"renewal_results":{},"sessions":{},"failures":{},"audit":[]}
+def load_state():
+    p=state_path()
+    if not p.exists(): return fresh_state()
+    try: return json.loads(p.read_text())
+    except Exception as e: raise RuntimeErrorCode("RUNTIME_STATE_CORRUPT",str(e))
+def save_state(state):
+    runtime_dir().mkdir(parents=True,exist_ok=True)
+    fd,tmp=tempfile.mkstemp(prefix="runtime.",dir=runtime_dir())
+    try:
+        with os.fdopen(fd,"w") as f:
+            json.dump(state,f,sort_keys=True,separators=(",",":")); f.write("\n"); f.flush()
+        os.replace(tmp,state_path())
+    finally:
+        if os.path.exists(tmp): os.unlink(tmp)
+def audit(state,event,**fields):
+    state["audit"].append({"at":state["clock"],"event":event,**fields})
+def fail_matches(spec,ctx):
+    for key in ("request_id","lease_id","pod_uid"):
+        if spec.get(key) and spec.get(key)!=ctx.get(key): return False
+    return True
+def consume_failure(state,point,ctx=None):
+    ctx=ctx or {}; bucket=state.get("failures",{}).get(point)
+    if not bucket: return False
+    specs=bucket if isinstance(bucket,list) else [bucket]
+    for spec in specs:
+        if int(spec.get("count",0))<=0 or not fail_matches(spec,ctx):
+            continue
+        spec["count"]=int(spec.get("count",0))-1
+        audit(state,"failure_consumed",point=point,**{k:v for k,v in ctx.items() if v})
+        state["failures"][point]=[x for x in specs if int(x.get("count",0))>0]
+        if not state["failures"][point]: state["failures"].pop(point,None)
+        return True
+    return False
+def public_user(user):
+    return {k:v for k,v in user.items() if k not in {"secret_digest"}}
+def public_lease(lease): return dict(lease)
+def lease_response(lease,user):
+    out=public_lease(lease); out["username"]=user["username"]; out["password_reference"]=user["password_reference"]; return out
+def fingerprint(req):
+    keys=("request_id","pod_uid","vault_role","database_role")
+    return digest(*(req.get(k,"") for k in keys))
+def validate_issue_req(req):
+    required=("request_id","pod_uid","vault_role","database_role")
+    missing=[k for k in required if not isinstance(req.get(k),str) or not req.get(k)]
+    if missing: raise RuntimeErrorCode("INVALID_REQUEST","missing "+",".join(missing))
+    if req["vault_role"]!="payment-ledger-k8s" or req["database_role"]!="payment-ledger":
+        raise RuntimeErrorCode("ROLE_DENIED","requested role is not available")
+
+def mint_token(claims):
+    header={"alg":"HS256","typ":"JWT","kid":"runtime-v1"}
+    body=f"{b64(canonical(header).encode())}.{b64(canonical(claims).encode())}"
+    sig=b64(hmac.new(SECRET,body.encode(),hashlib.sha256).digest())
+    return body+"."+sig
+def validate_signature(token):
+    parts=token.strip().split(".")
+    if len(parts)!=3: raise RuntimeErrorCode("INVALID_SIGNATURE","token signature is invalid")
+    body=parts[0]+"."+parts[1]
+    expected=hmac.new(SECRET,body.encode(),hashlib.sha256).digest()
+    try: actual=unb64(parts[2]); claims=json.loads(unb64(parts[1]))
+    except Exception: raise RuntimeErrorCode("INVALID_SIGNATURE","token signature is invalid")
+    if not hmac.compare_digest(expected,actual): raise RuntimeErrorCode("INVALID_SIGNATURE","token signature is invalid")
+    if not isinstance(claims,dict): raise RuntimeErrorCode("INVALID_SIGNATURE","token claims are invalid")
+    return claims
+
+def cmd_reset(args,state):
+    state.clear(); state.update(fresh_state(args.clock)); audit(state,"reset"); return {"status":"RESET","clock":state["clock"]}
+def cmd_clock(args,state):
+    if args.clock_action=="set": state["clock"]=iso(args.value); audit(state,"clock_set")
+    elif args.clock_action=="advance": state["clock"]=iso(parse_time(state["clock"])+dt.timedelta(seconds=parse_duration(args.value))); audit(state,"clock_advanced",duration=args.value)
+    return {"clock":state["clock"]}
+def cmd_mint(args,state): return {"token":mint_token(read_json(args.claims))}
+def cmd_validate(args,state):
+    token=pathlib.Path(args.token_file).read_text().strip() if args.token_file else args.token
+    if not token: raise RuntimeErrorCode("EMPTY_TOKEN","token is empty")
+    claims=validate_signature(token); audit(state,"token_signature_valid",claim_keys=sorted(claims)); return {"valid":True,"claims":claims}
+def cmd_status(args,state): return {"active_node":state["active_node"],"epoch":state["epoch"],"clock":state["clock"]}
+def cmd_failover(args,state):
+    if args.to==state["active_node"]: return {"active_node":state["active_node"],"epoch":state["epoch"],"changed":False}
+    state["active_node"]=args.to; state["epoch"]+=1; audit(state,"failover",active_node=args.to,epoch=state["epoch"])
+    return {"active_node":state["active_node"],"epoch":state["epoch"],"changed":True}
+def cmd_inject(args,state):
+    failures=state.setdefault("failures",{})
+    current=failures.get(args.point,[])
+    if isinstance(current,dict): current=[current]
+    current.append({"count":args.count,"request_id":args.request_id or "","lease_id":args.lease_id or "","pod_uid":args.pod_uid or ""})
+    failures[args.point]=current
+    audit(state,"failure_injected",point=args.point,count=args.count); return {"point":args.point,"count":args.count}
+def cmd_fault_check(args,state):
+    if consume_failure(state,args.point,{"request_id":args.request_id or "","lease_id":args.lease_id or "","pod_uid":args.pod_uid or ""}):
+        raise RuntimeErrorCode("INJECTED_FAILURE",f"fault at {args.point}",retryable=True,exit_code=75)
+    return {"triggered":False,"point":args.point}
+
+def create_lease_for_user(state,req,user):
+    now=parse_time(state["clock"]); lease_id="vdb-"+digest(req["request_id"],user["username"])[:18]
+    lease={"lease_id":lease_id,"request_id":req["request_id"],"database_username":user["username"],
+           "issued_at":iso(now),"expires_at":iso(now+dt.timedelta(seconds=300)),"renewable":True,
+           "max_expires_at":iso(now+dt.timedelta(seconds=1800)),"generation":int(req.get("generation",1)),
+           "vault_node":state["active_node"],"vault_epoch":state["epoch"],"status":"ACTIVE",
+           "owner_pod_uid":req["pod_uid"],"last_renewed_at":""}
+    state["leases"][lease_id]=lease; user["lease_id"]=lease_id; user["orphaned"]=False
+    state["requests"][req["request_id"]]={"fingerprint":fingerprint(req),"lease_id":lease_id,"username":user["username"]}
+    audit(state,"lease_committed",request_id=req["request_id"],lease_id=lease_id,username=user["username"],node=state["active_node"],epoch=state["epoch"])
+    return lease
+
+def cmd_issue(args,state):
+    req=read_json(args.request); validate_issue_req(req); ctx={"request_id":req["request_id"],"pod_uid":req["pod_uid"]}
+    if consume_failure(state,"BEFORE_DB_USER_CREATE",ctx): raise RuntimeErrorCode("UPSTREAM_UNAVAILABLE","issuance unavailable",True,75)
+    node=req.get("vault_node",args.node or "active-a"); epoch=int(req.get("vault_epoch",args.epoch or 1))
+    if node!=state["active_node"]: raise RuntimeErrorCode("STANDBY_NODE","node is not active",True,75)
+    if epoch!=int(state["epoch"]): raise RuntimeErrorCode("STALE_EPOCH","active-node epoch changed",True,75)
+    if consume_failure(state,"USERNAME_COLLISION",ctx): raise RuntimeErrorCode("USERNAME_COLLISION","generated database username collided",True,75)
+    state["user_seq"]+=1; attempt=sum(1 for u in state["users"].values() if u.get("request_id")==req["request_id"])+1
+    username="v_pay_"+digest(req["request_id"],attempt,state["user_seq"])[:12]
+    password_ref="vaultref://"+digest(username,req["pod_uid"])[:24]
+    user={"username":username,"request_id":req["request_id"],"fingerprint":fingerprint(req),"pod_uid":req["pod_uid"],
+          "database_role":req["database_role"],"tenant":"payments","privileges":sorted(ALLOWED),"active":True,
+          "created_at":state["clock"],"disabled_at":"","session_grace_until":"","lease_id":"","orphaned":True,
+          "generation":int(req.get("generation",1)),"vault_node":node,"vault_epoch":epoch,
+          "password_reference":password_ref,"secret_digest":digest("secret",password_ref)}
+    state["users"][username]=user; audit(state,"database_user_created",request_id=req["request_id"],username=username,node=node,epoch=epoch)
+    if consume_failure(state,"FAILOVER_AFTER_DB_USER_CREATE",ctx):
+        state["active_node"]="standby-b" if state["active_node"]=="active-a" else "active-a"; state["epoch"]+=1; audit(state,"failover",active_node=state["active_node"],epoch=state["epoch"]); save_state(state); raise RuntimeErrorCode("UNCERTAIN_ISSUANCE","active node changed after database user creation",True,75)
+    if consume_failure(state,"AFTER_DB_USER_CREATE",ctx) or consume_failure(state,"BEFORE_LEASE_JOURNAL",ctx):
+        save_state(state); raise RuntimeErrorCode("UNCERTAIN_ISSUANCE","connection lost after database user creation",True,75)
+    lease=create_lease_for_user(state,req,user)
+    if consume_failure(state,"FAILOVER_AFTER_LEASE_JOURNAL",ctx):
+        state["active_node"]="standby-b" if state["active_node"]=="active-a" else "active-a"; state["epoch"]+=1; audit(state,"failover",active_node=state["active_node"],epoch=state["epoch"]); save_state(state); raise RuntimeErrorCode("LOST_RESPONSE","active node changed after lease commit",True,75)
+    if consume_failure(state,"AFTER_LEASE_JOURNAL_WRITE",ctx) or consume_failure(state,"LOST_CLIENT_RESPONSE",ctx):
+        save_state(state); raise RuntimeErrorCode("LOST_RESPONSE","lease committed but response was lost",True,75)
+    return lease_response(lease,user)
+
+def reconcile_request(state,req):
+    validate_issue_req(req); fp=fingerprint(req); rid=req["request_id"]
+    related_users=[u for u in state["users"].values() if u.get("request_id")==rid]
+    related_leases=[l for l in state["leases"].values() if l.get("request_id")==rid]
+    if any(u.get("fingerprint")!=fp for u in related_users) or any(state.get("requests",{}).get(rid,{}).get("fingerprint",fp)!=fp for _ in [0]):
+        raise RuntimeErrorCode("REQUEST_ID_CONFLICT","request_id was reused with different identity")
+    valid=[]
+    for lease in related_leases:
+        user=state["users"].get(lease.get("database_username"))
+        if user and user.get("active") and lease.get("status")=="ACTIVE": valid.append((lease,user))
+        elif lease.get("status")=="ACTIVE": lease["status"]="FAILED"; audit(state,"orphan_lease_failed",lease_id=lease["lease_id"],request_id=rid)
+    valid.sort(key=lambda x:(x[0].get("issued_at",""),x[0]["lease_id"]))
+    if valid:
+        chosen=valid[0]
+        for lease,user in valid[1:]:
+            lease["status"]="REVOKED"; user["active"]=False; user["disabled_at"]=state["clock"]
+            audit(state,"duplicate_issuance_revoked",lease_id=lease["lease_id"],username=user["username"],request_id=rid)
+        state["requests"][rid]={"fingerprint":fp,"lease_id":chosen[0]["lease_id"],"username":chosen[1]["username"]}
+        return {"status":"RECOVERED_COMMITTED",**lease_response(chosen[0],chosen[1])}
+    orphans=[u for u in related_users if u.get("active") and not u.get("lease_id")]
+    orphans.sort(key=lambda u:(u.get("created_at",""),u["username"]))
+    if orphans:
+        chosen=orphans[0]; lease=create_lease_for_user(state,req,chosen)
+        for user in orphans[1:]: user["active"]=False; user["disabled_at"]=state["clock"]; audit(state,"orphan_user_revoked",username=user["username"],request_id=rid)
+        return {"status":"RECOVERED_ORPHAN_USER",**lease_response(lease,chosen)}
+    return {"status":"NONE"}
+def cmd_recover_issue(args,state): return reconcile_request(state,read_json(args.request))
+def cmd_lookup(args,state):
+    rec=state.get("requests",{}).get(args.request_id)
+    if not rec: return {"status":"NONE"}
+    lease=state["leases"].get(rec.get("lease_id")); user=state["users"].get(rec.get("username"))
+    if not lease or not user: return {"status":"INCOMPLETE"}
+    return {"status":"FOUND",**lease_response(lease,user)}
+
+def cmd_renew(args,state):
+    lease=state["leases"].get(args.lease_id); ctx={"lease_id":args.lease_id,"request_id":lease.get("request_id","") if lease else ""}
+    if consume_failure(state,"RENEW_TRANSIENT",ctx): raise RuntimeErrorCode("VAULT_TEMPORARY_UNAVAILABLE","renewal temporarily unavailable",True,75)
+    if not lease: raise RuntimeErrorCode("UNKNOWN_LEASE","lease does not exist")
+    if args.operation_id in state["renewal_results"]: return state["renewal_results"][args.operation_id]
+    now=parse_time(state["clock"])
+    if lease.get("status")=="REVOKED": raise RuntimeErrorCode("LEASE_REVOKED","revoked lease cannot renew")
+    if lease.get("status")!="ACTIVE" or now>=parse_time(lease["expires_at"]):
+        lease["status"]="EXPIRED"; raise RuntimeErrorCode("LEASE_EXPIRED","expired lease cannot renew")
+    if not lease.get("renewable",False): raise RuntimeErrorCode("LEASE_NOT_RENEWABLE","lease is not renewable")
+    target=parse_time(args.target_expires_at); maximum=parse_time(lease["max_expires_at"])
+    clamped=min(target,maximum)
+    if clamped<parse_time(lease["expires_at"]): clamped=parse_time(lease["expires_at"])
+    lease["expires_at"]=iso(clamped); lease["last_renewed_at"]=state["clock"]
+    user=state["users"][lease["database_username"]]
+    result=lease_response(lease,user); state["renewal_results"][args.operation_id]=result
+    audit(state,"lease_renewed",lease_id=args.lease_id,operation_id=args.operation_id,requested_expires_at=args.target_expires_at,expires_at=lease["expires_at"])
+    return result
+
+def revoke_one(state,lease_id):
+    lease=state["leases"].get(lease_id)
+    if not lease: return {"status":"REVOKED","lease_id":lease_id,"idempotent":True}
+    if lease.get("status")=="REVOKED": return {"status":"REVOKED","lease_id":lease_id,"idempotent":True}
+    if consume_failure(state,"DURING_REVOCATION",{"lease_id":lease_id,"request_id":lease.get("request_id","")}):
+        raise RuntimeErrorCode("REVOCATION_TEMPORARY_FAILURE","database user disable failed",True,75)
+    lease["status"]="REVOKED"; lease["revoked_at"]=state["clock"]
+    user=state["users"].get(lease.get("database_username"))
+    if user:
+        user["active"]=False; user["disabled_at"]=state["clock"]
+        user["session_grace_until"]=iso(parse_time(state["clock"])+dt.timedelta(seconds=45))
+    audit(state,"lease_revoked",lease_id=lease_id,username=lease.get("database_username",""))
+    return {"status":"REVOKED","lease_id":lease_id,"idempotent":False}
+def cmd_revoke(args,state): return revoke_one(state,args.lease_id)
+def cmd_expire(args,state):
+    if args.advance: state["clock"]=iso(parse_time(state["clock"])+dt.timedelta(seconds=parse_duration(args.advance)))
+    now=parse_time(state["clock"]); expired=[]
+    for lease in state["leases"].values():
+        if lease.get("status")=="ACTIVE" and now>=parse_time(lease["expires_at"]):
+            lease["status"]="EXPIRED"; expired.append(lease["lease_id"]); user=state["users"].get(lease["database_username"])
+            if user: user["active"]=False; user["disabled_at"]=state["clock"]
+    audit(state,"leases_expired",count=len(expired)); return {"clock":state["clock"],"expired":expired}
+def credential_valid(state,lease_id,password_reference):
+    lease=state["leases"].get(lease_id)
+    if not lease: raise RuntimeErrorCode("UNKNOWN_LEASE","lease does not exist")
+    user=state["users"].get(lease.get("database_username"))
+    if not user or not user.get("active") or lease.get("status")!="ACTIVE": raise RuntimeErrorCode("CREDENTIAL_REVOKED","credential is disabled")
+    if parse_time(state["clock"])>=parse_time(lease["expires_at"]): raise RuntimeErrorCode("CREDENTIAL_EXPIRED","credential is expired")
+    if user.get("password_reference")!=password_reference: raise RuntimeErrorCode("CREDENTIAL_REJECTED","credential reference is invalid")
+    return lease,user
+def cmd_validate_credential(args,state):
+    if consume_failure(state,"VALIDATE_CREDENTIAL",{"lease_id":args.lease_id}): raise RuntimeErrorCode("CREDENTIAL_REJECTED","injected credential validation failure")
+    lease,user=credential_valid(state,args.lease_id,args.password_reference); audit(state,"credential_validated",lease_id=args.lease_id,username=user["username"])
+    return {"valid":True,"lease_id":lease["lease_id"],"username":user["username"]}
+def authorize_operation(state,req):
+    lease,user=credential_valid(state,req["lease_id"],req["password_reference"])
+    if req.get("username") and req["username"]!=user["username"]: raise RuntimeErrorCode("CREDENTIAL_REJECTED","username does not match lease")
+    op=req.get("operation",""); tenant=req.get("tenant","")
+    if tenant!="payments": raise RuntimeErrorCode("CROSS_TENANT_DENIED","tenant access denied")
+    if op not in user.get("privileges",[]): raise RuntimeErrorCode("PRIVILEGE_DENIED",f"operation {op} is not permitted")
+    return lease,user
+def cmd_dbop(args,state):
+    req=read_json(args.request); lease,user=authorize_operation(state,req); audit(state,"database_operation",lease_id=lease["lease_id"],username=user["username"],operation=req["operation"],tenant=req["tenant"])
+    return {"allowed":True,"operation":req["operation"],"tenant":req["tenant"],"username":user["username"],"lease_id":lease["lease_id"]}
+def cmd_session_open(args,state):
+    req=read_json(args.request); lease,user=authorize_operation(state,req); state["session_seq"]+=1; sid="sess-"+digest(user["username"],state["session_seq"])[:16]
+    state["sessions"][sid]={"session_id":sid,"username":user["username"],"lease_id":lease["lease_id"],"opened_at":state["clock"],"closed":False}
+    audit(state,"session_opened",session_id=sid,lease_id=lease["lease_id"]); return {"session_id":sid,"username":user["username"]}
+def cmd_session_exec(args,state):
+    req=read_json(args.request); sess=state["sessions"].get(req.get("session_id"))
+    if not sess or sess.get("closed"): raise RuntimeErrorCode("SESSION_CLOSED","session is closed")
+    user=state["users"].get(sess["username"]); now=parse_time(state["clock"])
+    if not user: raise RuntimeErrorCode("SESSION_TERMINATED","session user no longer exists")
+    if not user.get("active") and (not user.get("session_grace_until") or now>parse_time(user["session_grace_until"])):
+        raise RuntimeErrorCode("SESSION_TERMINATED","drain grace elapsed")
+    op=req.get("operation",""); tenant=req.get("tenant","")
+    if tenant!="payments" or op not in user.get("privileges",[]): raise RuntimeErrorCode("PRIVILEGE_DENIED","operation is not permitted")
+    audit(state,"session_operation",session_id=sess["session_id"],operation=op); return {"allowed":True,"session_id":sess["session_id"],"operation":op}
+def cmd_session_close(args,state):
+    sess=state["sessions"].get(args.session_id)
+    if sess: sess["closed"]=True; audit(state,"session_closed",session_id=args.session_id)
+    return {"closed":True,"session_id":args.session_id}
+def cmd_restart(args,state): audit(state,"client_restarted"); return {"status":"RESTARTED"}
+def cmd_seed(args,state):
+    req=read_json(args.request); validate_issue_req(req)
+    if args.fixture=="orphan-lease":
+        fake="v_missing_"+digest(req["request_id"])[:8]; now=parse_time(state["clock"]); lid="vdb-orphan-"+digest(req["request_id"])[:10]
+        state["leases"][lid]={"lease_id":lid,"request_id":req["request_id"],"database_username":fake,"issued_at":iso(now),"expires_at":iso(now+dt.timedelta(seconds=300)),"renewable":True,"max_expires_at":iso(now+dt.timedelta(seconds=1800)),"generation":1,"vault_node":state["active_node"],"vault_epoch":state["epoch"],"status":"ACTIVE","owner_pod_uid":req["pod_uid"],"last_renewed_at":""}
+        audit(state,"seed_orphan_lease",lease_id=lid,request_id=req["request_id"]); return {"lease_id":lid}
+    raise RuntimeErrorCode("INVALID_FIXTURE","unknown fixture")
+def cmd_admin_set_lease(args,state):
+    lease=state["leases"].get(args.lease_id)
+    if not lease: raise RuntimeErrorCode("UNKNOWN_LEASE","lease does not exist")
+    if args.field=="renewable": lease["renewable"]=args.value.lower() in {"1","true","yes"}
+    elif args.field in {"expires_at","max_expires_at","status","owner_pod_uid"}: lease[args.field]=args.value
+    elif args.field=="generation": lease["generation"]=int(args.value)
+    else: raise RuntimeErrorCode("INVALID_FIELD","unsupported lease field")
+    audit(state,"admin_set_lease",lease_id=args.lease_id,field=args.field); return public_lease(lease)
+
+def cmd_inspect(args,state):
+    kind=args.kind
+    if kind=="leases": return {"leases":[public_lease(x) for x in sorted(state["leases"].values(),key=lambda x:x["lease_id"])]}
+    if kind=="database-users": return {"database_users":[public_user(x) for x in sorted(state["users"].values(),key=lambda x:x["username"])]}
+    if kind=="pools": return {"sessions":list(sorted(state["sessions"].values(),key=lambda x:x["session_id"]))}
+    if kind=="journal": return {"requests":state.get("requests",{}),"renewal_results":state.get("renewal_results",{})}
+    if kind=="audit": return {"audit":state.get("audit",[])}
+    if kind=="state":
+        return {"clock":state["clock"],"active_node":state["active_node"],"epoch":state["epoch"],"users":len(state["users"]),"leases":len(state["leases"])}
+    raise RuntimeErrorCode("INVALID_INSPECT_KIND","unknown inspect kind")
+
+def parser():
+    p=argparse.ArgumentParser(prog="vault-db-runtime"); sub=p.add_subparsers(dest="command",required=True)
+    q=sub.add_parser("reset"); q.add_argument("--clock",default="2026-06-23T10:00:00Z")
+    q=sub.add_parser("clock"); qs=q.add_subparsers(dest="clock_action",required=True)
+    for name in ("set","advance"): x=qs.add_parser(name); x.add_argument("value")
+    qs.add_parser("now")
+    q=sub.add_parser("mint-token"); q.add_argument("--claims",required=True)
+    q=sub.add_parser("validate-token"); g=q.add_mutually_exclusive_group(required=True); g.add_argument("--token-file"); g.add_argument("--token")
+    sub.add_parser("status")
+    q=sub.add_parser("failover"); q.add_argument("--to",required=True,choices=["active-a","standby-b"])
+    q=sub.add_parser("inject-failure"); q.add_argument("--point",required=True); q.add_argument("--count",type=int,default=1); q.add_argument("--request-id"); q.add_argument("--lease-id"); q.add_argument("--pod-uid")
+    q=sub.add_parser("fault-check"); q.add_argument("--point",required=True); q.add_argument("--request-id"); q.add_argument("--lease-id"); q.add_argument("--pod-uid")
+    q=sub.add_parser("issue"); q.add_argument("--request",required=True); q.add_argument("--node"); q.add_argument("--epoch",type=int)
+    q=sub.add_parser("recover-issue"); q.add_argument("--request",required=True)
+    q=sub.add_parser("lookup-request"); q.add_argument("--request-id",required=True)
+    q=sub.add_parser("renew"); q.add_argument("--lease-id",required=True); q.add_argument("--operation-id",required=True); q.add_argument("--target-expires-at",required=True)
+    q=sub.add_parser("revoke"); q.add_argument("--lease-id",required=True)
+    q=sub.add_parser("expire"); q.add_argument("--advance")
+    q=sub.add_parser("validate-credential"); q.add_argument("--lease-id",required=True); q.add_argument("--password-reference",required=True)
+    q=sub.add_parser("run-db-operation"); q.add_argument("--request",required=True)
+    q=sub.add_parser("session-open"); q.add_argument("--request",required=True)
+    q=sub.add_parser("session-exec"); q.add_argument("--request",required=True)
+    q=sub.add_parser("session-close"); q.add_argument("--session-id",required=True)
+    sub.add_parser("restart-client")
+    q=sub.add_parser("seed"); q.add_argument("--fixture",required=True); q.add_argument("--request",required=True)
+    q=sub.add_parser("admin-set-lease"); q.add_argument("--lease-id",required=True); q.add_argument("--field",required=True); q.add_argument("--value",required=True)
+    q=sub.add_parser("inspect"); q.add_argument("kind",choices=["leases","database-users","pools","journal","audit","state"])
+    return p
+
+def main():
+    args=parser().parse_args(); runtime_dir().mkdir(parents=True,exist_ok=True)
+    with open(lock_path(),"a+") as lock:
+        fcntl.flock(lock,fcntl.LOCK_EX); state=load_state()
+        try:
+            fn={"reset":cmd_reset,"clock":cmd_clock,"mint-token":cmd_mint,"validate-token":cmd_validate,"status":cmd_status,
+                "failover":cmd_failover,"inject-failure":cmd_inject,"fault-check":cmd_fault_check,"issue":cmd_issue,
+                "recover-issue":cmd_recover_issue,"lookup-request":cmd_lookup,"renew":cmd_renew,"revoke":cmd_revoke,
+                "expire":cmd_expire,"validate-credential":cmd_validate_credential,"run-db-operation":cmd_dbop,
+                "session-open":cmd_session_open,"session-exec":cmd_session_exec,"session-close":cmd_session_close,
+                "restart-client":cmd_restart,"seed":cmd_seed,"admin-set-lease":cmd_admin_set_lease,"inspect":cmd_inspect}[args.command]
+            result=fn(args,state); save_state(state); emit({"ok":True,**result})
+        except RuntimeErrorCode as e:
+            try: save_state(state)
+            except Exception: pass
+            emit({"ok":False,"error":{"code":e.code,"message":e.message,"retryable":e.retryable}}); sys.exit(e.exit_code)
+        except Exception as e:
+            try: save_state(state)
+            except Exception: pass
+            emit({"ok":False,"error":{"code":"RUNTIME_INTERNAL","message":str(e),"retryable":False}}); sys.exit(3)
+if __name__=="__main__": main()

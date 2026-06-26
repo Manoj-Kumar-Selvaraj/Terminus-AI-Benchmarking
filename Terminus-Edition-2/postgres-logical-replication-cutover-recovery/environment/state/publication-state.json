@@ -1,0 +1,15 @@
+{
+  "name": "profile_migration_pub",
+  "operations": [
+    "insert",
+    "update"
+  ],
+  "revision": 1,
+  "tables": [
+    "account_status",
+    "contact_method",
+    "customer_profile",
+    "migration_heartbeat",
+    "profile_audit"
+  ]
+}

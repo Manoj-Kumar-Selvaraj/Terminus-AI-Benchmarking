@@ -1,0 +1,2 @@
+-- Compatibility transformations are intentionally conservative.
+-- No active transformation is installed in the rehearsal image.
