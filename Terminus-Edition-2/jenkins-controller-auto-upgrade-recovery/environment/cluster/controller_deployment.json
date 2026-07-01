@@ -1,4 +1,8 @@
 {
+  "annotations": {
+    "change_ticket": "CHG-20260618-441",
+    "owner": "platform-ci"
+  },
   "cluster": "prod-ci-east",
   "controller_image": "registry.local/jenkins/controller:2.462.3-jdk11",
   "deployment": "jenkins-controller",
@@ -7,6 +11,10 @@
   "home_path": "/app/jenkins_home",
   "java_major": 11,
   "jenkins_version": "2.462.3",
+  "labels": {
+    "app": "jenkins-controller",
+    "environment": "prod"
+  },
   "namespace": "jenkins-prod",
   "replicas": 1,
   "service": "jenkins-web"

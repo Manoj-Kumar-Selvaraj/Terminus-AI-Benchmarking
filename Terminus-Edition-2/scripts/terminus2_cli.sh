@@ -352,7 +352,17 @@ PY
 task_supports_docker_cumulative_oracle() {
   local task_dir="$1"
   [ -f "$task_dir/task.toml" ] || return 1
-  grep -qiE 'languages\s*=\s*\[.*"(go|bash|ruby|cobol|pl1)".*\]' "$task_dir/task.toml"
+  python3 - "$task_dir/task.toml" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+text = Path(sys.argv[1]).read_text(encoding="utf-8")
+lang_ok = bool(re.search(r'languages\s*=\s*\[.*"(go|bash|ruby|cobol|pl1)".*\]', text, flags=re.I | re.S))
+m = re.search(r'number_of_milestones\s*=\s*(\d+)', text)
+milestones = int(m.group(1)) if m else 0
+raise SystemExit(0 if (lang_ok and milestones > 0) else 1)
+PY
 }
 
 run_docker_cumulative_oracle() {

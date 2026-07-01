@@ -1,0 +1,20 @@
+{
+  "review_id": "SEC-PE-20260629",
+  "findings": [
+    "mixed egress semantics in legacy plan",
+    "data subnet default routes present",
+    "interface endpoint policy used wildcard principal",
+    "subnet flow logs missing or not keyed per tier and AZ",
+    "flow-log IAM policy used global wildcard resources",
+    "runtime queue policy lacked TLS and VPC-endpoint deny controls"
+  ],
+  "required_remediation": [
+    "same-AZ NAT for app tiers",
+    "no default internet routes on data subnets",
+    "scoped PrivateLink and interface endpoint policies",
+    "gateway endpoints attached only to app and data route tables",
+    "subnet-level flow logs with interface-id log format and scoped delivery IAM",
+    "resolver security limited to corporate DNS CIDRs on TCP/UDP 53",
+    "KMS and SQS runtime policies without wildcard grants and with explicit deny fencing"
+  ]
+}

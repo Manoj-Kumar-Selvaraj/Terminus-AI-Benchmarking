@@ -1,16 +1,15 @@
-# Restore audit-grade flow logs and resolver security boundaries
+# Audit and resolver policy reconciliation
 
-You are on the network platform rotation for a failed Terraform AWS VPC module rollout. This is offline: do not call AWS and do not require Terraform. Use `/app/bin/vpcsim`, `/app/docs/module_contract.md`, and `/app/evidence` to diagnose the incident. Repair logic in `/app/infra/modules/vpc/module.go` and rebuild with `go build -o /app/bin/vpcsim /app/cmd/vpcsim`.
+Preserve Milestones 1 through 3. Extend recovery to reconcile audit-grade flow logs and resolver security while keeping the recovered routing, endpoint, and imported-state behavior intact.
 
-## Requirements
+Requirements:
 
-- Emit VPC flow logs covering all subnets with `traffic_type: ALL` and the configured destination.
-- The flow log object must list every subnet id under the key `subnet_ids` (not `resource_ids` or other aliases).
-- Flow log IAM policy must be the simulator's flat shape `{"Action": [...], "Resource": "<arn>"}`, not a nested AWS policy document. `Action` must be a non-empty list. Its `Resource` must not be `*` and must include the configured `log_group_arn`.
-- Flow log `log_format` must include `${interface-id}` so audit records identify the network interface.
-- Flow log `id` must use the module `_id("fl", ...)` convention (prefix `fl-`).
-- Resolver security group `id` must use the module `_id("sg", ...)` convention (prefix `sg-`).
-- Resolver security group ingress must be exactly two rules: TCP 53 and UDP 53 from configured corporate CIDRs only (no `0.0.0.0/0`). Each ingress rule must expose corporate CIDRs under the key `cidr_blocks` (not `cidrs` or other aliases).
-- Preserve `main.tf` resource labels and `outputs.tf` output keys.
-
-Compatibility constraints: keep `/app/infra/modules/vpc`, all labels in `main.tf`, all outputs in `outputs.tf`, and CLI flags `plan`, `apply`, `validate`, `--config`, `--prior-state`, `--out`, `--state`. Do not hardcode sample JSON or edit verifier fixtures.
+- Flow logs must cover every recovered subnet and expose the covered subnet IDs under `flow_log.subnet_ids`.
+- When the configured flow-log destination account matches the VPC account, preserve the existing flow-log ID and audit metadata from `evidence/audit_inventory.json`.
+- Flow-log IAM policy must be a scoped flat object with `Action` and `Resource`, not a wildcard policy and not `logs:*`.
+- The flow-log IAM policy `Resource` must be a CloudWatch Logs ARN for the configured account and log group, must include `log-group:`, must end with `:*`, and must not be an account-wide wildcard resource.
+- The flow-log IAM policy `Action` list must include at least `logs:CreateLogStream` and `logs:PutLogEvents`, and every action must start with `logs:`.
+- Destination account mismatch must fail before mutation with error substring `account mismatch`.
+- Resolver ingress must contain exactly TCP 53 and UDP 53 rules from the current corporate CIDRs in config, using the key `cidr_blocks`.
+- Manual resolver rules from observed audit evidence must not be silently deleted. Report them in `drift_report` with `action: "report_only"`, `resource: "resolver_security_group"`, and preserve the observed manual rule details.
+- Cumulative behavior from earlier milestones must remain intact: same-AZ app NAT routing, isolated data route tables, gateway endpoints with observed IDs/policies, imported subnet and route-table IDs, top-level `moved` entries, and `outputs.private_app_route_table_ids`.

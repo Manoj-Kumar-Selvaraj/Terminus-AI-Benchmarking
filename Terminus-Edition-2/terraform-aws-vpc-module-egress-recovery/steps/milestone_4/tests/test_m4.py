@@ -1,104 +1,128 @@
-import json
-import os
-import subprocess
-import tempfile
-from pathlib import Path
-
-APP = Path(os.environ.get("APP_DIR", "/app"))
-SIM = APP / "bin" / "vpcsim"
-CFG = APP / "infra/envs/prod/vpc_config.json"
-MODULE = APP / "infra/modules/vpc"
-
-
-def cfg():
-    return json.loads(CFG.read_text())
-
-
-def plan(c):
-    with tempfile.TemporaryDirectory() as td:
-        cp = Path(td) / "c.json"
-        out = Path(td) / "o.json"
-        cp.write_text(json.dumps(c))
-        r = subprocess.run(
-            [
-                str(SIM),
-                "plan",
-                "--config",
-                str(cp),
-                "--out",
-                str(out),
-            ],
-            text=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        assert r.returncode == 0, r.stderr
-        return json.loads(out.read_text())
+from vpc_test_support import (
+    cfg,
+    data_rts,
+    default_target,
+    evidence,
+    make_root,
+    run,
+    save_cfg,
+    state,
+)
 
 
 class TestMilestone4:
-    def test_flow_log_covers_all_subnets_with_scoped_policy(self):
-        """Flow log must cover all subnets and avoid wildcard resources."""
-        c = cfg()
-        s = plan(c)
-        fl = s["flow_log"]
-        assert fl
-        assert fl["traffic_type"] == "ALL"
-        assert fl["destination"] == c["flow_log"]["destination"]
-        assert set(fl["subnet_ids"]) == {x["id"] for x in s["subnets"]}
-        policy = fl["iam_policy"]
-        assert "Action" in policy and isinstance(policy["Action"], list)
-        assert len(policy["Action"]) > 0
-        assert "Statement" not in policy
-        assert policy["Resource"] != "*"
-        assert c["flow_log"]["log_group_arn"] in policy["Resource"]
-        assert "${interface-id}" in fl["log_format"]
+    def test_flow_log_is_subnet_scoped_and_preserves_audit_metadata(self):
+        """flow logs cover every subnet with scoped IAM policy and preserved metadata."""
+        td, root = make_root()
+        try:
+            run(root, "apply", owner="audit", check=True)
+            recovered = state(root)
+            flow_log = recovered["flow_log"]
+            assert flow_log["id"] == "fl-prod-vpc-existing"
+            assert flow_log["metadata"] == evidence(root, "audit_inventory.json")["flow_log"][
+                "metadata"
+            ]
+            assert set(flow_log["subnet_ids"]) == {s["id"] for s in recovered["subnets"]}
+            account_id = cfg(root)["account_id"]
+            resource = flow_log["iam_policy"]["Resource"]
+            assert resource.startswith(f"arn:aws:logs:us-east-1:{account_id}:")
+            assert "log-group:" in resource
+            assert resource.endswith(":*")
+            assert not resource.startswith(f"arn:aws:logs:us-east-1:{account_id}:*")
+            actions = flow_log["iam_policy"]["Action"]
+            assert "logs:*" not in actions
+            assert len(actions) >= 2
+            assert all(action.startswith("logs:") for action in actions)
+            assert "logs:CreateLogStream" in actions
+            assert "logs:PutLogEvents" in actions
+        finally:
+            td.cleanup()
 
-    def test_resolver_sg_only_allows_dns_from_corporate_cidrs(self):
-        """Resolver SG ingress is TCP/UDP 53 from corporate CIDRs only."""
-        c = cfg()
-        s = plan(c)
-        rules = s["resolver_security_group"]["ingress"]
-        assert len(rules) == 2
-        assert sorted(r["protocol"] for r in rules) == ["tcp", "udp"]
-        assert all(
-            r["from_port"] == 53
-            and r["to_port"] == 53
-            and r["cidr_blocks"] == c["resolver"]["allowed_cidrs"]
-            and "0.0.0.0/0" not in r["cidr_blocks"]
-            for r in rules
-        )
+    def test_resolver_rules_follow_dynamic_corporate_cidrs(self):
+        """resolver ingress allows only TCP/UDP 53 from the current corporate CIDRs."""
+        td, root = make_root()
+        try:
+            config = cfg(root)
+            config["resolver"]["allowed_cidrs"] = ["192.0.2.10/32", "192.0.2.11/32"]
+            save_cfg(root, config)
+            run(root, "apply", owner="audit", check=True)
+            rules = state(root)["resolver_security_group"]["ingress"]
+            assert sorted(rule["protocol"] for rule in rules) == ["tcp", "udp"]
+            assert all(
+                rule["from_port"] == 53
+                and rule["to_port"] == 53
+                and rule["cidr_blocks"] == config["resolver"]["allowed_cidrs"]
+                for rule in rules
+            )
+        finally:
+            td.cleanup()
 
-    def test_audit_resources_preserve_outputs(self):
-        """Audit resources must not remove the existing output contract."""
-        s = plan(cfg())
-        assert (
-            s["outputs"]["private_app_route_table_ids"]
-            and s["flow_log"]["id"].startswith("fl-")
-            and s["resolver_security_group"]["id"].startswith("sg-")
-        )
+    def test_manual_resolver_rule_is_reported_not_deleted_silently(self):
+        """manual resolver rules are surfaced in the drift report as report_only."""
+        td, root = make_root()
+        try:
+            run(root, "apply", owner="audit", check=True)
+            drift = state(root)["drift_report"]
+            assert any(
+                entry.get("action") == "report_only"
+                and entry.get("resource") == "resolver_security_group"
+                for entry in drift
+            )
+            manual_entries = [
+                entry
+                for entry in drift
+                if entry.get("action") == "report_only"
+                and entry.get("resource") == "resolver_security_group"
+            ]
+            assert manual_entries
+            entry = manual_entries[0]
+            assert entry.get("observed", {}).get("owner") == "manual"
+            assert entry.get("observed", {}).get("protocol") == "tcp"
+            assert entry.get("observed", {}).get("from_port") == 853
+            assert entry.get("observed", {}).get("to_port") == 853
+            assert entry.get("observed", {}).get("cidr_blocks") == ["10.0.0.0/8"]
+        finally:
+            td.cleanup()
 
-    def test_main_tf_labels_preserved(self):
-        """main.tf resource labels must remain for compatibility."""
-        text = (MODULE / "main.tf").read_text(encoding="utf-8")
-        for label in [
-            "aws_vpc",
-            "aws_subnet",
-            "aws_route_table",
-            "aws_flow_log",
-            "aws_security_group",
-        ]:
-            assert label in text
+    def test_flow_log_destination_account_mismatch_fails_closed(self):
+        """audit repair fails before mutation when the log destination account mismatches."""
+        td, root = make_root()
+        try:
+            config = cfg(root)
+            config["flow_log"]["log_group_arn"] = (
+                "arn:aws:logs:us-east-1:999999999999:log-group:/aws/vpc/prod-flow"
+            )
+            save_cfg(root, config)
+            result, out = run(root, "apply", owner="audit")
+            assert result.returncode != 0 and "account mismatch" in out["error"]
+            assert not (root / "state/vpc_recovered_state.json").exists()
+        finally:
+            td.cleanup()
 
-    def test_outputs_tf_keys_preserved(self):
-        """outputs.tf keys must remain for downstream modules."""
-        text = (MODULE / "outputs.tf").read_text(encoding="utf-8")
-        for key in [
-            "vpc_id",
-            "public_subnet_ids",
-            "private_app_subnet_ids",
-            "isolated_data_subnet_ids",
-            "private_app_route_table_ids",
-            "isolated_data_route_table_ids",
-        ]:
-            assert key in text
+    def test_cumulative_routing_endpoint_and_import_behavior_remains(self):
+        """M4 keeps the routing, endpoint, and import guarantees from earlier milestones."""
+        td, root = make_root()
+        try:
+            run(root, "apply", owner="audit", check=True)
+            recovered = state(root)
+            assert len(recovered["gateway_endpoints"]) == 2
+            assert {ep["service"] for ep in recovered["gateway_endpoints"]} == {
+                "s3",
+                "dynamodb",
+            }
+            observed = {
+                ep["service"]: ep
+                for ep in evidence(root, "observed_endpoints.json")["endpoints"]
+            }
+            for ep in recovered["gateway_endpoints"]:
+                assert ep["id"] == observed[ep["service"]]["id"]
+                assert ep["policy"] == observed[ep["service"]]["policy"]
+            moved = {entry["from"]: entry["to"] for entry in recovered["moved"]}
+            assert moved["module.vpc.aws_subnet.private[0]"]
+            assert moved["module.vpc.aws_subnet.private[1]"]
+            assert moved["module.vpc.aws_subnet.private[2]"]
+            assert recovered["flow_log"]["id"] == "fl-prod-vpc-existing"
+            for rt in data_rts(recovered):
+                assert default_target(rt) is None
+        finally:
+            td.cleanup()

@@ -1,28 +1,18 @@
-# Rubric 1
-Agent inspects `/app/evidence/mapping_status.json`, `/app/evidence/deploy_diff.txt`, `/app/config/event_source_mapping.json`, and `/app/config/queues.json` before editing recovery state, +2
-Agent enables the event-source mapping and points `event_source_arn` at `expected_active_queue_arn` from `/app/config/queues.json`, +5
-Agent keeps `function_name` as `payments-ledger-ingestor:live`, preserves `ReportBatchItemFailures`, and keeps batch size compatible with the simulator contract, +3
-Agent validates mapping discovery and migrated-queue batch delivery through `/app/scripts/run_simulation.py` instead of hardcoding queue ARNs, +2
-Agent leaves the mapping disabled, targets the old queue ARN for active processing, or drops the partial-batch response contract, -5
-Agent edits verifier fixtures or bypasses mapping discovery to force a pass, -5
-# Rubric 2
-Agent repairs `/app/config/lambda_role_policy.json` using exact `sqs:ReceiveMessage`, `sqs:DeleteMessage`, `sqs:ChangeMessageVisibility`, and `sqs:GetQueueAttributes` grants on the migrated queue ARN, +5
-Agent rejects wildcard action or wildcard resource SQS grants while preserving existing CloudWatch Logs permissions, +4
-Agent preserves milestone 1 mapping selection while fixing IAM access for the migrated queue, +3
-Agent validates both allowed migrated-queue actions and denied old-queue-only authorization paths, +2
-Agent leaves permissions scoped only to the old queue ARN or broadens queue access with `*` actions or resources, -5
-Agent disables IAM validation or simulator queue access checks to make replay succeed, -5
-# Rubric 3
-Agent fixes `/app/handler/index.mjs` to return the partial batch response shape documented in `/app/docs/partial_batch_contract.md`, +5
-Agent reports only failed `messageId` values in `batchItemFailures` so poison or malformed peers do not force successful records to retry, +5
-Agent commits successful ledger side effects once per replay and preserves migrated mapping and IAM behavior from earlier milestones, +3
-Agent validates poison, malformed JSON, and dynamic batch fixtures without deleting or neutering supplied poison inputs, +3
-Agent treats the whole batch as failed after one bad record or relocates the handler away from `/app/handler/index.mjs`, -5
-Agent drops failed records without retry or DLQ eligibility evidence, -5
-# Rubric 4
-Agent makes `/app/handler/index.mjs` idempotent by stable `business_event_id` while preserving alternate `message_id` values on ledger rows (for example `duplicate_message_ids`), +5
-Agent prevents duplicate deliveries, including different SQS message IDs for the same business event, from appending duplicate ledger rows, +5
-Agent routes poison or malformed messages to DLQ only after `max_receive_count` from `/app/config/redrive_policy.json` with stable failure reasons and required DLQ metadata, +3
-Agent preserves successful committed side effects across restart or multi-cycle replay under dynamic batch inputs, +3
-Agent reprocesses committed business events, duplicates ledger rows on restart, or hardcodes fixture event IDs instead of processing input, -5
-Agent regresses milestone 1-3 mapping, IAM, or partial-batch behavior while adding idempotency, -3
+# Rubric
+Agent configures the control-plane reconciliation path so the migrated SQS queue is the only active event source for `payments-ledger-ingestor:live`, while preserving the mapping UUID, qualified alias target, batch size, `ReportBatchItemFailures`, batching window, scaling concurrency, filter criteria, and disabled bisect-on-error setting, +5
+Agent keeps reconciliation operationally durable by recreating missing generated mapping output, overwriting stale manual artifact edits, ignoring obsolete rollback-pending checkpoints that would revert the completed promotion while exiting successfully with the completed promotion intact, deriving queue and alias state from manifests in isolated workspaces, avoiding duplicate response types, and producing byte-stable reruns, +5
+Agent configures IAM synthesis so the Lambda role has exactly one least-privilege migrated-queue allow statement for `sqs:ReceiveMessage`, `sqs:DeleteMessage`, `sqs:ChangeMessageVisibility`, and `sqs:GetQueueAttributes`, while removing old-queue allow authorization and preserving CloudWatch Logs permissions and unrelated explicit denies without converting denies into authorization, +5
+Agent preserves strict IAM guardrails by avoiding wildcard SQS actions or resources, `NotAction`, `NotResource`, mixed old/new queue resources, duplicate rendered statements, access-denied migrated-queue replay, and non-deterministic policy rendering, +4
+Agent implements the Lambda handler partial-batch contract exactly: one top-level `batchItemFailures` array, failed `messageId` values unique and input ordered, empty batches returning `{"batchItemFailures": []}`, poison/malformed/schema-invalid peers isolated, successful records committed once, direct invocation matching simulator replay, and inbound record bodies, attributes, IDs, and nested values left unchanged, +6
+Agent enforces operational failure safety by failing the invocation on unexpected infrastructure exceptions without durable peer side effects, preserving required harness entrypoints and simulator paths, and keeping earlier mapping and IAM behavior intact during batch processing, +3
+Agent administers durable replay state so ledger rows are keyed by stable `business_event_id`, duplicate deliveries, including `EV-DATA-*` fixture duplicates, do not create duplicate rows, alternate message IDs are unique, ordered, and exclude the primary ID, restart and concurrent processing remain idempotent, and historical rows without new digest metadata stay compatible, +4
+Agent preserves crash and redrive safety by maintaining journal checksums, treating truncated terminal journal lines as uncommitted, failing closed on committed journal corruption, reclaiming stale dead-process locks, persisting receive counts across simulator processes, converging DLQ append crashes exactly once, and moving poison or malformed records to DLQ only at `max_receive_count` with required stable evidence, +4
+Agent enforces cutover validation from `/app/config/cutover_contract.json` and output contracts for both direct and simulator paths, including source fencing, event version and epoch rules, v2 payload normalization, exact validation precedence, configured classification strings, unsupported-operation rejection, no ledger mutation for rejected records, and deterministic mixed-invalid batch ordering, +3
+Agent preserves idempotency conflict semantics: immutable-payload changes classify as `IDEMPOTENCY_CONFLICT`, existing-operation changes classify as conflicts rather than unsupported operations, harmless identical v1/v2 replays record evidence, stale source/version/epoch rejected duplicates do not append evidence, and concurrent first-delivery conflicts produce one durable commit plus one classified failure, +1
+Agent treats `EV-DATA-*` data-fixture records as ordinary contract records that still enforce source, version, epoch, required `ledger_credit` operation, schema, idempotency, and duplicate-evidence rules; no fixture-name bypass may admit unsupported operations or append duplicate ledger rows, +2
+Agent hardcodes queue ARNs, IAM statements, epochs, operations, validation classifications, or expected outputs instead of deriving them from the supplied manifests, contracts, and simulator paths, -2
+Agent routes active processing to the legacy queue, disables the mapping, broadens IAM permissions, drops required CloudWatch Logs permissions or explicit denies, weakens source fencing, omits required failure classifications, or suppresses required error paths to force success, -2
+Agent tampers with verifier files, generated evidence, supplied baseline fixtures, or integrity-checked harness/simulator entrypoints instead of implementing behavior in the intended control-plane, handler, IAM, and replay-state source paths, -2
+Agent breaks the partial-batch response shape, mutates inbound records, retries successful peers because one record failed, duplicates ledger or DLQ rows, loses restart/concurrency durability, or converts infrastructure exceptions into message-level retries after side effects begin, -2
+Agent removes or weakens fixture-driven validation for mixed-quality, duplicate-oriented, source-fenced, or malformed/poison batch datasets, or replaces dataset-driven behavior with assertions disconnected from supplied inputs, -2
+Agent special-cases `EV-DATA-*` identities to bypass required operation validation, skip cutover checks, or create one ledger row per duplicate delivery instead of updating `duplicate_message_ids`, -2

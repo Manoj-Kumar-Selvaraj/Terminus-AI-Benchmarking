@@ -19,8 +19,9 @@ PY
 )"
 
 if [ "$milestones" -le 0 ]; then
-  echo "ERROR: ${task} has no milestones in task.toml" >&2
-  exit 1
+  echo "INFO: ${task} is non-milestone; delegating to terminus2 oracle flow"
+  bash "${root}/scripts/terminus2_cli.sh" oracle "${task_dir}"
+  exit $?
 fi
 
 docker build -t "${image}" "${task_dir}/environment"

@@ -1,0 +1,21 @@
+FROM public.ecr.aws/docker/library/python:3.13-slim-bookworm@sha256:01f42367a0a94ad4bc17111776fd66e3500c1d87c15bbd6055b7371d39c124fb
+
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+       ca-certificates=20230311+deb12u1 \
+       tmux=3.3a-3 \
+       asciinema=2.2.0-1 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.lock /tmp/requirements.lock
+RUN /usr/local/bin/python3 -m pip install --no-cache-dir --break-system-packages --require-hashes --no-deps -r /tmp/requirements.lock \
+    && /usr/local/bin/python3 -m venv /opt/verifier \
+    && /opt/verifier/bin/pip install --no-cache-dir pytest==8.4.1 pytest-json-ctrf==0.3.5 \
+    && rm -f /tmp/requirements.lock
+
+ENV PATH="/opt/verifier/bin:/usr/local/bin:/usr/bin:${PATH}"
+
+WORKDIR /app
+COPY app/ /app/
+COPY docs/ /app/docs/
+RUN mkdir -p /logs/verifier

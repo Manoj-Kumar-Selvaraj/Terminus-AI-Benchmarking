@@ -1,0 +1,7 @@
+{
+  "jobs": [
+    "payments-ledger/main",
+    "shared-library/test",
+    "platform-smoke/healthcheck"
+  ]
+}

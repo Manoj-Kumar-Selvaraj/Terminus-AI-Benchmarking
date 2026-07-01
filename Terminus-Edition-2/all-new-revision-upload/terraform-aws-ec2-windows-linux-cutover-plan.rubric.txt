@@ -1,0 +1,17 @@
+Agent builds the real Terraform module under `/app/environment/terraform/modules/ec2_linux_migration` and wires it through the existing root module instead of writing static plan JSON, +3
+Agent keeps the workspace credentialless and plan-only: no live AWS calls, no Terraform data sources, no imports, no applies, and the normal render script writes `/app/output/ec2_linux_migration_plan.json`, +3
+Agent preserves the render pipeline so it initializes Terraform offline, validates, plans with refresh disabled, and writes plan JSON through `terraform show -json`, +2
+Agent creates exactly one Linux `aws_instance` for each documented legacy Windows workload, with all EC2 resource addresses under `module.ec2_linux_migration`, +3
+Agent preserves target AMI, instance type, private subnet, availability zone, private IP, root gp3 disk size from `root_gib`, root KMS encryption, and no public IP association for every instance, +4
+Agent preserves migration identity tags including `ManagedBy`, `MigrationProgram`, `ComplianceDomain`, `CutoverId`, `MigrationWave`, `MigratedFromOS`, `OSFamily`, `LegacyInstanceId`, workload, application, environment, owner, cost center, patch group, and backup tier, +4
+Agent plans every documented data snapshot as an encrypted gp3 `aws_ebs_volume` in the matching workload availability zone with documented snapshot ID, size, IOPS, throughput, KMS key, and traceability tags, +4
+Agent creates exactly five safe `aws_volume_attachment` resources with the inventory Linux device names and `force_detach=false`, including both payments-api data volumes, +3
+Agent populates `planned_linux_instances` from the module keyed by workload and `planned_data_volumes` from the module keyed by `workload:device_name`, +3
+Agent makes instances SSM-managed by including the required SSM security group and shared IAM instance profile, while removing all forbidden RDP, WinRM, and domain-join administration groups, +4
+Agent omits `key_name`, enables termination protection, detailed monitoring, and EBS optimization, and hardens IMDS with endpoint enabled, tokens required, hop limit one, and instance metadata tags enabled, +4
+Agent keeps root and data disks encrypted with the supplied KMS key and keeps root volume tags showing `VolumeRole = root`, +3
+Agent leaves a collapsed or hardcoded one-off EC2 design outside the module, changes the root variable interface, or bypasses Terraform source with handwritten output JSON, -2
+Agent uses Terraform data sources, live AWS lookups, apply/import behavior, public IP association, key pairs, or public/admin security groups in the final plan, -2
+Agent drops any workload, volume, snapshot, output key, migration identity tag, or source legacy-instance traceability, -2
+Agent uses unsafe attachment behavior, wrong device names, unencrypted disks, wrong KMS key, or incomplete gp3 performance settings, -2
+Agent edits verifier, solution metadata, or generated plan evidence to force a pass without expressing the recovery in Terraform source, -2

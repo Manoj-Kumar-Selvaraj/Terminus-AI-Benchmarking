@@ -7,13 +7,14 @@ Preserve milestones 1–2. Use `/app/docs/rollout_contract.md`, `/app/evidence/a
 ## Required behavior
 
 - Release changes use the documented fenced `pilot-then-wave` operation and ordered event contract.
+- Emit the complete `instance_refresh` schema from `/app/docs/module_contract.md` and `/app/docs/rollout_contract.md`, including integer `cursor`, ordered integer `completed_slots`, `min_healthy_percentage`, `max_unavailable`, and event `event`, `seq`, `healthy_capacity`, and `unavailable` fields. Do not use `name` instead of `event`.
 - For post-pilot work, emit `wave_launched`, `wave_healthy`, and `wave_committed` once per wave group, never once per slot. Every event in that three-event group carries the same `wave` number and `slots` list. For remaining slots `[1,2,3,4,5]` with `wave_size=2`, emit one trio for `[1,2]`, then one trio for `[3,4]`, then one trio for `[5]`.
 - The healthy-capacity floor and `max_unavailable` invariant hold at every event for any valid desired capacity.
 - Pilot or wave health failure rolls back to the exact prior fleet and records that previous capacity was preserved.
 - When `rollout.candidate_health` is `fail_pilot`, emit events `pilot_launched`, `pilot_unhealthy`, `previous_capacity_preserved`, set refresh `status` to `rolled_back`, and leave prior `instances` and `outputs.instance_ids` unchanged.
 - When `rollout.candidate_health` is `fail_wave`, complete the pilot, fail the first wave health check, end with `previous_capacity_preserved`, set refresh `status` to `rolled_back`, and leave prior `instances` and `outputs.instance_ids` unchanged.
 - Operation identity is deterministic for source release, target release, environment, application, and desired capacity.
-- A lost response after committed pilot progress writes durable `in_progress` state before returning failure.
+- With `fault_point: after_pilot_commit_response_lost`, `apply` first persists the pilot and journal record, then returns exit status `3` with `in_progress`, `completed_slots: [0]`, and `control_plane_response_lost: true`.
 - Restart resumes from the first unfinished slot without duplicate instance IDs or repeated pilot events.
 - A stale owner fails closed with an error containing `stale rollout owner`. A changed target release fails closed with an error containing `target release changed`.
 - Replanning a completed target release is a no-op.

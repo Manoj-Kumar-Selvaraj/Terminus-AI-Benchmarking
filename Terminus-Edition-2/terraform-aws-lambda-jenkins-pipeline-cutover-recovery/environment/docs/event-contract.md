@@ -35,7 +35,7 @@ items
 metadata
 ```
 
-The owner is required for version 2. An execution ID cannot be reused with another batch, owner, or artifact digest. Item IDs must be non-empty and unique. Unsupported protocol versions are rejected before any Lambda stage is invoked.
+The owner is required for version 2. An execution ID cannot be reused with another batch, owner, or artifact digest. Such reuse exits nonzero before any additional stage invocation or effect and writes a diagnostic containing `conflicting`. Item IDs must be non-empty and unique. Unsupported protocol versions are rejected before any Lambda stage is invoked and also exit nonzero.
 
 ## Checkpoint compatibility
 

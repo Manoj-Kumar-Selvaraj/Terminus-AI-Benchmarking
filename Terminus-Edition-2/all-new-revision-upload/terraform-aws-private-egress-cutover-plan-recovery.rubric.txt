@@ -1,0 +1,26 @@
+# Rubric 1
+Agent repairs the real `/app/modules/private_egress` Terraform module and keeps the verifier workflow plan-only (`init -backend=false`, `validate`, `plan -refresh=false`, `show -json`) without simulators, generated JSON, or apply-time shortcuts, +2
+Agent keeps the module reusable by avoiding all Terraform `data` blocks whose type starts with `aws_` (including `data "aws_iam_policy_document"`) and avoiding module-owned provider or backend blocks, +2
+Agent plans one public, one app, and one data subnet per configured AZ with correct public/private `map_public_ip_on_launch` behavior, +2
+Agent represents app egress with `aws_route.app_default` keyed by AZ and direct same-AZ NAT references, and prevents any `aws_route.data_default` default route behavior for data subnets, +2
+Agent keeps `egress_route_matrix` complete and schema-correct for each AZ (`app_cidr`, `data_cidr`, `nat_az`, `data_has_default_route`), +1
+Agent fails closed when same-AZ NAT coverage is missing and keeps that fail-closed validation active after migration recovery, +2
+Agent plans the complete interface endpoint service set (ECR API, ECR DKR, Logs, STS, Secrets Manager, KMS, SQS, SSM, SSMMessages, EC2Messages) with region-derived service names, +2
+Agent keeps interface endpoints in app subnets only with private DNS enabled, +1
+Agent plans gateway endpoints for S3 and DynamoDB and builds `route_table_ids` from app and data route tables only, never public route tables, +2
+Agent keeps endpoint security-group ingress limited to TCP 443 from app/data workload CIDRs only, +1
+Agent enforces endpoint policy scoping to configured workload principals and artifact resources without wildcard principals, wildcard actions, wildcard-only resources, or broad `arn:aws:iam::*` principals, +2
+Agent preserves account and region portability by deriving policy/account/region values from fixture inputs across greenfield and west, +2
+Agent plans subnet flow logs for every subnet with `traffic_type = ALL`, `${interface-id}` in log format, and keying pattern `public-<az>`, `app-<az>`, `data-<az>`, +2
+Agent scopes flow-log IAM delivery permissions to log-group ARNs and keeps KMS key actions as complete literal action names with no `*` character, +1
+Agent keeps resolver controls strict with exactly TCP/UDP 53 ingress from corporate DNS CIDRs only, +1
+Agent enforces runtime queue Deny controls for both `aws:SecureTransport` and `aws:SourceVpce`, with queue policy tied to the SQS interface endpoint path, +2
+Agent emits complete `security_summary` with both `endpoint_ingress_cidrs` and `resolver_ingress_cidrs`, +1
+Agent declares all required moved blocks for legacy subnet and route-table addresses (`use1a`, `use1b`, `use1c`) with unique targets, +2
+Agent removes legacy private subnet/route-table resources and `aws_route.data_default`, and protects `aws_kms_key.logs` and `aws_cloudwatch_log_group.flow` with `prevent_destroy`, +2
+Agent produces a final legacy plan without destructive replacements while preserving all prior routing, endpoint, and security controls, +2
+Agent uses simulators, output stubs, module-owned backend/provider config, any Terraform `data "aws_*"` source, or same-AZ NAT fallback behavior, -2
+Agent omits required interface services, misplaces interface endpoints outside app subnets, disables private DNS, or attaches gateway endpoints to public route tables, -2
+Agent leaves wildcarded policy shapes (including any IAM action string containing `*`), hardcodes account/region values, weakens resolver/flow-log/KMS/queue controls, or misses required `security_summary` fields, -2
+Agent omits required moved blocks, duplicates moved targets, keeps legacy private resources or `aws_route.data_default`, or removes `prevent_destroy` from state-sensitive resources, -2
+Agent introduces destructive legacy replacements or bypasses fail-closed same-AZ NAT validation after recovery, -2

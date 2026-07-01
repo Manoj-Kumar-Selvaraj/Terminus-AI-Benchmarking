@@ -1,0 +1,3 @@
+{"ts":"2026-06-24T09:30:01Z","worker_generation":41,"source":"payments-ledger-old","event_version":1,"business_event_id":"PAY-OVERLAP-1"}
+{"ts":"2026-06-24T09:30:02Z","worker_generation":42,"source":"payments-ledger-v2","event_version":2,"cutover_epoch":"2026-06-24T09:30:00Z","business_event_id":"PAY-OVERLAP-1"}
+{"ts":"2026-06-24T09:30:03Z","worker_generation":42,"source":"payments-ledger-v2","event_version":2,"cutover_epoch":"2026-06-24T09:29:00Z","business_event_id":"PAY-OVERLAP-2"}

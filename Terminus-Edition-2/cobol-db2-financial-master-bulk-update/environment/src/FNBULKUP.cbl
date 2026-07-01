@@ -1,7 +1,7 @@
        IDENTIFICATION DIVISION.
        PROGRAM-ID. FNBULKUP.
 *> COBOL batch driver for FINUPD fixed-width bulk updates.
-*> DB2 semantics are provided by /app/tools/db2_bridge.py via finbulk_op.sh.
+*> DB2 semantics are provided by the Go DB2 bridge via finbulk_op.sh.
        ENVIRONMENT DIVISION.
        INPUT-OUTPUT SECTION.
        FILE-CONTROL.

@@ -71,9 +71,24 @@ validate_task() {
     fi
   done
   milestones="$(grep -E '^[[:space:]]*number_of_milestones[[:space:]]*=' "$dir/task.toml" | head -1 | sed -E 's/.*=[[:space:]]*//' | tr -d '\r')"
-  if [[ -z "$milestones" || "$milestones" -le 0 ]]; then
-    echo "task.toml must define number_of_milestones >= 1" >&2
+  if [[ -z "$milestones" || ! "$milestones" =~ ^[0-9]+$ ]]; then
+    echo "task.toml must define numeric number_of_milestones" >&2
     return 1
+  fi
+  if [[ "$milestones" -eq 0 ]]; then
+    for req in "instruction.md" "tests/test.sh" "solution/solve.sh"; do
+      if [[ ! -e "$dir/$req" ]]; then
+        echo "Missing required path: $dir/$req" >&2
+        return 1
+      fi
+    done
+    if ! compgen -G "$dir/tests/test_*.py" >/dev/null \
+      && ! compgen -G "$dir/tests/test_*.rb" >/dev/null \
+      && ! compgen -G "$dir/tests/test_*.t" >/dev/null; then
+      echo "Missing required root verifier test file under: $dir/tests" >&2
+      return 1
+    fi
+    return 0
   fi
   for ((i = 1; i <= milestones; i++)); do
     test_file="steps/milestone_${i}/tests/test_m${i}.py"

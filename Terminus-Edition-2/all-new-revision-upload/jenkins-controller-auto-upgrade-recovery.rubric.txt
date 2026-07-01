@@ -1,0 +1,40 @@
+# Rubric 1
+Agent reviews evidence, `/app/docs/simulator_contract.md`, `/app/docs/recovery_state_contract.md`, `/app/docs/jenkins_upgrade_contract.md`, and `/app/recovery/main.go` before implementing the reusable recovery controller, +1
+Agent implements `/app/scripts/jenkins-recover` with `inspect`, `plan`, `apply`, `resume`, and read-only `verify` commands that honor `APP_ROOT`, contract-driven targets, and documented JSON schemas, +1
+Agent derives runtime requirements from `config/version_contract.json` in both `plan` and `apply`, including dynamically mutated Java requirements, and atomically updates only compatibility fields while preserving cluster identity and unknown deployment metadata, +1
+Agent records durable recovery state in `/app/recovery_state/journal.jsonl` and `/app/recovery_state/lease.json` with deterministic operation identity, integer `journal_records`, lease `status`, and idempotent replay, +1
+Agent fences a different owner, resumes a lost response without repeating `runtime_committed`, and fails closed on unknown targets or `--fault before_runtime_commit` with documented error substrings such as `absent from version contract` and `fenced by owner`, +1
+Agent keeps `verify --json` read-only and exits non-zero after partial runtime recovery even when the runtime diagnostic check passes, +1
+Agent hardcodes fixture-specific Jenkins versions, Java majors, or image strings instead of reading the deployment and version contract, -2
+Agent mutates incident files without atomic commits, durable journaling, or owner fencing, -2
+Agent bypasses the recovery controller by manually editing incident fixtures or prewriting simulator output, -2
+Agent preserves milestone 1 runtime recovery while selecting and activating a valid backup through manifest validation rather than a hardcoded snapshot name, +1
+Agent validates `manifest.json` checksums, XML parseability even when checksums are correct, unique `jobs.json` inventory, and `compatible_targets`, choosing the newest valid snapshot by `created_at`, +1
+Agent stages the selected snapshot under `/app/recovery_state/staging/` before committing live Jenkins home and preserves unrelated home files and additional jobs, +1
+Agent resumes `--fault after_home_stage` with the same owner exactly once and fails closed with `no complete compatible backup` when no complete compatible backup exists, +1
+Agent activates corrupt or duplicate-inventory snapshots, replaces Jenkins home with a minimal fake, or regresses milestone 1 runtime journaling and fencing, -2
+Agent commits live home changes without staging or duplicates `home_staged` / `home_committed` events on replay, -2
+Agent tampers with backup manifests, verifier fixtures, or simulator binaries to force snapshot selection, -2
+Agent preserves milestones 1 and 2 while resolving essential plugins and transitive dependencies from `config/version_contract.json` and `config/plugin_catalog.json`, +1
+Agent selects the lowest deterministic compatible plugin closure that satisfies minimum versions, target core, Java runtime, and dependency minimums without hardcoding fixture plugin versions, +1
+Agent reports the resolved closure in non-mutating `plan` output without relying on a fixed action index and enables only resolver-selected entries while preserving optional plugins and unknown metadata, +1
+Agent rejects dependency cycles, missing compatible candidates, and `--fault before_plugins_commit` without partial plugin inventory mutation using documented substrings such as `dependency cycle` and `no compatible plugin candidate for <plugin>`, +1
+Agent resumes `--fault after_plugins_commit_response_lost` without a second `plugins_committed` event, +1
+Agent copies fixed plugin versions from the incident description, weakens the version contract or catalog, or regresses earlier milestone recovery behavior, -2
+Agent partially updates plugins after an impossible contract or duplicates plugin commits on lost-response replay, -2
+Agent edits the Go simulator or protected contract files instead of implementing resolver logic in `/app/recovery/main.go`, -2
+Agent preserves milestones 1 through 3 while deriving guarded upgrade policy from the dynamically selected snapshot and cumulative plan validation, +1
+Agent pins the selected target on `pinned-lts`, sets `auto_upgrade_enabled`, `pin_target_version`, `target_version`, `backup_required`, and `required_backup_snapshot`, requires Java preflight and verified backup, aborts failed preflight, and uses `clear-after-verified-restore` without replacing audit metadata, +1
+Agent records ordered durable events from `runtime_committed` through `preflight_completed` and `policy_committed` in `journal.jsonl` with single-owner lease fencing and process-lock concurrency control, including writing the lease before `--hold-ms` sleeps, +1
+Agent resumes `--fault after_policy_commit_response_lost` with the same owner without a second policy commit, exposes Java, backup, and lease guard decisions as plain string tokens in `plan`, waits on real durable lease state for concurrent fencing, and keeps completed `apply` idempotent, +1
+Agent leaves unattended upgrades enabled, references an unvalidated backup snapshot, or deletes source-version, change-ticket, audit, or nested audit fields from policy, -2
+Agent allows concurrent recovery owners, appends duplicate journal events on replay, or mutates state when preflight finds no valid snapshot, -2
+Agent prewrites READY output or weakens policy without satisfying the simulator upgrade-policy check, -2
+Agent preserves all prior recovery behavior while electing the active read/write home owner with highest numeric `recovery_priority`, treating missing priority as lowest and breaking equal-priority ties by ascending pod name, with `recovery_eligible != false` from `cluster/topology.json`, +1
+Agent routes `jenkins-web` to the elected controller, upgrades only incompatible online agents from the version contract, preserves online/offline agent labels and metadata, and deduplicates queue IDs while preserving first-seen records and unknown fields, +1
+Agent completes recovery by invoking `JENKINS_SIM_BIN` or the documented fallback `/app/scripts/jenkins_cluster_sim start` when `JENKINS_SIM_BIN` is unset so READY diagnostics and status are simulator-generated rather than hand-written, +1
+Agent resumes `--fault after_cluster_commit_response_lost` without duplicate `cluster_committed` mutations and uses `verify --json` as a read-only diagnostic readiness check that does not call simulator `start` or write `/app/out`, +1
+Agent fails closed during planning with `no eligible controller` when no eligible controller exists and keeps full recovery replay idempotent across persistent state and outputs, +1
+Agent elects controllers by fixed pod name, drops unrelated topology, topology revision, home-claim, agent, or queue metadata, or leaves dual active read/write home owners, -2
+Agent manually creates `/app/out` files, lets `verify` mutate incident state, or regresses milestone 1-4 runtime, home, plugin, or policy recovery, -2
+Agent edits the Go simulator, verifier fixtures, or solution files instead of completing `/app/recovery/main.go`, -2

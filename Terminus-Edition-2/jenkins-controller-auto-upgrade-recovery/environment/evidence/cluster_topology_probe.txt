@@ -1,5 +1,5 @@
-jenkins-0 mounted jenkins-home-rwo read/write
-jenkins-restore-0 also declared as active and attempted read/write home mount
-service jenkins-web selected pod=jenkins-restore-0 even though restore pod is not the elected active controller
-queue probe found duplicate queue ids after failed restoration
-agent probe found linux-builder-a still configured for remoting javaMajor=11
+more than one pod claimed write-capable access to the controller home
+service route did not match a durably elected home owner
+one or more online agents advertised a remoting runtime below the current contract
+queue scan found repeated IDs mixed with unrelated unique work
+pod names and queue IDs are observations, not stable recovery rules

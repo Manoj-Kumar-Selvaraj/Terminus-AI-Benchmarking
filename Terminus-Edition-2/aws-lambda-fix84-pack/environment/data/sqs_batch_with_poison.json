@@ -1,0 +1,47 @@
+{
+  "queue_arn": "arn:aws:sqs:us-east-1:111122223333:payments-ledger-v2",
+  "messages": [
+    {
+      "messageId": "msg-good-2001",
+      "receiptHandle": "rh-2001",
+      "eventSourceARN": "arn:aws:sqs:us-east-1:111122223333:payments-ledger-v2",
+      "body": "{\"account_id\": \"acct-200\", \"amount_cents\": 1200, \"business_event_id\": \"PAY-2001\", \"currency\": \"USD\", \"operation\": \"ledger_credit\"}",
+      "attributes": {
+        "ApproximateReceiveCount": "0"
+      },
+      "messageAttributes": {
+        "migration_id": {
+          "stringValue": "queue-migration-2026-06-payments-ledger"
+        }
+      }
+    },
+    {
+      "messageId": "msg-poison-2002",
+      "receiptHandle": "rh-2002",
+      "eventSourceARN": "arn:aws:sqs:us-east-1:111122223333:payments-ledger-v2",
+      "body": "{\"business_event_id\": \"PAY-POISON-2002\", \"failure_reason\": \"schema_missing_amount\", \"poison\": true}",
+      "attributes": {
+        "ApproximateReceiveCount": "0"
+      },
+      "messageAttributes": {
+        "migration_id": {
+          "stringValue": "queue-migration-2026-06-payments-ledger"
+        }
+      }
+    },
+    {
+      "messageId": "msg-good-2003",
+      "receiptHandle": "rh-2003",
+      "eventSourceARN": "arn:aws:sqs:us-east-1:111122223333:payments-ledger-v2",
+      "body": "{\"account_id\": \"acct-201\", \"amount_cents\": 450, \"business_event_id\": \"PAY-2003\", \"currency\": \"USD\", \"operation\": \"ledger_credit\"}",
+      "attributes": {
+        "ApproximateReceiveCount": "0"
+      },
+      "messageAttributes": {
+        "migration_id": {
+          "stringValue": "queue-migration-2026-06-payments-ledger"
+        }
+      }
+    }
+  ]
+}

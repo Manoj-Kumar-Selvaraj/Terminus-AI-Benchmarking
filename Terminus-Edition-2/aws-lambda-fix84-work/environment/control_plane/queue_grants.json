@@ -1,0 +1,27 @@
+{
+  "grants": [
+    {
+      "generation": 41,
+      "status": "rollback_pending",
+      "queue_ref": "old_queue_arn",
+      "sid": "AllowOldQueuePollingOnly",
+      "actions": [
+        "sqs:ReceiveMessage",
+        "sqs:DeleteMessage",
+        "sqs:GetQueueAttributes"
+      ]
+    },
+    {
+      "generation": 42,
+      "status": "active",
+      "queue_ref": "expected_active_queue_arn",
+      "sid": "AllowMigratedQueuePolling",
+      "actions": [
+        "sqs:ReceiveMessage",
+        "sqs:DeleteMessage",
+        "sqs:ChangeMessageVisibility",
+        "sqs:GetQueueAttributes"
+      ]
+    }
+  ]
+}

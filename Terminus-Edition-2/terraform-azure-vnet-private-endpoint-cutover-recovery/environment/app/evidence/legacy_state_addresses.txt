@@ -1,0 +1,4 @@
+azurerm_subnet.app
+azurerm_subnet.data
+azurerm_route_table.default
+azurerm_subnet_route_table_association.app

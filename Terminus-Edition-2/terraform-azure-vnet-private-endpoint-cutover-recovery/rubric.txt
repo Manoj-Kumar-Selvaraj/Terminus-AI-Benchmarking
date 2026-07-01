@@ -1,0 +1,21 @@
+Agent replaces hard-coded legacy subnet resources with subnet-map driven resources while preserving logical keys, +3
+Agent restores routeable-subnet filtering and excludes platform/private-endpoint subnets, +3
+Agent sends default workload egress to the firewall private IP with `VirtualAppliance` and never `Internet`, +3
+Agent preserves required output compatibility and input validation, +1
+Agent restores Private DNS zone catalog and VNet links for all required services, +3
+Agent creates private endpoints from input data and places them only in the dedicated private endpoint subnet, +3
+Agent attaches zone groups and disables private endpoint subnet policies correctly, +3
+Agent avoids hard-coded Azure resource IDs and preserves DNS/endpoint outputs, +1
+Agent creates key-preserving NSGs and associations for enabled subnets, +2
+Agent scopes app ingress to the application gateway subnet and configured app ports, +2
+Agent scopes data ingress to app subnet prefixes only, +2
+Agent denies Internet inbound and avoids broad allow rules, +2
+Agent disables BGP route propagation on forced-egress route tables, +2
+Agent merges required and caller-provided tags consistently, +2
+Agent restores VNet and NSG diagnostics to Log Analytics, +3
+Agent makes DDoS attachment conditional without creating the shared DDoS plan, +2
+Agent adds VNet delete guardrail and preserves all downstream outputs, +3
+Agent records legacy moved metadata for subnets, route table, and association resources, +3
+Agent adds prevent-destroy lifecycle guards to core network resources, +2
+Agent adds private endpoint subnet and administrator CIDR validation, +2
+Agent avoids live lookups, nondeterministic resources, provider/backend ownership, and apply artifacts, +3

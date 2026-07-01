@@ -13,6 +13,7 @@ Work offline. Use `/app/tools/ec2sim`, `/app/docs/release_contract.md`, `/app/do
 - Equivalent JSON ordering produces the same launch-template version and state digest.
 - Replanning the same approved release preserves launch-template and logical instance identity.
 - Instance tags retain exact slot, commit, build, and release-manifest provenance.
+- Output instance `slot` values are zero-based JSON integers. Only the `tags.Slot` provenance tag is the matching decimal string.
 - `apply` atomically writes the complete state and appends one JSONL journal record. Each record includes `operation_id`, `release_manifest_sha256` from the approved artifact, `refresh_status`, and the rendered `state_digest`; with no `--journal`, use `${state}.journal.jsonl`.
 - Preserve the documented CLI, Terraform resource labels, and output keys.
 

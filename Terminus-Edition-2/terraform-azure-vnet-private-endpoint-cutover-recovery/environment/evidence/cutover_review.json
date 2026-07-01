@@ -1,0 +1,8 @@
+{
+  "cutover_id": "AZ-PE-20260629",
+  "blocked_reasons": [
+    "legacy singleton subnet resources remained",
+    "default routes used Internet next hop",
+    "private endpoints not isolated to dedicated subnet"
+  ]
+}

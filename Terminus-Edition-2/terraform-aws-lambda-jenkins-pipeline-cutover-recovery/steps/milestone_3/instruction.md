@@ -8,7 +8,7 @@ Review:
 - `/app/docs/fanout-contract.md`
 - `/app/docs/retry-idempotency-contract.md`
 
-Make the item portion of the workflow failure-isolated. Permanently invalid items must receive exactly the documented three validation attempts before being recorded in the trusted DLQ, while valid siblings continue through ledger publication. The batch result must distinguish partial completion from full success.
+Make the item portion of the workflow failure-isolated. Permanently invalid items must receive exactly the documented three validation attempts before being recorded in the trusted DLQ, while valid siblings continue through ledger publication. The runtime DLQ is a JSON object keyed by `batch_id`, with each value the sorted item-ID array isolated for that batch. The batch result must distinguish partial completion from full success.
 
 Enforce one execution owner per batch without globally serializing unrelated batches. A second execution must not publish the same batch after the first owner releases its transient lock. Locks must still be released on successful and partial completion.
 

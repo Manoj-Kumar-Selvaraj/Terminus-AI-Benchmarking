@@ -26,4 +26,4 @@ Each logical instance slot owns one volume for each configured `logical_name`.
 
 Each `ebs_volumes` output entry has `id`, `logical_name`, `slot`, `size_gb`, `encrypted`, `kms_key_alias`, `kms_key_arn`, `delete_on_termination`, `orphaned`, `attached_instance_id`, `attachment_generation`, `attachment_token`, and `tags`. Managed volumes must have `encrypted: true`, `delete_on_termination: false`, and `orphaned: false`.
 
-Volume tags are exactly `Application`, `Environment`, `Slot`, `VolumeRole`, and `ManagedBy`. `Slot` is the logical slot string, `VolumeRole` is the configured `logical_name`, and `ManagedBy` is `terraform-aws-ec2-module`.
+Volume tags are exactly `Application`, `Environment`, `Slot`, `VolumeRole`, and `ManagedBy`. Output `ebs_volumes[].slot` is the zero-based JSON integer; the tag `Slot` is only its decimal string form. `VolumeRole` is the configured `logical_name`, and `ManagedBy` is `terraform-aws-ec2-module`.

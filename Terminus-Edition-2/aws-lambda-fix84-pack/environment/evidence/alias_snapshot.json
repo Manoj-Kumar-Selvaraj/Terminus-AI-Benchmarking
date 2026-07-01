@@ -1,0 +1,7 @@
+{
+  "captured_at": "2026-06-24T09:28:30Z",
+  "function": "payments-ledger-ingestor",
+  "active_alias": "live",
+  "qualified_target": "payments-ledger-ingestor:live",
+  "deployment_generation": 42
+}

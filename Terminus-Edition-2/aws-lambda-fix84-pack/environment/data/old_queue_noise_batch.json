@@ -1,0 +1,19 @@
+{
+  "queue_arn": "arn:aws:sqs:us-east-1:111122223333:payments-ledger-old",
+  "messages": [
+    {
+      "messageId": "msg-old-noise-1",
+      "receiptHandle": "rh-old-1",
+      "eventSourceARN": "arn:aws:sqs:us-east-1:111122223333:payments-ledger-old",
+      "body": "{\"account_id\": \"acct-old\", \"amount_cents\": 999, \"business_event_id\": \"PAY-OLD-1\", \"currency\": \"USD\", \"operation\": \"ledger_credit\"}",
+      "attributes": {
+        "ApproximateReceiveCount": "0"
+      },
+      "messageAttributes": {
+        "migration_id": {
+          "stringValue": "queue-migration-2026-06-payments-ledger"
+        }
+      }
+    }
+  ]
+}

@@ -1,7 +1,11 @@
 FROM public.ecr.aws/docker/library/python:3.13-slim-bookworm@sha256:01f42367a0a94ad4bc17111776fd66e3500c1d87c15bbd6055b7371d39c124fb AS go_builder
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends golang-go \
+    && apt-get install -y --no-install-recommends \
+        golang-go=2:1.19~1 \
+        golang-1.19-go=1.19.8-2 \
+        golang-1.19-src=1.19.8-2 \
+        golang-src=2:1.19~1 \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build
@@ -40,5 +44,5 @@ COPY go.mod /app/go.mod
 COPY cmd/ec2sim /app/cmd/ec2sim
 COPY cmd/runner /app/cmd/runner
 COPY infra /app/infra
-RUN mkdir -p /app/out /app/state /logs/verifier \
+RUN mkdir -p /app/out /app/state \
     && sha256sum /app/tools/ec2sim /app/infra/modules/ec2/module.go > /opt/ec2sim.sha256

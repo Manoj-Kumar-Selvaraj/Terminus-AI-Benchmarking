@@ -1,11 +1,6 @@
-FROM public.ecr.aws/docker/library/golang:1.24-bookworm@sha256:1a6d4452c65dea36aac2e2d606b01b4a029ec90cc1ae53890540ce6173ea77ac AS go_runtime
-
 FROM public.ecr.aws/docker/library/python:3.13-slim-bookworm@sha256:01f42367a0a94ad4bc17111776fd66e3500c1d87c15bbd6055b7371d39c124fb
 
 ENV DEBIAN_FRONTEND=noninteractive
-
-COPY --from=go_runtime /usr/local/go /usr/local/go
-ENV PATH="/usr/local/go/bin:${PATH}"
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -13,6 +8,9 @@ RUN apt-get update \
         ca-certificates \
         coreutils \
         diffutils \
+        golang-1.19-go=1.19.8-2 \
+        golang-1.19-src=1.19.8-2 \
+        golang-go=2:1.19~1 \
         tmux=3.3a-3 \
         asciinema=2.2.0-1 \
     && rm -rf /var/lib/apt/lists/*
@@ -32,6 +30,8 @@ COPY docs/ /app/docs/
 COPY scripts/ /app/scripts/
 COPY tools/ /app/tools/
 
-RUN chmod +x /app/bin/run_finbulk.sh /app/scripts/reset_lab.sh /app/tools/*.py \
+RUN chmod +x /app/bin/run_finbulk.sh /app/bin/finbulk_op.sh /app/bin/db2_bridge_call.sh /app/scripts/reset_lab.sh \
     && mkdir -p /app/out /app/build \
-    && go build -o /app/build/finbulk /app/cmd/finbulk
+    && go build -o /app/build/finbulk ./cmd/finbulk \
+    && go build -o /app/build/db2bridge ./cmd/db2bridge \
+    && go build -o /app/build/inspect-state ./cmd/inspect-state

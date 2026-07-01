@@ -1,0 +1,21 @@
+{
+  "snapshot_id": "pre-upgrade-20260620-corrupt",
+  "created_at": "2026-06-20T01:00:00Z",
+  "source_version": "2.426.3",
+  "compatible_targets": [
+    "2.462.3"
+  ],
+  "checksums": {
+    "config.xml": "0000000000000000000000000000000000000000000000000000000000000000",
+    "credentials.xml": "00935be904f44c4689d1e99338106ed90c73b97bed53c9c383502b6b89d43b9d",
+    "queue.xml": "2e06fa3918a153d3673788457615aabd1796ce3c336cb5aacad67f862aee7c05",
+    "jobs.json": "48a8d890c420d5dbefe320d6f4c29eee537e03f25177608a221ab98f63d956e1",
+    "jobs/payments-ledger/config.xml": "eb5e356efa9fae36866f34a1e2f7e5f04d35e25a92a7d09bfdd457a69a84948a",
+    "jobs/shared-library/config.xml": "e08ce5430aba8c4e787acaabccb7d65e10e99a559bc32386b44c339e8b2bb966",
+    "jobs/platform-smoke/config.xml": "417fec242f9efa2c44e06055ac1bfb24e1d31a3b05fbbab5bad7de78707beb47"
+  },
+  "metadata": {
+    "created_by": "jenkins-backup-controller",
+    "incident": "INC-P1-20260618"
+  }
+}

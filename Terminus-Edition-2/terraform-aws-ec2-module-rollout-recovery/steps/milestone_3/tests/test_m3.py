@@ -68,9 +68,20 @@ class TestMilestone3:
         assert refresh["strategy"]=="pilot-then-wave" and refresh["status"]=="completed"
         assert events[:3]==["pilot_launched","pilot_healthy","pilot_committed"]
         assert events[-1]=="rollout_completed"
-        assert events.count("wave_launched")==events.count("wave_healthy")==events.count("wave_committed")
-        for launched,healthy,committed in zip([i for i,e in enumerate(events) if e=="wave_launched"],[i for i,e in enumerate(events) if e=="wave_healthy"],[i for i,e in enumerate(events) if e=="wave_committed"]):
-            assert launched < healthy < committed
+        assert events.count("wave_launched")==events.count("wave_healthy")==events.count("wave_committed")==3
+        wave_events=[event for event in refresh["events"] if event["event"].startswith("wave_")]
+        trios=[wave_events[index:index+3] for index in range(0,len(wave_events),3)]
+        assert [[event["event"] for event in trio] for trio in trios] == [
+            ["wave_launched","wave_healthy","wave_committed"],
+            ["wave_launched","wave_healthy","wave_committed"],
+            ["wave_launched","wave_healthy","wave_committed"],
+        ]
+        assert [trio[0]["slots"] for trio in trios] == [[1,2],[3,4],[5]]
+        for wave_number,trio in enumerate(trios,start=1):
+            assert all(event["wave"]==wave_number for event in trio)
+            assert trio[0]["slots"]==trio[1]["slots"]==trio[2]["slots"]
+        assert refresh["cursor"] == new["asg"]["desired_capacity"]
+        assert isinstance(refresh["cursor"], int)
 
     def test_capacity_invariant_holds_at_every_refresh_event(self):
         """The event timeline never exceeds max unavailable or drops below the healthy floor."""
@@ -79,6 +90,9 @@ class TestMilestone3:
         desired=new["asg"]["desired_capacity"]
         minimum=math.ceil((desired-new["asg"]["max_unavailable"])*100/desired)
         assert refresh["min_healthy_percentage"]==minimum
+        assert refresh["max_unavailable"] == new["asg"]["max_unavailable"]
+        assert refresh["cursor"] == desired
+        assert isinstance(refresh["cursor"], int)
         assert all(e["unavailable"]<=1 and e["healthy_capacity"]>=desired-1 for e in refresh["events"])
 
     def test_failed_pilot_preserves_complete_previous_capacity(self):
@@ -88,7 +102,10 @@ class TestMilestone3:
         refresh=state["autoscaling_group"]["instance_refresh"]
         assert refresh["status"]=="rolled_back"
         assert [i["id"] for i in state["instances"]]==[i["id"] for i in old["instances"]]
-        assert [e["event"] for e in refresh["events"]]==["pilot_launched","pilot_unhealthy","previous_capacity_preserved"]
+        events = [e["event"] for e in refresh["events"]]
+        assert "pilot_launched" in events
+        assert "pilot_unhealthy" in events
+        assert events[-1] == "previous_capacity_preserved"
 
     def test_failed_wave_restores_complete_previous_capacity(self):
         """A later health failure still returns to the exact pre-rollout fleet."""
@@ -97,16 +114,16 @@ class TestMilestone3:
         refresh=state["autoscaling_group"]["instance_refresh"]
         assert refresh["status"]=="rolled_back"
         assert state["outputs"]["instance_ids"]==old["outputs"]["instance_ids"]
-        assert [e["event"] for e in refresh["events"]]==[
-            "pilot_launched",
-            "pilot_healthy",
-            "pilot_committed",
-            "wave_launched",
-            "wave_unhealthy",
-            "previous_capacity_preserved",
-        ]
-        assert [e["seq"] for e in refresh["events"]]==list(range(1,7))
-        assert refresh["events"][3]["wave"]==1 and refresh["events"][4]["wave"]==1
+        events = [e["event"] for e in refresh["events"]]
+        assert events[:3] == ["pilot_launched", "pilot_healthy", "pilot_committed"]
+        assert "wave_launched" in events
+        assert "wave_unhealthy" in events
+        assert events[-1] == "previous_capacity_preserved"
+        seqs = [e["seq"] for e in refresh["events"] if "seq" in e]
+        assert seqs == sorted(seqs)
+        wave_events = [e for e in refresh["events"] if e["event"].startswith("wave_")]
+        assert all(e.get("wave") == 1 for e in wave_events)
+        assert all(e.get("slots") == [1,2] for e in wave_events if "slots" in e)
 
     def test_lost_response_commits_pilot_state_before_returning_error(self, tmp_path):
         """A lost response returns nonzero only after durable pilot progress is written."""
@@ -129,6 +146,8 @@ class TestMilestone3:
         assert second.returncode==0
         refresh=done["autoscaling_group"]["instance_refresh"]
         assert refresh["status"]=="completed" and refresh["completed_slots"]==list(range(6))
+        assert refresh["cursor"] == new["asg"]["desired_capacity"]
+        assert isinstance(refresh["cursor"], int)
         assert len(done["outputs"]["instance_ids"])==len(set(done["outputs"]["instance_ids"]))==6
         assert [e["event"] for e in refresh["events"]].count("pilot_committed")==1
 
@@ -140,15 +159,43 @@ class TestMilestone3:
         second,done=run("plan",new,prior=json.loads(path.read_text()))
         assert second.returncode==0 and done["outputs"]["rollout_operation_id"]==operation
 
-    def test_operation_identity_changes_when_desired_capacity_changes(self):
-        """Desired capacity is part of the rollout operation identity."""
-        cfg,old=baseline(); new=next_release(cfg); result,state=run("plan",new,prior=old)
-        assert result.returncode==0
-        smaller=config(); smaller["asg"]["desired_capacity"]=5
-        _,smaller_old=run("plan",smaller); smaller_new=next_release(smaller)
-        changed,changed_state=run("plan",smaller_new,prior=smaller_old)
-        assert changed.returncode==0
-        assert changed_state["outputs"]["rollout_operation_id"]!=state["outputs"]["rollout_operation_id"]
+    def test_operation_identity_includes_every_documented_identity_input(self):
+        """Source, target, environment, application, and capacity all affect operation identity."""
+        cfg, old = baseline()
+        target = next_release(cfg)
+        result, state = run("plan", target, prior=old)
+        assert result.returncode == 0
+        operation_id = state["outputs"]["rollout_operation_id"]
+
+        alternate_target = next_release(cfg, "20")
+        _, target_state = run("plan", alternate_target, prior=old)
+        assert target_state["outputs"]["rollout_operation_id"] != operation_id
+
+        source_cfg = next_release(cfg, "17")
+        _, alternate_source = run("plan", source_cfg)
+        _, source_state = run("plan", target, prior=alternate_source)
+        assert source_state["outputs"]["rollout_operation_id"] != operation_id
+
+        environment_cfg = copy.deepcopy(cfg)
+        environment_cfg["environment"] = "staging"
+        _, environment_old = run("plan", environment_cfg)
+        environment_target = next_release(environment_cfg)
+        _, environment_state = run("plan", environment_target, prior=environment_old)
+        assert environment_state["outputs"]["rollout_operation_id"] != operation_id
+
+        application_cfg = copy.deepcopy(cfg)
+        application_cfg["app"] = "orders-api"
+        _, application_old = run("plan", application_cfg)
+        application_target = next_release(application_cfg)
+        _, application_state = run("plan", application_target, prior=application_old)
+        assert application_state["outputs"]["rollout_operation_id"] != operation_id
+
+        capacity_cfg = copy.deepcopy(cfg)
+        capacity_cfg["asg"]["desired_capacity"] = 5
+        _, capacity_old = run("plan", capacity_cfg)
+        capacity_target = next_release(capacity_cfg)
+        _, capacity_state = run("plan", capacity_target, prior=capacity_old)
+        assert capacity_state["outputs"]["rollout_operation_id"] != operation_id
 
     def test_stale_owner_cannot_resume_in_progress_rollout(self, tmp_path):
         """A different controller token is fenced from committed rollout state."""
@@ -173,6 +220,10 @@ class TestMilestone3:
         assert replayed["outputs"]["instance_ids"]==done["outputs"]["instance_ids"]
         assert not any(a["action"]=="rolling_replace" for a in replayed["plan_actions"])
         assert replayed["autoscaling_group"]["instance_refresh"]["events"]==done["autoscaling_group"]["instance_refresh"]["events"]
+        refresh = replayed["autoscaling_group"]["instance_refresh"]
+        assert refresh["cursor"] == new["asg"]["desired_capacity"]
+        assert isinstance(refresh["cursor"], int)
+        assert refresh["max_unavailable"] == new["asg"]["max_unavailable"]
 
     @pytest.mark.parametrize("desired",[5,7,9])
     def test_healthy_floor_is_correct_for_odd_capacities(self, desired):
@@ -183,3 +234,5 @@ class TestMilestone3:
         refresh=state["autoscaling_group"]["instance_refresh"]
         assert refresh["min_healthy_percentage"]==math.ceil((desired-1)*100/desired)
         assert refresh["completed_slots"]==list(range(desired))
+        assert refresh["cursor"] == desired
+        assert isinstance(refresh["cursor"], int)

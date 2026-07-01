@@ -1,0 +1,43 @@
+{
+  "resources": [
+    {
+      "address": "module.vpc.aws_subnet.private[0]",
+      "type": "aws_subnet",
+      "id": "subnet-import-app-a",
+      "cidr": "10.42.10.0/24",
+      "tier": "app",
+      "az": "us-east-1a",
+      "route_table_id": "rtb-import-app-a",
+      "tags": {
+        "Name": "prod-app-a",
+        "LegacyIndex": "0"
+      }
+    },
+    {
+      "address": "module.vpc.aws_subnet.private[1]",
+      "type": "aws_subnet",
+      "id": "subnet-import-app-b",
+      "cidr": "10.42.11.0/24",
+      "tier": "app",
+      "az": "us-east-1b",
+      "route_table_id": "rtb-import-app-b",
+      "tags": {
+        "Name": "prod-app-b",
+        "LegacyIndex": "1"
+      }
+    },
+    {
+      "address": "module.vpc.aws_subnet.private[2]",
+      "type": "aws_subnet",
+      "id": "subnet-import-app-c",
+      "cidr": "10.42.12.0/24",
+      "tier": "app",
+      "az": "us-east-1c",
+      "route_table_id": "rtb-import-app-c",
+      "tags": {
+        "Name": "prod-app-c",
+        "LegacyIndex": "2"
+      }
+    }
+  ]
+}

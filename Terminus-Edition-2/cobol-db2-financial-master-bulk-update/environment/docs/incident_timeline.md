@@ -8,6 +8,6 @@
 
 2026-06-17 01:20 IST — During online posting overlap, one account returned SQLCODE -911. The batch log looked green, but the locked update vanished and the checkpoint advanced past it.
 
-2026-06-17 03:05 IST — Credit-limit records exposed master/risk drift: master limit changed even when the related risk row rejected the update.
+2026-06-17 03:05 IST — Credit-limit records exposed master and risk drift: master limit changed even when the related risk row rejected the update.
 
 The task is to repair the offline simulator-backed FNBULKUP workflow without real DB2 credentials.

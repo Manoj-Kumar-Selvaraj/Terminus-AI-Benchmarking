@@ -31,6 +31,7 @@ func Load(path string) (DB, error) {
 		"master": map[string]any{}, "risk": map[string]any{}, "locks": map[string]any{},
 		"ledger": []any{}, "audit": []any{}, "rejects": []any{}, "pending_locks": []any{},
 		"checkpoint": map[string]any{}, "applied_events": map[string]any{},
+		"control_totals": map[string]any{}, "chain_index": map[string]any{},
 	}
 	for k, v := range defaults {
 		if _, ok := db[k]; !ok {

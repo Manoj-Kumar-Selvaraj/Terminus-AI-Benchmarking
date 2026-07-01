@@ -166,6 +166,7 @@ class TestMilestone1:
         stages["stages"].pop()
         (infra / "stages.json").write_text(json.dumps(stages))
         assert deploy(infra, check=False).returncode != 0
+        assert runtime_state("deployments") == {}
 
     def test_duplicated_stage_is_rejected(self, tmp_path):
         """A duplicate stage name cannot replace another required stage."""
@@ -183,15 +184,22 @@ class TestMilestone1:
         stages["stages"][3], stages["stages"][4] = stages["stages"][4], stages["stages"][3]
         (infra / "stages.json").write_text(json.dumps(stages))
         assert deploy(infra, check=False).returncode != 0
+        assert runtime_state("deployments") == {}
 
-    def test_unversioned_or_wrong_runtime_module_is_rejected(self, tmp_path):
-        """The loader rejects local-module and legacy-runtime substitutions."""
+    @pytest.mark.parametrize(
+        ("expected", "replacement"),
+        [
+            ('source  = "terraform-aws-modules/lambda/aws"', 'source = "./lambda"'),
+            ('runtime       = "provided.al2023"', 'runtime = "go1.x"'),
+        ],
+    )
+    def test_wrong_module_or_runtime_is_rejected_before_registration(self, tmp_path, expected, replacement):
+        """Module provenance and custom runtime substitutions fail independently."""
         infra = copy_infra(tmp_path)
-        text = (infra / "main.tf").read_text().replace(
-            'source  = "terraform-aws-modules/lambda/aws"', 'source = "./lambda"'
-        ).replace('runtime       = "provided.al2023"', 'runtime = "go1.x"')
+        text = (infra / "main.tf").read_text().replace(expected, replacement)
         (infra / "main.tf").write_text(text)
         assert deploy(infra, check=False).returncode != 0
+        assert runtime_state("deployments") == {}
 
     def test_invalid_resource_bounds_are_rejected(self, tmp_path):
         """Timeout and concurrency values remain within the documented Lambda bounds."""
@@ -201,6 +209,7 @@ class TestMilestone1:
         stages["stages"][1]["reserved_concurrency"] = 0
         (infra / "stages.json").write_text(json.dumps(stages))
         assert deploy(infra, check=False).returncode != 0
+        assert runtime_state("deployments") == {}
 
     @pytest.mark.parametrize(
         ("field", "delta"),

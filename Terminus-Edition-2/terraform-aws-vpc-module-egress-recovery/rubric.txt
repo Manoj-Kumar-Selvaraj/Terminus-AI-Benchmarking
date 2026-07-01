@@ -1,30 +1,44 @@
 # Rubric 1
-Agent inspects vpcsim evidence and module contract before changing routing logic, +2
-Agent restores same-AZ NAT default routes for every app subnet route table, +5
-Agent removes default internet routes from isolated data route tables, +5
-Agent preserves required output keys and subnet Name/Tier tags, +3
-Agent hardcodes vpcsim JSON outputs instead of fixing module.go routing, -5
+Agent implements `/app/bin/vpc-recover` from `/app/cmd/vpcrecover/main.go` with working `inspect`, `plan`, `apply`, `resume`, and `verify` subcommands instead of hand-editing recovered state, +3
+Agent derives environment, route tables, NAT health, and output values from desired config plus structured evidence under `/app/evidence` rather than hardcoding fixture JSON, +3
+Agent restores every app route table so `0.0.0.0/0` targets a healthy same-AZ NAT gateway and removes module-owned default internet routes from data route tables, +5
+Agent preserves manual non-default routes and route-table metadata, including observed ticket/provenance fields, while keeping `plan --json` non-mutating with integer `feature_level`, `config_digest`, `plan_only: true`, `environment`, `route_tables`, and `outputs`, +5
+Agent writes recovered state with `schema_version: "vpc-recovery.aws.1"`, repaired routes, environment, config digest, and journal events `route_plan_written` and `apply_committed`, and `verify --json` reports `valid: true` / `phase: "READY"` after successful recovery, +5
+Agent resumes after a lost response with the same repaired route state and fences conflicting owners with `stale owner`, +5
+Agent routes app egress through cross-AZ NAT gateways, leaves data subnets with default internet routes, or deletes manual route metadata, -5
+Agent bypasses the controller by writing recovered JSON directly, stubbing static outputs, or ignoring `--root`, -5
 # Rubric 2
-Agent preserves milestone 1 routing while scoping gateway endpoints, +3
-Agent attaches S3 and DynamoDB endpoints only to app route tables, +5
-Agent fails closed on unsupported gateway endpoint services, +3
-Agent preserves endpoint `ManagedBy` tags and the nested IAM policy path `Statement[0].Condition.StringEquals.aws:PrincipalAccount`, +3
-Agent leaves endpoints attached to public or data route tables, -5
+Agent preserves same-AZ NAT routing and isolated data routing while adding gateway endpoint reconciliation, +3
+Agent supports only S3 and DynamoDB gateway endpoints and attaches each endpoint only to the complete set of private app route table IDs in `outputs.private_app_route_table_ids`, +5
+Agent preserves full observed endpoint IDs, policy documents, tags, policy account provenance, and metadata objects when associations are reconciled safely, +5
+Agent fails closed before writing recovered state on both `apply` and `resume` for unsupported endpoint services, endpoint policy account mismatches, or changed recovery config digests, +5
+Agent keeps endpoint identity independent of service ordering and avoids duplicate route-table associations on repeated `apply` or `resume`, +3
+Agent attaches gateway endpoints to public or data route tables, strips endpoint tags or metadata, accepts unsupported services, or mutates state after endpoint validation failure, -5
+Agent regresses route recovery or edits recovered-state JSON directly while adding endpoint behavior, -5
 # Rubric 3
-Agent preserves prior routing and endpoint fixes while hardening CIDR validation, +3
-Agent rejects overlapping subnet CIDRs, including partial range overlap, with overlaps errors, +5
-Agent rejects subnets outside vpc_cidr with outside vpc_cidr errors, +5
-Agent preserves subnet identity on AZ expansion by using `--prior-state` unchanged CIDRs without replace plan actions, +5
-Agent allows destructive replace actions or deletes regulated workload evidence, -5
+Agent preserves route and endpoint recovery while validating desired subnet CIDRs before any state mutation, +3
+Agent rejects exact and partial overlapping subnet CIDRs with `overlaps` and subnets outside `vpc_cidr` with `outside vpc_cidr`, +5
+Agent rejects duplicate imported Terraform state matches with `ambiguous imported cidr` and preserves imported subnet IDs plus route table IDs by stable CIDR match, +5
+Agent emits legacy import moves in the top-level `moved` array with `from`, Terraform module-path `to`, `action: "moved"`, and imported `id` for each CIDR match, +5
+Agent expands to a new AZ by creating only new subnet identities and avoids `plan_actions` entries with `action: "replace"` for unchanged imported resources, +5
+Agent keeps gateway endpoint associations aligned to imported app route table IDs after CIDR and state reconciliation, +3
+Agent allows overlapping or out-of-range CIDRs, chooses between ambiguous imported matches, reindexes unchanged imported subnets, or omits required `moved` entries, -5
+Agent regresses route or endpoint recovery while adding CIDR validation and imported-state behavior, -5
 # Rubric 4
-Agent preserves prior fixes while enabling audit-grade flow logs and resolver SG, +3
-Agent emits ALL-traffic flow logs covering every subnet with flat scoped IAM policy using non-empty `Action`, `subnet_ids`, configured log group `Resource`, fl- ID prefix, and interface-id format, +5
-Agent configures exactly TCP and UDP port 53 resolver ingress from corporate CIDRs using `cidr_blocks` with the resolver sg- ID prefix, +5
-Agent preserves main.tf labels and outputs.tf keys, +3
-Agent uses wildcard IAM resources or 0.0.0.0/0 resolver ingress, -5
+Agent preserves route, endpoint, CIDR, and imported-state recovery while reconciling flow logs and resolver security from config plus audit inventory, +3
+Agent covers every recovered subnet in flow logs and uses scoped CloudWatch Logs IAM resources for the configured account and log group with required actions such as `logs:CreateLogStream` and `logs:PutLogEvents` instead of bare `*`, account-level wildcards, arbitrary actions, or `logs:*`, +5
+Agent preserves flow-log `id` and the full metadata object from audit inventory when the destination account matches the desired VPC account, +5
+Agent limits resolver ingress to TCP and UDP port 53 from the current configured corporate CIDRs, +5
+Agent reports actual observed manual resolver ingress rule content in top-level `drift_report` entries with `action: "report_only"` and `resource: "resolver_security_group"`, +5
+Agent fails closed before mutation on flow-log destination account mismatch with `account mismatch`, +5
+Agent uses wildcard flow-log permissions, open resolver ingress, silently deletes manual resolver rules, or omits required `drift_report` entries, -5
+Agent regresses route, endpoint, CIDR, or imported-state behavior while adding audit and resolver recovery, -5
 # Rubric 5
-Agent preserves recovered module behavior while fixing imported-state handling, +3
-Agent declares each legacy private subnet path exactly once across `moved + plan_actions`, including integer-indexed prior-state addresses without AZ fields, as `{"action": "moved", "from": ..., "to": ...}` records to matching app addresses, +5
-Agent avoids replace actions on unchanged imported state, +5
-Agent fails closed when app AZs lack same-AZ NAT with missing nat gateway errors, +5
-Agent toggles hidden feature flags instead of implementing real module fixes, -5
+Agent preserves cumulative routing, endpoint, CIDR, imported-state, flow-log, and resolver behavior while making `apply` and `resume` restart-safe, +3
+Agent uses `/app/state/recovery_journal.jsonl` for `apply` and `resume`, records the matching `config_digest` on journal entries, and repairs only a torn final JSONL journal record by truncating the invalid tail, +5
+Agent fails closed on interior journal corruption with `journal corruption` and fences resumes with matching owner plus matching `config_digest`, +5
+Agent rejects changed desired config during fenced resume with `config digest changed` and different owners with `stale owner`, +5
+Agent resumes safely after `--fail-after endpoint_commit` and repeated `apply` without duplicating routes, endpoint associations, moved actions, or state-affecting side effects, +5
+Agent reports `verify --json` as `valid: true` and `phase: "READY"` only after controller-generated recovered state exists, and does not report READY before recovered state is written, +5
+Agent auto-repairs interior journal corruption, allows cross-owner resume, accepts changed config during resume, or duplicates state changes during replay, -5
+Agent regresses cumulative route, endpoint, CIDR, imported-state, audit, or resolver behavior in the final recovered state, -5

@@ -1,7 +1,12 @@
 {
   "abort_on_failed_preflight": false,
+  "audit": {
+    "incident": "INC-P1-20260618",
+    "requested_by": "auto-upgrade-controller"
+  },
   "auto_upgrade_enabled": true,
   "backup_required": false,
+  "change_ticket": "CHG-20260618-441",
   "channel": "latest",
   "java_preflight_required": false,
   "last_upgrade_id": "auto-20260618-220801",

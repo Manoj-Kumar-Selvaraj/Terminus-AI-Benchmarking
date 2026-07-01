@@ -10,6 +10,7 @@ Preserve milestone 1. Use `/app/docs/network_contract.md`, `/app/docs/module_con
 - Capacity is balanced across unique eligible availability zones.
 - Stable logical slots retain their subnet when input ordering changes or another eligible zone is added.
 - Scale-out creates only the newly required slots and preserves existing instance identities.
+- Emit typed `plan_actions`: `create`, `no_op`, and `scale_in` use integer `slot` plus `instance_id`; a future `rolling_replace` also carries `operation_id`. See `/app/docs/module_contract.md` for the complete shape.
 - Reject duplicate subnet IDs, duplicate zones, public tiers, cross-account subnets, insufficient zone count, malformed security-group IDs, malformed or duplicate prefix-list IDs, and invalid service ports with the field-specific error fragments in `/app/docs/network_contract.md`.
 - Ingress and egress use the exact rule shapes from `/app/docs/network_contract.md`, including `source_security_group_id`, sorted `prefix_list_ids`, and the configured service port.
 - Preserve all milestone 1 release and compatibility behavior.

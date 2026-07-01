@@ -1,0 +1,15 @@
+{
+  "review_window": "2026-06-26T21:35:00Z/2026-06-26T22:12:00Z",
+  "region_examples": [
+    "us-east-1",
+    "us-west-2"
+  ],
+  "observed_findings": [
+    "app egress route no longer preserved AZ locality",
+    "data tables unexpectedly acquired default routes",
+    "interface endpoint private DNS was disabled for some services",
+    "endpoint and queue policies used wildcard principals/actions during the migration",
+    "legacy state addresses were not protected by moved declarations"
+  ],
+  "execution_boundary": "plan-only; no apply; no live AWS lookup data sources"
+}

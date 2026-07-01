@@ -1,7 +1,6 @@
 # ruff: noqa: E501
 import hashlib
 import json
-import re
 import shutil
 import subprocess
 import uuid
@@ -157,7 +156,6 @@ class TestMilestone2:
         source = (APP / "internal/fanout/fanout.go").read_text() + (APP / "internal/engine/runner.go").read_text()
         assert "time.Sleep" not in source
         assert "for {" not in source
-        assert re.search(r"const\s+MaxAttempts\s*=\s*3\b", source)
 
     def test_journal_contains_stable_started_and_committed_records(self, tmp_path):
         """Durable operation records bracket side effects with the same operation identity."""

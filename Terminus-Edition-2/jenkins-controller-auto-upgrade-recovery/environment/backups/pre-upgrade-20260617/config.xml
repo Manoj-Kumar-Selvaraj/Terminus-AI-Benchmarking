@@ -1,0 +1,1 @@
+<jenkins><version>2.426.3</version><numExecutors>2</numExecutors><securityRealm>ldap</securityRealm><authorizationStrategy>matrix</authorizationStrategy></jenkins>

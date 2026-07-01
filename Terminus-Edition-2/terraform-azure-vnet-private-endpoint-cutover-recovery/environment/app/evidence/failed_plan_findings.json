@@ -1,0 +1,24 @@
+{
+  "findings": [
+    {
+      "id": "NET-001",
+      "symptom": "app route table has 0.0.0.0/0 next hop Internet",
+      "severity": "critical"
+    },
+    {
+      "id": "DNS-017",
+      "symptom": "private endpoint lacks private_dns_zone_group",
+      "severity": "high"
+    },
+    {
+      "id": "SEC-042",
+      "symptom": "NSG permits Internet source on wildcard destination port",
+      "severity": "critical"
+    },
+    {
+      "id": "MIG-009",
+      "symptom": "legacy subnet address has delete/create shape without moved metadata",
+      "severity": "high"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "nat_gateways": [
+    {
+      "id": "nat-prod-a",
+      "az": "us-east-1a",
+      "state": "available"
+    },
+    {
+      "id": "nat-prod-b",
+      "az": "us-east-1b",
+      "state": "available"
+    },
+    {
+      "id": "nat-prod-c",
+      "az": "us-east-1c",
+      "state": "available"
+    }
+  ],
+  "checked_at": "2026-06-27T04:18:21Z"
+}

@@ -95,6 +95,15 @@ class TestMilestone5:
         assert result.returncode != 0
         assert inspect("invocations") == []
 
+    def test_version_two_absent_owner_rejected_before_invocation(self, tmp_path):
+        """A version-two envelope without an owner key is rejected before work starts."""
+        path, request = request_file(tmp_path, version=2)
+        del request["owner"]
+        path.write_text(json.dumps(request))
+        result = run(CLI, "run", "--request", path, check=False)
+        assert result.returncode != 0
+        assert inspect("invocations") == []
+
     def test_unsupported_protocol_rejected_without_side_effect(self, tmp_path):
         """Unknown rollout protocols fail before trusted runtime work begins."""
         path, _ = request_file(tmp_path, version=7, owner="owner-x")

@@ -2,6 +2,10 @@
   "home_schema": "partial-upgrade",
   "last_successful_boot": "2026-06-18T21:54:00Z",
   "previous_version": "2.426.3",
+  "recovery_notes": {
+    "incident": "INC-P1-20260618",
+    "operator": "oncall-platform"
+  },
   "restored_from_snapshot": "",
   "target_version": "2.462.3",
   "upgrade_status": "FAILED_BOOT"

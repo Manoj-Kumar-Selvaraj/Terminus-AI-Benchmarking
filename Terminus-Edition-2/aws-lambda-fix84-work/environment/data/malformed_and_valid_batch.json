@@ -1,0 +1,33 @@
+{
+  "queue_arn": "arn:aws:sqs:us-east-1:111122223333:payments-ledger-v2",
+  "messages": [
+    {
+      "messageId": "msg-malformed-4001",
+      "receiptHandle": "rh-4001",
+      "eventSourceARN": "arn:aws:sqs:us-east-1:111122223333:payments-ledger-v2",
+      "body": "{not-json",
+      "attributes": {
+        "ApproximateReceiveCount": "0"
+      },
+      "messageAttributes": {
+        "migration_id": {
+          "stringValue": "queue-migration-2026-06-payments-ledger"
+        }
+      }
+    },
+    {
+      "messageId": "msg-good-4002",
+      "receiptHandle": "rh-4002",
+      "eventSourceARN": "arn:aws:sqs:us-east-1:111122223333:payments-ledger-v2",
+      "body": "{\"account_id\": \"acct-400\", \"amount_cents\": 600, \"business_event_id\": \"PAY-4002\", \"currency\": \"USD\", \"operation\": \"ledger_credit\"}",
+      "attributes": {
+        "ApproximateReceiveCount": "0"
+      },
+      "messageAttributes": {
+        "migration_id": {
+          "stringValue": "queue-migration-2026-06-payments-ledger"
+        }
+      }
+    }
+  ]
+}

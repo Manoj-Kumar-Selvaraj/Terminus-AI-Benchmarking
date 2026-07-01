@@ -45,3 +45,7 @@ journal_repaired
 drift_repaired
 resumed
 ```
+
+## Exit-status and rejection contract
+
+`pipelinectl run` and `pipelinectl resume` exit `0` only for terminal `SUCCEEDED` or `PARTIAL` checkpoints. When a transient failure exhausts the retry budget, they still print the durable `RETRY_PENDING` checkpoint JSON on stdout, then exit nonzero so a caller can schedule recovery. Any request, deployment, generation, module, ownership, protocol, or runtime rejection exits nonzero before it creates an additional invocation or effect. Rejected reuse of an existing `execution_id` with a different batch, owner, or artifact digest must include the lowercase diagnostic word `conflicting` in its output.

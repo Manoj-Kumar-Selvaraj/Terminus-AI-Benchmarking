@@ -2,6 +2,8 @@
 
 Each execution pins one deployed Lambda generation when it begins. Alias changes affect only new executions. An in-flight generation remains available until its pinned work completes.
 
+`pipelinectl deploy --infra <directory>` reads the deployment generation from `<directory>/deployment.json`; it must not infer that value from package hashes, aliases, the active runtime state, or a hard-coded default. Package hashes contribute to the immutable deployment digest, while `deployment.json.generation` identifies the deployment registered with the trusted runtime. Cutover and rollback may select only an already registered generation; an unknown or rejected generation exits nonzero.
+
 Only one implementation may produce settlement side effects for a batch. During Lambda-primary operation, the Jenkins bridge runs in observation-only shadow mode. It may compare stage results but must not write ledger, report, notification, or archive effects.
 
 A cutover response can be lost after the trusted control plane commits the alias change. Retrying or reconciling must discover the committed generation. Rollback chooses a generation for future work without rewriting checkpoints belonging to already-running executions.

@@ -61,6 +61,18 @@ def run_sim(command, cfg, prior=None, state=None, journal=None):
         return result, json.loads(output_path.read_text(encoding="utf-8"))
 
 
+def assert_complete_instance_fleet(cfg, state):
+    desired = cfg["asg"]["desired_capacity"]
+    instances = state["instances"]
+    instance_ids = state["outputs"]["instance_ids"]
+    assert len(instances) == desired
+    assert len(instance_ids) == desired
+    assert [instance["slot"] for instance in instances] == list(range(desired))
+    assert all(isinstance(instance["slot"], int) for instance in instances)
+    assert instance_ids == [instance["id"] for instance in instances]
+    assert len(set(instance_ids)) == desired
+
+
 class TestMilestone1:
     def test_simulator_cli_integrity(self):
         """The harness CLI remains unchanged while the EC2 module is repaired."""
@@ -172,6 +184,8 @@ class TestMilestone1:
         first_result, first = run_sim("plan", cfg)
         second_result, second = run_sim("plan", cfg, prior=first)
         assert first_result.returncode == second_result.returncode == 0
+        assert_complete_instance_fleet(cfg, first)
+        assert_complete_instance_fleet(cfg, second)
         assert first["launch_template"]["version"] == second["launch_template"]["version"]
         assert first["outputs"]["instance_ids"] == second["outputs"]["instance_ids"]
         assert not any(action["action"] == "rolling_replace" for action in second["plan_actions"])
@@ -182,6 +196,7 @@ class TestMilestone1:
         result, state = run_sim("plan", cfg)
         assert result.returncode == 0
         artifact = cfg["release_artifact"]
+        assert_complete_instance_fleet(cfg, state)
         for slot, instance in enumerate(state["instances"]):
             assert instance["tags"]["Slot"] == str(slot)
             assert instance["tags"]["CommitSha"] == artifact["commit_sha"]
@@ -200,5 +215,22 @@ class TestMilestone1:
         assert json.loads(state_path.read_text(encoding="utf-8")) == output
         records = [json.loads(line) for line in journal_path.read_text().splitlines()]
         assert len(records) == 1
+        assert isinstance(records[0]["operation_id"], str) and records[0]["operation_id"]
+        assert records[0]["refresh_status"] in {"stable", "completed", "rolled_back", "in_progress"}
+        assert records[0]["release_manifest_sha256"] == cfg["release_artifact"]["manifest_sha256"]
+        assert records[0]["state_digest"] == output["state_digest"]
+
+    def test_apply_uses_state_derived_default_journal_path(self, tmp_path):
+        """Without --journal, apply appends to the documented ${state}.journal.jsonl path."""
+        cfg = config()
+        state_path = tmp_path / "nested" / "state.json"
+        result, output = run_sim("apply", cfg, prior={}, state=state_path)
+        assert result.returncode == 0
+        default_journal = Path(str(state_path) + ".journal.jsonl")
+        assert default_journal.exists()
+        records = [json.loads(line) for line in default_journal.read_text().splitlines()]
+        assert len(records) == 1
+        assert records[0]["operation_id"] == output["outputs"]["rollout_operation_id"]
+        assert records[0]["refresh_status"] == output["autoscaling_group"]["instance_refresh"]["status"]
         assert records[0]["release_manifest_sha256"] == cfg["release_artifact"]["manifest_sha256"]
         assert records[0]["state_digest"] == output["state_digest"]

@@ -1,12 +1,19 @@
-# Make AZ expansion and CIDR validation safe
+# CIDR and imported-state migration
 
-You are on the network platform rotation for a failed Terraform AWS VPC module rollout. This is offline: do not call AWS and do not require Terraform. Use `/app/bin/vpcsim`, `/app/docs/module_contract.md`, and `/app/evidence` to diagnose the incident. Repair logic in `/app/infra/modules/vpc/module.go` and rebuild with `go build -o /app/bin/vpcsim /app/cmd/vpcsim`.
+Preserve Milestones 1 and 2. Extend recovery to validate subnet CIDRs and reconcile imported Terraform state without replacing existing imported identities.
 
-## Requirements
+Requirements:
 
-- Reject overlapping subnet CIDRs with errors containing `overlaps`.
-- Reject subnets outside the VPC CIDR with errors containing `outside vpc_cidr`.
-- When appending a new AZ, preserve existing subnet IDs for unchanged CIDRs by comparing the current config with the optional `--prior-state` JSON passed to `vpcsim plan`.
-- AZ expansion with `--prior-state` must not emit destructive `replace` actions in `plan_actions`.
-
-Compatibility constraints: keep `/app/infra/modules/vpc`, all labels in `main.tf`, all outputs in `outputs.tf`, and CLI flags `plan`, `apply`, `validate`, `--config`, `--prior-state`, `--out`, `--state`. Do not hardcode sample JSON or edit verifier fixtures.
+- Reject subnets outside `vpc_cidr` before mutation with error substring `outside vpc_cidr`.
+- Reject exact, containing, contained, or partial subnet overlaps before mutation with error substring `overlaps`.
+- Reject ambiguous imported-state matches for the same CIDR before mutation with error substring `ambiguous imported cidr`.
+- Match imported legacy subnet resources by CIDR, including legacy addresses such as `module.vpc.aws_subnet.private[0]`.
+- Preserve imported subnet IDs and imported route table IDs when a configured subnet CIDR matches imported state.
+- Recovered app subnet objects must keep their evidence-derived `address`, `id`, `cidr`, `tier`, `az`, and `route_table_id` fields.
+- Emit deterministic moved entries in recovered state under the top-level `moved` array, not only in `plan_actions`. Each moved entry must be shaped as `{"action": "moved", "from": "<legacy address>", "to": "<current subnet address>"}`.
+- The legacy imported app subnet moves must map `module.vpc.aws_subnet.private[0]`, `[1]`, and `[2]` to the current app subnet address for the same CIDR.
+- Adding a new AZ must create only new subnet and route-table identities for the new CIDRs, while preserving unchanged imported subnet IDs and route table IDs.
+- AZ expansion must not emit destructive `replace` actions in `plan_actions` for unchanged imported resources.
+- `outputs.private_app_route_table_ids` must remain present and must use imported app route table IDs when imported state provides them.
+- Gateway endpoint associations must follow `outputs.private_app_route_table_ids`, so endpoint route tables use imported app route table IDs rather than generated names.
+- Milestone 1 routing and Milestone 2 gateway endpoint behavior must remain intact after imported-state recovery.

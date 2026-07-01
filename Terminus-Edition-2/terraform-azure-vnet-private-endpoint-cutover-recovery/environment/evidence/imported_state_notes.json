@@ -1,0 +1,8 @@
+{
+  "required_moved_blocks": [
+    "azurerm_subnet.app",
+    "azurerm_subnet.data",
+    "azurerm_subnet_route_table_association.app"
+  ],
+  "note": "Legacy indexed addresses must reconcile to keyed module resources without replace actions on unchanged identities."
+}

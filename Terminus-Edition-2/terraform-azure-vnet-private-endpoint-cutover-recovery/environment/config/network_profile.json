@@ -1,0 +1,9 @@
+{
+  "private_endpoint_subnet_key": "private-endpoints",
+  "firewall_private_ip": "10.80.0.4",
+  "reserved_subnet_names": [
+    "AzureFirewallSubnet",
+    "GatewaySubnet",
+    "AzureBastionSubnet"
+  ]
+}

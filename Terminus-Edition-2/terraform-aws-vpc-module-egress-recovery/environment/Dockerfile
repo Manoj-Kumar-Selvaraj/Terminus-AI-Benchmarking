@@ -31,5 +31,6 @@ COPY infra/ /app/infra/
 COPY docs /app/docs
 COPY evidence /app/evidence
 
-RUN mkdir -p /app/bin /app/out /app/state /logs/verifier \
-    && /usr/local/go/bin/go build -o /app/bin/vpcsim /app/cmd/vpcsim
+RUN mkdir -p /app/bin /app/out /app/state \
+    && /usr/local/go/bin/go build -o /app/bin/vpcsim /app/cmd/vpcsim \
+    && /usr/local/go/bin/go build -o /app/bin/vpc-recover /app/cmd/vpcrecover

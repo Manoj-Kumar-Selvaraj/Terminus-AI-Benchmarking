@@ -1,6 +1,6 @@
 # Retry, Checkpoint, and Idempotency Contract
 
-Transient Lambda or control-plane failures may be retried at most three times per stage operation. The implementation must not use `time.Sleep` to model retry timing. The trusted runtime exposes a deterministic clock.
+Transient Lambda or control-plane failures may be retried at most three times per stage operation. The authoritative limit is `max_attempts: 3` in `/app/config/retry-policy.json`; implementations may use any clear Go identifier or configuration-loading approach rather than a prescribed constant name. The implementation must not use `time.Sleep` to model retry timing. The trusted runtime exposes a deterministic clock.
 
 ## Operation journal
 
@@ -31,6 +31,8 @@ updated_at
 
 A durable checkpoint is written after each completed stage. Resume starts at the first unfinished stage and does not replay completed work.
 When all three attempts for a stage operation are exhausted, the durable checkpoint status is exactly `RETRY_PENDING`. Its `next_stage` remains the zero-based index of the first unfinished pipeline stage. A later `resume` or reconciliation pass may continue from that checkpoint after the transient fault is cleared.
+
+`pipelinectl run` and `pipelinectl resume` print that durable `RETRY_PENDING` checkpoint, then exit nonzero. They exit zero only after a terminal `SUCCEEDED` or `PARTIAL` checkpoint. Reuse of an existing `execution_id` with a different batch, owner, or artifact digest is rejected before another invocation or effect and the diagnostic includes `conflicting`.
 
 The following operations are externally visible and require stable operation identities across retries, lost responses, and process restarts:
 

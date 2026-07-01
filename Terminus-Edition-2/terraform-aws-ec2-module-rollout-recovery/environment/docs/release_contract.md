@@ -18,6 +18,6 @@ Validation fails closed when a field is absent, the digest is inconsistent, the 
 
 A launch-template version is a deterministic digest of immutable release identity, instance type, metadata options, and bootstrap hash. Reordering JSON keys must not change it. Reapplying the same approved release must not synthesize another version.
 
-Launch-template and instance tags carry release provenance. Required tag keys are `Application`, `Environment`, `CommitSha`, `BuildId`, and `ReleaseManifestSha256`; instance tags also include `Slot` as the logical slot string. The `ReleaseManifestSha256` tag value is exactly `release_artifact.manifest_sha256`.
+Launch-template and instance tags carry release provenance. Required tag keys are `Application`, `Environment`, `CommitSha`, `BuildId`, and `ReleaseManifestSha256`; instance tags also include `Slot` as the decimal string form of the corresponding zero-based integer `instance.slot`. The `ReleaseManifestSha256` tag value is exactly `release_artifact.manifest_sha256`.
 
 Fail-closed validation errors must name the field family that failed so operators can repair the manifest: missing manifest fields use `release_artifact.<field> is required` such as `release_artifact.manifest_version is required`, unknown AMIs name `ami_catalog.images`, catalog owner mismatches contain `owner`, unavailable images contain `available`, and deprecated images contain `deprecated`.

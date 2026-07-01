@@ -8,7 +8,7 @@ Preserve milestones 1–4. Use `/app/docs/recovery_contract.md`, `/app/docs/modu
 
 - Require IMDSv2 with the documented endpoint and hop limit.
 - Render the exact least-privilege IAM statement Sids, actions, resources, and restrictive conditions documented in `/app/docs/recovery_contract.md`; `Effect: "Allow"` is permitted, any other effect is not, and wildcard actions are forbidden.
-- Declare every documented legacy Terraform move in `state_migrations.tf`.
+- Declare every exact legacy Terraform `from` to `to` move listed in `/app/docs/recovery_contract.md` in `state_migrations.tf`.
 - Recover missing stable slots from legacy `Slot` tags and preserve imported instance IDs when release and capacity are unchanged.
 - Unchanged imported state has no destructive or rolling replacement actions.
 - Missing or invalid legacy slot provenance fails closed with an error containing `missing Slot tag`.

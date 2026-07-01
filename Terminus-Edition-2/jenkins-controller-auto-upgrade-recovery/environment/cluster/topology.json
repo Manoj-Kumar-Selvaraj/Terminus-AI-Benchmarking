@@ -1,14 +1,40 @@
 {
   "agents": [
     {
+      "labels": [
+        "linux",
+        "docker"
+      ],
       "name": "linux-builder-a",
       "online": true,
       "remoting_java_major": 11
     },
     {
+      "labels": [
+        "linux",
+        "docker"
+      ],
       "name": "linux-builder-b",
       "online": true,
       "remoting_java_major": 17
+    },
+    {
+      "labels": [
+        "windows",
+        "signing"
+      ],
+      "name": "windows-builder-c",
+      "online": true,
+      "remoting_java_major": 17
+    },
+    {
+      "labels": [
+        "legacy",
+        "offline"
+      ],
+      "name": "legacy-offline-agent",
+      "online": false,
+      "remoting_java_major": 11
     }
   ],
   "home_claim": {
@@ -18,6 +44,12 @@
   "pods": [
     {
       "elected": false,
+      "metadata": {
+        "managed_by": "statefulset",
+        "zone": "az-a",
+        "recovery_eligible": true,
+        "recovery_priority": 100
+      },
       "mounts_home": true,
       "name": "jenkins-0",
       "read_write": true,
@@ -25,14 +57,34 @@
     },
     {
       "elected": false,
+      "metadata": {
+        "managed_by": "statefulset",
+        "zone": "az-b",
+        "recovery_eligible": false,
+        "recovery_priority": 10
+      },
       "mounts_home": true,
       "name": "jenkins-restore-0",
       "read_write": true,
       "role": "active"
+    },
+    {
+      "elected": false,
+      "metadata": {
+        "managed_by": "deployment",
+        "zone": "az-c",
+        "recovery_eligible": false,
+        "recovery_priority": 0
+      },
+      "mounts_home": false,
+      "name": "jenkins-observer-0",
+      "read_write": false,
+      "role": "observer"
     }
   ],
   "service": {
     "name": "jenkins-web",
     "routes_to": "jenkins-restore-0"
-  }
+  },
+  "topology_revision": "incident-snapshot-7"
 }

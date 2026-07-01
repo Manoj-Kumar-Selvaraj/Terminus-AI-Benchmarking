@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+SOURCE="${JENKINS_RECOVERY_SOURCE:-/app/recovery/main.go}"
+if [ -f "$SOURCE" ]; then
+  cd "$(dirname "$SOURCE")"
+  exec /usr/local/go/bin/go run . "$@"
+fi
+cd "$SOURCE"
+exec /usr/local/go/bin/go run . "$@"

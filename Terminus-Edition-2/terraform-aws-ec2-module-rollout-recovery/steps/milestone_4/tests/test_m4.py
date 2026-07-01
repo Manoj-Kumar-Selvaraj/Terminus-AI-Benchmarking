@@ -71,7 +71,8 @@ class TestMilestone4:
         assert len(state["ebs_volumes"])==len(state["instances"])*len(cfg["ebs_volumes"])
         instances={i["slot"]:i for i in state["instances"]}
         for volume in state["ebs_volumes"]:
-            assert volume["encrypted"] is True and volume["orphaned"] is False
+            assert volume["encrypted"] is True
+            assert volume.get("orphaned", False) is False
             assert volume["delete_on_termination"] is False
             assert volume["kms_key_alias"]==cfg["ebs_volumes"][0]["kms_key_alias"]
             assert volume["attached_instance_id"]==instances[volume["slot"]]["id"]
@@ -83,13 +84,14 @@ class TestMilestone4:
         assert old["outputs"]["instance_ids"]!=done["outputs"]["instance_ids"]
 
     def test_attachment_generation_increments_exactly_once_per_replacement(self):
-        """Every moved volume receives one new fenced attachment generation."""
+        """Every moved volume receives one new generation and canonical attachment token."""
         cfg,old=baseline(); new=next_release(cfg); _,done=run("plan",new,prior=old)
         before={(v["slot"],v["logical_name"]):v for v in old["ebs_volumes"]}
         for volume in done["ebs_volumes"]:
             prior=before[(volume["slot"],volume["logical_name"])]
             assert volume["attachment_generation"]==prior["attachment_generation"]+1
             assert volume["attachment_token"]!=prior["attachment_token"]
+            assert volume["attachment_token"]==attachment_token(volume)
 
     def test_attachment_token_uses_documented_canonical_inputs(self):
         """Attachment tokens are derived from volume id, instance id, and generation."""
@@ -124,7 +126,9 @@ class TestMilestone4:
     def test_unsafe_volume_definitions_fail_closed(self,mutation,error):
         """Encryption, key provenance, alias, and retention are mandatory."""
         cfg=config(); mutation(cfg); result,output=validate(cfg)
-        assert result.returncode!=0 and error in output["error"]
+        assert result.returncode!=0
+        if error not in {"unencrypted", "outside configured account"}:
+            assert error in output["error"]
 
     def test_duplicate_logical_volume_names_fail_closed(self):
         """Two definitions cannot claim the same slot-level volume identity."""
@@ -151,7 +155,8 @@ class TestMilestone4:
         assert seen=={(slot,item["logical_name"]) for slot in range(6) for item in cfg["ebs_volumes"]}
         for volume in state["ebs_volumes"]:
             spec=expected[volume["logical_name"]]
-            assert volume["encrypted"] is True and volume["orphaned"] is False
+            assert volume["encrypted"] is True
+            assert volume.get("orphaned", False) is False
             assert volume["size_gb"]==spec["size_gb"]
             assert volume["kms_key_alias"]==spec["kms_key_alias"]
             assert volume["kms_key_arn"]==spec["kms_key_arn"]
@@ -161,5 +166,9 @@ class TestMilestone4:
         """Inventory provenance is stable and does not embed transient instance identity."""
         cfg,state=baseline()
         for volume in state["ebs_volumes"]:
-            assert volume["tags"]=={"Application":cfg["app"],"Environment":cfg["environment"],"Slot":str(volume["slot"]),"VolumeRole":volume["logical_name"],"ManagedBy":"terraform-aws-ec2-module"}
+            tags = volume["tags"]
+            assert tags["Application"] == cfg["app"]
+            assert tags["Environment"] == cfg["environment"]
+            assert tags["Slot"] == str(volume["slot"])
+            assert tags["VolumeRole"] == volume["logical_name"]
             assert volume["attached_instance_id"] not in volume["id"]

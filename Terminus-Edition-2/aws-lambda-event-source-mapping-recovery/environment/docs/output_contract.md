@@ -57,3 +57,5 @@ Reports deterministic offline replay for one SQS batch file.
 | `dlq_entries` | list[object] | DLQ rows after replay |
 
 Batch simulations report delivered, deleted, failed, receive-count, ledger, and DLQ state after deterministic offline replay.
+
+The handler response embedded in replay must follow the partial-batch response contract exactly. `failed_message_ids` is derived from response objects whose only allowed keys are `itemIdentifier` for parsing/schema/poison failures, or `itemIdentifier` plus `failureClassification` for cutover-classified failures. Additional response keys are not part of the public Lambda contract.

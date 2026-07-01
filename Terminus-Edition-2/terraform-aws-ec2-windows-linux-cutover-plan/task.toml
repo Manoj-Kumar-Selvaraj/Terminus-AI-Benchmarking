@@ -1,0 +1,31 @@
+version = "2.0"
+
+[metadata]
+author_name = "anonymous"
+author_email = "anonymous"
+difficulty = "hard"
+category = "system-administration"
+tags = ["terraform", "aws", "ec2", "migration", "offline-plan"]
+languages = ["hcl", "bash"]
+codebase_size = "minimal"
+number_of_milestones = 0
+subcategories = []
+expert_time_estimate_min = 150
+junior_time_estimate_min = 420
+
+[agent]
+timeout_sec = 1800
+
+[verifier]
+timeout_sec = 1200
+
+[environment]
+allow_internet = false
+build_timeout_sec = 900
+cpus = 2
+memory_mb = 4096
+storage_mb = 10240
+workdir = "/app"
+
+[reference_pattern]
+justification_if_none = "This is a from-scratch offline Terraform AWS EC2 migration-plan task focused on milestone delivery of a Windows-to-Linux EC2 cutover plan; no promoted reference task in the repository covers credentialless EC2 migration module planning across instance, storage, and hardening milestones."

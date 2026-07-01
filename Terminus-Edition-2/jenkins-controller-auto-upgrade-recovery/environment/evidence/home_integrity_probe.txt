@@ -1,6 +1,5 @@
-config.xml: XML parse failed at byte 92
-credentials.xml: backup has same credential ids as live home before incident
-queue.xml: live file contains incomplete queue item after abrupt JVM exit
-upgrade.lock: target=2.462.3 status=FAILED_BOOT
-jobs/payments-ledger/config.xml: present in backup, live copy changed during failed init
-jobs/shared-library/config.xml: present in backup and must remain present after restore
+live config.xml: parse failure after interrupted upgrade write
+live queue.xml: trailing incomplete item detected
+backup scan: more than one candidate; at least one newer candidate has a checksum mismatch
+job inventory and per-job config must agree before activation
+unrelated userContent files were not implicated and should be retained

@@ -1,0 +1,5 @@
+Dashboard snapshot 2026-06-13T18:15Z
+- Widget label: payments-ledger-old-consumer
+- IteratorAge: stale/empty
+- Lambda errors: flatline during disabled mapping interval
+- Operator warning: label may lag deployment by one release

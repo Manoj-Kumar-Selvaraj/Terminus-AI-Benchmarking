@@ -1,4 +1,10 @@
 {
+  "audit-trail": {
+    "enabled": true,
+    "optional": true,
+    "source": "internal-update-center",
+    "version": "2.4.1"
+  },
   "credentials-binding": {
     "enabled": true,
     "version": "1.27"
@@ -14,6 +20,7 @@
   "monitoring-theme": {
     "enabled": true,
     "optional": true,
+    "source": "internal-update-center",
     "version": "1.0"
   },
   "workflow-job": {

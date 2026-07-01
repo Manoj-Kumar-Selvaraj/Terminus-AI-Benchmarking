@@ -1,94 +1,11 @@
 # EKS platform upgrade contract
 
-Use `terraform-aws-modules/eks/aws`. Keep the API endpoint private (`cluster_endpoint_public_access = false`, `cluster_endpoint_private_access = true`) and `subnet_ids` pointed at `var.private_subnet_ids`. Use managed node groups named `system`, `apps`, and `batch` inside `eks_managed_node_groups` (remove any `default` pool).
+The regulated platform runs EKS through the pinned Terraform AWS EKS module and must keep cluster identity, module version pins, and private networking stable during upgrades. The EKS module remains pinned to `20.0.0`, `cluster_name` continues to come from `var.cluster_name`, public endpoint access is disabled, private endpoint access is enabled, and cluster subnet placement uses `var.private_subnet_ids`. Managed node groups are separated by workload class so system add-ons, application services, and batch jobs can be governed independently. The `eks_managed_node_groups` map has real `system`, `apps`, and `batch` entries, each with a matching `nodepool` label. The critical add-on taint belongs only in the `system` entry, with key `CriticalAddonsOnly`, value `true`, and no-schedule effect.
 
-## Milestone 1 — Node groups and system taint
+Platform-owned add-ons are version-pinned and updated conservatively. The core add-ons are `vpc-cni`, `coredns`, `kube-proxy`, and `aws-ebs-csi-driver`; they are managed through the EKS module add-on configuration, each has an inline quoted `addon_version`, each add-on block must include `resolve_conflicts_on_update = "PRESERVE"`, and updates preserve existing add-on settings. Add-on IAM access must be scoped through IRSA for the controller service accounts that need AWS APIs; node-role administrator policies are not permitted. The Terraform IRSA modules are named `ebs_csi_irsa`, `alb_controller_irsa`, and `karpenter_irsa`; the EBS CSI role binds to `kube-system:ebs-csi-controller-sa`, the AWS Load Balancer Controller role binds to `kube-system:aws-load-balancer-controller`, and the Karpenter role binds to `karpenter:karpenter`. The EBS CSI add-on may use `service_account_role_arn` or a service-account annotation. The load balancer controller may use Helm or Kubernetes service-account configuration. In all cases, the binding must reference the Terraform-managed role ARN and must not be empty. Remove the active `aws_iam_role_policy_attachment.node_addon_admin` resource and all `AdministratorAccess` references. Do not introduce wildcard IAM `Action` or `Resource` grants.
 
-Each node group must include `labels = { nodepool = "<name>" }` where `<name>` is `system`, `apps`, or `batch`.
+Karpenter is allowed only through private discovery selectors and an interruption queue. Keep the queue, the `karpenter_irsa` module, and regulated Karpenter resources in `/app/terraform/karpenter.tf` so the recovery is reviewable in one place. Regulated EC2 node classes select private subnets and security groups with cluster-owned selector terms using the `karpenter.sh/discovery` tag key; public subnet identifiers and public selector tags are not acceptable for the regulated path. Regulated workloads must have a dedicated on-demand placement path backed by a matching node class. The Terraform `kubectl_manifest` resource that owns this regulated placement is named `karpenter_regulated_nodepool`, and its YAML includes a Karpenter NodePool named `regulated-on-demand` plus the companion EC2 node class it selects. The regulated NodePool's `karpenter.sh/capacity-type` requirement allows only `on-demand`. Spot capacity may exist for other pools, but it must not be part of the regulated placement resource. Scheduling evidence is stored in `/app/fixtures/scheduling_report.json` as a JSON object with top-level arrays `regulated_workloads` and `addon_pods`; keep the existing `settlement-ledger` regulated workload, and each regulated workload record contains `name`, `capacity_type`, and `nodepool` with on-demand placement on `regulated-on-demand`.
 
-The `system` group must taint nodes with:
+Compatibility outputs are a public interface for downstream stacks. Keep these exact legacy output blocks: `cluster_endpoint`, `cluster_security_group_id`, `oidc_provider_arn`, `private_subnet_ids`, `managed_node_group_names`, and `addon_irsa_role_arns`. The role map uses keys `ebs_csi`, `load_balancer`, and `karpenter`, each mapped to the recovered module role ARN. Values must be real Terraform expressions that reference recovered infrastructure, not empty strings, placeholder literals, comments, or replacement output names. Record the retired node-admin attachment refactor with one syntactically balanced `moved` block in `/app/terraform/outputs.tf`, not in `/app/terraform/addons.tf`; its `from` address is `aws_iam_role_policy_attachment.node_addon_admin`, and its `to` address references `module.ebs_csi_irsa`. This is migration metadata only. No active node-admin attachment resource or administrator policy may remain.
 
-- key: `CriticalAddonsOnly`
-- value: `true`
-- effect: `NO_SCHEDULE` (or `NoSchedule`)
-
-## Milestone 2 — Add-ons and IRSA
-
-Core EKS add-ons (`vpc-cni`, `coredns`, `kube-proxy`, `aws-ebs-csi-driver`) must use pinned `addon_version` values (no `latest`) and `resolve_conflicts_on_update = "PRESERVE"`.
-
-EBS CSI and AWS Load Balancer Controller must use IRSA via `terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks` with service accounts:
-
-- `kube-system:ebs-csi-controller-sa` → `module.ebs_csi_irsa`
-- `kube-system:aws-load-balancer-controller` → `module.alb_controller_irsa`
-
-Annotate pods/service accounts with `eks.amazonaws.com/role-arn`. Do not attach `AdministratorAccess`, `node_addon_admin`, or wildcard IAM policies (`Action = "*"`, `Resource = "*"`).
-
-## Milestone 3 — Karpenter and scheduling report
-
-Karpenter must include:
-
-- an `aws_sqs_queue` for interruption handling (name contains `karpenter-interruption`)
-- IRSA for Karpenter via `terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks`
-- private selectors (`karpenter.sh/discovery`, `subnetSelectorTerms`, `securityGroupSelectorTerms`; no public subnet tags)
-- a `regulated-on-demand` NodePool declared as `resource "kubectl_manifest" "karpenter_regulated_nodepool"` that allows only `on-demand` capacity (no `spot`)
-- the regulated NodePool and its `EC2NodeClass` co-located as multi-document YAML (`---` separator) inside that resource's `yaml_body` heredoc (not a separate `kubectl_manifest`)
-
-### scheduling_report.json schema
-
-`/app/fixtures/scheduling_report.json` must keep at least one regulated workload entry:
-
-```json
-{
-  "regulated_workloads": [
-    {
-      "name": "<workload-name>",
-      "capacity_type": "on-demand",
-      "nodepool": "regulated-on-demand"
-    }
-  ],
-  "addon_pods": [ ... ]
-}
-```
-
-Do not delete or empty `regulated_workloads`.
-
-## Milestone 4 — Legacy outputs and moved blocks
-
-`outputs.tf` must expose these legacy output names with real module/var expressions (not empty strings):
-
-- `cluster_endpoint`
-- `cluster_security_group_id`
-- `oidc_provider_arn`
-- `private_subnet_ids`
-- `managed_node_group_names`
-- `addon_irsa_role_arns`
-
-Do not rename to `cluster_endpoint_url` only.
-
-Include a `moved` block pairing:
-
-- `from = aws_iam_role_policy_attachment.node_addon_admin`
-- `to = module.ebs_csi_irsa`
-
-Keep Terraform module `version` pins.
-
-## Milestone 5 — plan.json schema
-
-`/app/fixtures/plan.json` must pass `/app/scripts/plan_guard`. Protected resources must not be deleted or replaced:
-
-- `module.eks.aws_eks_cluster.this[0]`
-- `module.eks.aws_security_group.cluster[0]`
-- `module.eks.aws_eks_node_group.this["system"]`
-- `module.eks.aws_eks_node_group.this["apps"]`
-- `module.eks.aws_eks_node_group.this["batch"]`
-
-Root module outputs in `configuration.root_module.outputs` must include:
-
-- `cluster_endpoint`
-- `cluster_security_group_id`
-- `oidc_provider_arn`
-- `private_subnet_ids`
-- `managed_node_group_names`
-- `addon_irsa_role_arns`
-
-Broad node admin attachments (`node_addon_admin`) must be removed from Terraform and must not appear as `create` actions in the plan. The literal string `AdministratorAccess` must not appear in `/app/fixtures/plan.json`. The `moved` block pairing `node_addon_admin` to `module.ebs_csi_irsa` must remain in `outputs.tf`.
+The offline plan evidence is used to prove the upgrade is non-destructive. Protected cluster, security-group, and managed-node-group resources may be read or updated in place, but not deleted or replaced. The protected addresses are `module.eks.aws_eks_cluster.this[0]`, `module.eks.aws_security_group.cluster[0]`, `module.eks.aws_eks_node_group.this["system"]`, `module.eks.aws_eks_node_group.this["apps"]`, and `module.eks.aws_eks_node_group.this["batch"]`. The plan JSON stores resource changes under `resource_changes`, action lists under `change.actions`, and output declarations under `configuration.root_module.outputs`. The plan must include the required root outputs and must not recreate broad node administration or reintroduce administrator policy references. `/app/scripts/plan_guard` must exit zero and emit JSON containing `{"ok": true}`. Editing the plan evidence alone is insufficient; the Terraform files must independently express the recovered private endpoint, private subnets, split groups, pinned add-ons, scoped IRSA, regulated Karpenter placement, compatibility outputs, and moved metadata.

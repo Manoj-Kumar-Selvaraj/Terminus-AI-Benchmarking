@@ -78,9 +78,16 @@ class TestMilestone4:
         infra2 = generation_infra(tmp_path, 2)
         deployed = json.loads(run(CLI, "deploy", "--infra", infra2).stdout)
         cutover = json.loads(run(CLI, "cutover", "--generation", "2", "--writer", "lambda").stdout)
+        runtime = inspect("state")
         assert deployed["generation"] == 2
-        assert cutover["active_generation"] == 2
-        assert inspect("state")["active_generation"] == 2
+        assert set(cutover) == {"active_generation", "previous_generation", "writer", "epoch"}
+        assert cutover == {
+            "active_generation": 2,
+            "previous_generation": 1,
+            "writer": "lambda",
+            "epoch": runtime["epoch"],
+        }
+        assert runtime["active_generation"] == 2
 
     def test_inflight_execution_remains_on_original_generation(self, tmp_path):
         """An alias shift cannot mix function generations inside one execution."""
@@ -145,7 +152,12 @@ class TestMilestone4:
         path2, request2 = request_file(tmp_path)
         run(RUNTIME, "inject", "BEFORE_STAGE:notify_partner", "3")
         run(CLI, "run", "--request", path2, check=False)
-        run(CLI, "rollback", "--generation", "1")
+        rollback = json.loads(run(CLI, "rollback", "--generation", "1").stdout)
+        assert set(rollback) == {"active_generation", "previous_generation", "writer", "epoch"}
+        assert rollback["active_generation"] == 1
+        assert rollback["previous_generation"] == 2
+        assert rollback["writer"] == "lambda"
+        assert rollback["epoch"] == inspect("state")["epoch"]
         run(RUNTIME, "clear-failures")
         resumed = json.loads(run(CLI, "resume", "--execution", request2["execution_id"]).stdout)
         assert resumed["generation"] == 2 and resumed["status"] == "SUCCEEDED"
@@ -177,5 +189,10 @@ class TestMilestone4:
         run(CLI, "cutover", "--generation", "2", "--writer", "lambda")
         second_path, _ = request_file(tmp_path)
         run(CLI, "run", "--request", second_path)
-        run(CLI, "rollback", "--generation", "1")
+        rollback = json.loads(run(CLI, "rollback", "--generation", "1").stdout)
+        assert set(rollback) == {"active_generation", "previous_generation", "writer", "epoch"}
+        assert rollback["active_generation"] == 1
+        assert rollback["previous_generation"] == 2
+        assert rollback["writer"] == "lambda"
+        assert rollback["epoch"] == inspect("state")["epoch"]
         assert all(e["count"] == 1 for e in inspect("effects"))

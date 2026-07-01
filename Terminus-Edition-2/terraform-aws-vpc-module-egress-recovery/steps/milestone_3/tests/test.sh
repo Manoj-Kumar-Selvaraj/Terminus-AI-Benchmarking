@@ -10,8 +10,8 @@ if [ "$PWD" = "/" ]; then
     exit 1
 fi
 
-mkdir -p /app/bin
-/usr/local/go/bin/go build -o /app/bin/vpcsim /app/cmd/vpcsim
+mkdir -p "${APP_DIR}/bin"
+(cd "${APP_DIR}" && /usr/local/go/bin/go build -o "${APP_DIR}/bin/vpc-recover" ./cmd/vpcrecover)
 
 pytest -q -rA --disable-warnings /tests/test_m3.py
 

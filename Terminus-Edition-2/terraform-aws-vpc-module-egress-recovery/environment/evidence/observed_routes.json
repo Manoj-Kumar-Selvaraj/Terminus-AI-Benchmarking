@@ -1,0 +1,167 @@
+{
+  "route_tables": [
+    {
+      "id": "rtb-prod-public-a",
+      "tier": "public",
+      "az": "us-east-1a",
+      "owner": "terraform-aws-vpc-module",
+      "metadata": {
+        "ticket": "INC-74291",
+        "observed_by": "vpc-audit-3"
+      },
+      "routes": [
+        {
+          "destination": "0.0.0.0/0",
+          "target": "igw-prod-shared",
+          "owner": "terraform-aws-vpc-module"
+        }
+      ]
+    },
+    {
+      "id": "rtb-prod-public-b",
+      "tier": "public",
+      "az": "us-east-1b",
+      "owner": "terraform-aws-vpc-module",
+      "metadata": {
+        "ticket": "INC-74291",
+        "observed_by": "vpc-audit-3"
+      },
+      "routes": [
+        {
+          "destination": "0.0.0.0/0",
+          "target": "igw-prod-shared",
+          "owner": "terraform-aws-vpc-module"
+        }
+      ]
+    },
+    {
+      "id": "rtb-prod-public-c",
+      "tier": "public",
+      "az": "us-east-1c",
+      "owner": "terraform-aws-vpc-module",
+      "metadata": {
+        "ticket": "INC-74291",
+        "observed_by": "vpc-audit-3"
+      },
+      "routes": [
+        {
+          "destination": "0.0.0.0/0",
+          "target": "igw-prod-shared",
+          "owner": "terraform-aws-vpc-module"
+        }
+      ]
+    },
+    {
+      "id": "rtb-prod-app-a",
+      "tier": "app",
+      "az": "us-east-1a",
+      "owner": "terraform-aws-vpc-module",
+      "metadata": {
+        "ticket": "INC-74291",
+        "observed_by": "vpc-audit-3"
+      },
+      "routes": [
+        {
+          "destination": "0.0.0.0/0",
+          "target": "nat-prod-a",
+          "owner": "terraform-aws-vpc-module"
+        },
+        {
+          "destination": "10.200.0.0/16",
+          "target": "tgw-core",
+          "owner": "manual"
+        }
+      ]
+    },
+    {
+      "id": "rtb-prod-app-b",
+      "tier": "app",
+      "az": "us-east-1b",
+      "owner": "terraform-aws-vpc-module",
+      "metadata": {
+        "ticket": "INC-74291",
+        "observed_by": "vpc-audit-3"
+      },
+      "routes": [
+        {
+          "destination": "0.0.0.0/0",
+          "target": "nat-prod-a",
+          "owner": "terraform-aws-vpc-module"
+        }
+      ]
+    },
+    {
+      "id": "rtb-prod-app-c",
+      "tier": "app",
+      "az": "us-east-1c",
+      "owner": "terraform-aws-vpc-module",
+      "metadata": {
+        "ticket": "INC-74291",
+        "observed_by": "vpc-audit-3"
+      },
+      "routes": [
+        {
+          "destination": "0.0.0.0/0",
+          "target": "nat-prod-b",
+          "owner": "terraform-aws-vpc-module"
+        }
+      ]
+    },
+    {
+      "id": "rtb-prod-data-a",
+      "tier": "data",
+      "az": "us-east-1a",
+      "owner": "terraform-aws-vpc-module",
+      "metadata": {
+        "ticket": "INC-74291",
+        "observed_by": "vpc-audit-3"
+      },
+      "routes": [
+        {
+          "destination": "0.0.0.0/0",
+          "target": "nat-prod-a",
+          "owner": "terraform-aws-vpc-module"
+        },
+        {
+          "destination": "10.100.0.0/16",
+          "target": "tgw-analytics",
+          "owner": "manual"
+        }
+      ]
+    },
+    {
+      "id": "rtb-prod-data-b",
+      "tier": "data",
+      "az": "us-east-1b",
+      "owner": "terraform-aws-vpc-module",
+      "metadata": {
+        "ticket": "INC-74291",
+        "observed_by": "vpc-audit-3"
+      },
+      "routes": [
+        {
+          "destination": "0.0.0.0/0",
+          "target": "nat-prod-b",
+          "owner": "terraform-aws-vpc-module"
+        }
+      ]
+    },
+    {
+      "id": "rtb-prod-data-c",
+      "tier": "data",
+      "az": "us-east-1c",
+      "owner": "terraform-aws-vpc-module",
+      "metadata": {
+        "ticket": "INC-74291",
+        "observed_by": "vpc-audit-3"
+      },
+      "routes": [
+        {
+          "destination": "172.20.0.0/16",
+          "target": "tgw-compliance",
+          "owner": "manual"
+        }
+      ]
+    }
+  ]
+}

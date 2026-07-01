@@ -1,12 +1,29 @@
-# Restore same-AZ app egress and isolated data routes
+# Route-ownership recovery controller
 
-You are on the network platform rotation for a failed Terraform AWS VPC module rollout. This is offline: do not call AWS and do not require Terraform. Use `/app/bin/vpcsim`, `/app/docs/module_contract.md`, and `/app/evidence` to diagnose the incident. Repair logic in `/app/infra/modules/vpc/module.go` and rebuild with `go build -o /app/bin/vpcsim /app/cmd/vpcsim`.
+The incident is no longer a static VPC renderer repair. Implement `/app/cmd/vpcrecover/main.go` so `/app/bin/vpc-recover` supports:
 
-## Requirements
+```bash
+vpc-recover inspect --root /app --json
+vpc-recover plan --root /app --json
+vpc-recover apply --root /app --owner OWNER [--fail-after route_commit]
+vpc-recover resume --root /app --owner OWNER
+vpc-recover verify --root /app --json
+```
 
-- Restore app route tables so each app subnet's `0.0.0.0/0` route targets the NAT gateway in the same AZ.
-- Remove all default internet routes from isolated data route tables.
-- Preserve output keys: `vpc_id`, `public_subnet_ids`, `private_app_subnet_ids`, `isolated_data_subnet_ids`, `private_app_route_table_ids`, `isolated_data_route_table_ids`.
-- Keep subnet tags `Name` and `Tier` on every subnet.
+Use the desired config plus structured evidence under `/app/evidence`. The noisy production log is intentionally long and includes irrelevant INFO, WARN, and ERROR lines; do not hardcode a single log line.
 
-Compatibility constraints: keep `/app/infra/modules/vpc`, all labels in `main.tf`, all outputs in `outputs.tf`, and CLI flags `plan`, `apply`, `validate`, `--config`, `--prior-state`, `--out`, `--state`. Do not hardcode sample JSON or edit verifier fixtures.
+Requirements:
+
+- JSON output must use the exact schema values documented in `/app/docs/recovery_controller_contract.md`: `schema_version` is exactly `vpc-recovery.aws.1`; `inspect --json` includes integer `feature_level` and `evidence_files`; `plan --json` includes `environment`, `config_digest`, and recovered `route_tables`.
+- App route tables must route `0.0.0.0/0` to a healthy NAT gateway in the same AZ.
+- Data route tables must not keep module-owned default internet routes.
+- Manual non-default routes and route-table metadata must be preserved.
+- `plan` must not write recovered state or journal files.
+- `apply` must write `/app/state/vpc_recovered_state.json` and `/app/state/recovery_journal.jsonl`.
+- The journal must use snake_case JSONL records with event names `route_plan_written` and `apply_committed`, the owner, and the config digest.
+- `--fail-after route_commit` simulates a lost response after durable route recovery. It must exit with a non-zero status, leave enough recovered state and journal data for the same owner to resume, and must not be treated as a successful command that only prints an interrupted JSON message.
+- `resume` must continue after a lost response following `route_commit`.
+- `verify --json` must read the recovered state without mutating files, return `valid: true` and `phase: "READY"` after successful recovery, and report a non-ready result when recovered state is absent.
+- Recovery owner and config digest must fence stale or changed resumes with error substrings `stale owner` and `config digest changed`.
+- Missing or unhealthy same-AZ NAT for an app AZ must fail before state mutation with error substring `missing nat gateway`.
+- Do not leave manual test journals or recovered state in `/app/state`; the verifier copies the starting environment into every test root.

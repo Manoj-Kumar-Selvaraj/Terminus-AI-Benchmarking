@@ -1,193 +1,169 @@
-import json
-import os
-import subprocess
-import tempfile
-from pathlib import Path
-
-APP = Path(os.environ.get("APP_DIR", "/app"))
-SIM = APP / "bin" / "vpcsim"
-CFG = APP / "infra/envs/prod/vpc_config.json"
-
-
-def cfg():
-    return json.loads(CFG.read_text())
-
-
-def two_az_config():
-    return {
-        "environment": "test",
-        "account_id": "111122223333",
-        "vpc_cidr": "10.0.0.0/16",
-        "availability_zones": ["us-west-2a", "us-west-2b"],
-        "internet_gateway_id": "igw-test",
-        "subnets": [
-            {
-                "name": "test-public-a",
-                "tier": "public",
-                "az": "us-west-2a",
-                "cidr": "10.0.0.0/24",
-            },
-            {
-                "name": "test-public-b",
-                "tier": "public",
-                "az": "us-west-2b",
-                "cidr": "10.0.1.0/24",
-            },
-            {
-                "name": "test-app-a",
-                "tier": "app",
-                "az": "us-west-2a",
-                "cidr": "10.0.10.0/24",
-            },
-            {
-                "name": "test-app-b",
-                "tier": "app",
-                "az": "us-west-2b",
-                "cidr": "10.0.11.0/24",
-            },
-            {
-                "name": "test-data-a",
-                "tier": "data",
-                "az": "us-west-2a",
-                "cidr": "10.0.20.0/24",
-            },
-            {
-                "name": "test-data-b",
-                "tier": "data",
-                "az": "us-west-2b",
-                "cidr": "10.0.21.0/24",
-            },
-        ],
-        "nat_gateways": [
-            {"id": "nat-test-a", "az": "us-west-2a"},
-            {"id": "nat-test-b", "az": "us-west-2b"},
-        ],
-        "gateway_endpoints": [{"service": "s3"}, {"service": "dynamodb"}],
-    }
-
-
-def assert_same_az_app_routes(c, s):
-    n = {x["az"]: x["id"] for x in c["nat_gateways"]}
-    assert all(
-        next(r for r in rt["routes"] if r["destination"] == "0.0.0.0/0")["target"]
-        == n[rt["az"]]
-        for rt in s["route_tables"]
-        if rt["tier"] == "app"
-    )
-
-
-def plan(c):
-    with tempfile.TemporaryDirectory() as td:
-        cp = Path(td) / "c.json"
-        out = Path(td) / "o.json"
-        cp.write_text(json.dumps(c))
-        r = subprocess.run(
-            [
-                str(SIM),
-                "plan",
-                "--config",
-                str(cp),
-                "--out",
-                str(out),
-            ],
-            text=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        assert r.returncode == 0, r.stderr + r.stdout
-        return json.loads(out.read_text())
-
-
-def apply(c):
-    with tempfile.TemporaryDirectory() as td:
-        cp = Path(td) / "c.json"
-        out = Path(td) / "o.json"
-        state = Path(td) / "state.json"
-        cp.write_text(json.dumps(c))
-        r = subprocess.run(
-            [
-                str(SIM),
-                "apply",
-                "--config",
-                str(cp),
-                "--out",
-                str(out),
-                "--state",
-                str(state),
-            ],
-            text=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        assert r.returncode == 0, r.stderr + r.stdout
-        assert state.exists()
-        return json.loads(out.read_text())
-
-
-def validate(c):
-    with tempfile.TemporaryDirectory() as td:
-        cp = Path(td) / "c.json"
-        out = Path(td) / "o.json"
-        cp.write_text(json.dumps(c))
-        r = subprocess.run(
-            [
-                str(SIM),
-                "validate",
-                "--config",
-                str(cp),
-                "--out",
-                str(out),
-            ],
-            text=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        assert r.returncode == 0, r.stderr + r.stdout
-        return json.loads(out.read_text())
+from vpc_test_support import (
+    app_rts,
+    cfg,
+    data_rts,
+    default_target,
+    evidence,
+    journal_lines,
+    make_root,
+    run,
+    save_cfg,
+    save_evidence,
+    state,
+)
 
 
 class TestMilestone1:
-    def test_app_routes_use_same_az_nat(self):
-        """App subnet default routes must target NAT gateways in the same AZ."""
-        c = cfg()
-        s = plan(c)
-        assert_same_az_app_routes(c, s)
+    def test_inspect_reports_recovery_controller_contract(self):
+        """inspect exposes the recovery-controller workflow instead of only rendering state."""
+        td, root = make_root()
+        try:
+            _, out = run(root, "inspect", check=True)
+            assert isinstance(out["feature_level"], int)
+            assert "observed_routes.json" in out["evidence_files"]
+        finally:
+            td.cleanup()
 
-    def test_app_routes_2az_config(self):
-        """Same-AZ NAT routing must generalize beyond the prod 3-AZ fixture."""
-        c = two_az_config()
-        s = plan(c)
-        assert_same_az_app_routes(c, s)
+    def test_plan_repairs_routes_without_mutating_state(self):
+        """plan corrects route ownership but does not write the recovery state file."""
+        td, root = make_root()
+        try:
+            _, out = run(root, "plan", check=True)
+            assert not (root / "state/vpc_recovered_state.json").exists()
+            nats = {n["az"]: n["id"] for n in cfg(root)["nat_gateways"]}
+            for rt in app_rts(out):
+                assert default_target(rt) == nats[rt["az"]]
+            for rt in data_rts(out):
+                assert default_target(rt) is None
+            app_a = next(rt for rt in app_rts(out) if rt["az"] == "us-east-1a")
+            assert app_a.get("metadata", {}).get("ticket") == "INC-74291"
+            assert app_a.get("metadata", {}).get("observed_by") == "vpc-audit-3"
+            assert any(
+                route.get("owner") == "manual" and route["target"] == "tgw-core"
+                for route in app_a["routes"]
+            )
+            data_a = next(rt for rt in data_rts(out) if rt["az"] == "us-east-1a")
+            assert any(
+                route.get("owner") == "manual" and route["target"] == "tgw-analytics"
+                for route in data_a["routes"]
+            )
+        finally:
+            td.cleanup()
 
-    def test_data_subnets_remain_isolated(self):
-        """Data route tables must not receive a default internet route."""
-        s = plan(cfg())
-        assert all(
-            not any(r["destination"] == "0.0.0.0/0" for r in rt["routes"])
-            for rt in s["route_tables"]
-            if rt["tier"] == "data"
-        )
+    def test_dynamic_environment_and_nat_ids_are_derived(self):
+        """recovery follows mutated config values and does not hardcode prod NAT IDs."""
+        td, root = make_root()
+        try:
+            config = cfg(root)
+            config["environment"] = "qa"
+            for nat in config["nat_gateways"]:
+                nat["id"] = "nat-qa-" + nat["az"][-1]
+            save_cfg(root, config)
+            nat_health = evidence(root, "nat_health.json")
+            for nat in nat_health["nat_gateways"]:
+                nat["id"] = "nat-qa-" + nat["az"][-1]
+            save_evidence(root, "nat_health.json", nat_health)
+            _, out = run(root, "plan", check=True)
+            assert out["environment"] == "qa"
+            for rt in app_rts(out):
+                assert default_target(rt).startswith("nat-qa-")
+        finally:
+            td.cleanup()
 
-    def test_outputs_and_tags_are_compatible(self):
-        """Output keys and subnet tagging must stay compatible."""
-        s = plan(cfg())
-        keys = {
-            "vpc_id",
-            "public_subnet_ids",
-            "private_app_subnet_ids",
-            "isolated_data_subnet_ids",
-            "private_app_route_table_ids",
-            "isolated_data_route_table_ids",
-        }
-        assert keys <= set(s["outputs"])
-        assert all(
-            x["tags"].get("Name") and x["tags"].get("Tier") for x in s["subnets"]
-        )
+    def test_apply_writes_state_and_journal(self):
+        """apply persists recovered state and durable journal records for replay."""
+        td, root = make_root()
+        try:
+            run(root, "apply", owner="operator-a", check=True)
+            recovered = state(root)
+            assert recovered["schema_version"] == "vpc-recovery.aws.1"
+            nats = {n["az"]: n["id"] for n in cfg(root)["nat_gateways"]}
+            for rt in app_rts(recovered):
+                assert default_target(rt) == nats[rt["az"]]
+            for rt in data_rts(recovered):
+                assert default_target(rt) is None
+            assert recovered["environment"] == "prod"
+            assert isinstance(recovered.get("config_digest"), str) and recovered["config_digest"]
+            events = [entry["event"] for entry in journal_lines(root)]
+            assert "route_plan_written" in events and "apply_committed" in events
+        finally:
+            td.cleanup()
 
-    def test_apply_and_validate_still_work(self):
-        """apply and validate subcommands remain compatible with the repaired module."""
-        c = cfg()
-        s = apply(c)
-        assert s["outputs"]["vpc_id"]
-        v = validate(c)
-        assert v["valid"] is True
+    def test_verify_reports_ready_only_after_recovered_state_exists(self):
+        """verify reads recovered state and does not act as an unimplemented no-op."""
+        td, root = make_root()
+        try:
+            result, out = run(root, "verify")
+            assert result.returncode != 0 or out.get("phase") != "READY"
+            assert out.get("valid") is not True
+
+            run(root, "apply", owner="operator-a", check=True)
+            _, out = run(root, "verify", check=True)
+            assert out["valid"] is True
+            assert out["phase"] == "READY"
+        finally:
+            td.cleanup()
+
+    def test_lost_response_after_route_commit_can_resume(self):
+        """a crash after route commit can be resumed by the same owner without losing state."""
+        td, root = make_root()
+        try:
+            result, _ = run(root, "apply", owner="operator-a", fail_after="route_commit")
+            assert result.returncode != 0
+            assert (root / "state/vpc_recovered_state.json").exists()
+            run(root, "resume", owner="operator-a", check=True)
+            recovered = state(root)
+            assert recovered["schema_version"] == "vpc-recovery.aws.1"
+            nats = {n["az"]: n["id"] for n in cfg(root)["nat_gateways"]}
+            for rt in app_rts(recovered):
+                assert default_target(rt) == nats[rt["az"]]
+            for rt in data_rts(recovered):
+                assert default_target(rt) is None
+            events = [entry["event"] for entry in journal_lines(root)]
+            assert "apply_committed" in events
+        finally:
+            td.cleanup()
+
+    def test_missing_same_az_nat_fails_before_mutation(self):
+        """missing or unhealthy same-AZ NAT is rejected before state is written."""
+        td, root = make_root()
+        try:
+            nat_health = evidence(root, "nat_health.json")
+            nat_health["nat_gateways"] = [
+                n for n in nat_health["nat_gateways"] if n["az"] != "us-east-1c"
+            ]
+            save_evidence(root, "nat_health.json", nat_health)
+            config = cfg(root)
+            config["nat_gateways"] = [
+                n for n in config["nat_gateways"] if n["az"] != "us-east-1c"
+            ]
+            save_cfg(root, config)
+            result, out = run(root, "apply", owner="operator-a")
+            assert result.returncode != 0 and "missing nat gateway" in out["error"]
+            assert not (root / "state/vpc_recovered_state.json").exists()
+        finally:
+            td.cleanup()
+
+    def test_stale_owner_is_fenced(self):
+        """an active recovery journal fences another owner from resuming the operation."""
+        td, root = make_root()
+        try:
+            run(root, "apply", owner="operator-a", fail_after="route_commit")
+            result, out = run(root, "resume", owner="operator-b")
+            assert result.returncode != 0 and "stale owner" in out["error"]
+        finally:
+            td.cleanup()
+
+    def test_changed_config_digest_fences_resume(self):
+        """an interrupted operation cannot resume after desired config changes."""
+        td, root = make_root()
+        try:
+            run(root, "apply", owner="operator-a", fail_after="route_commit")
+            config = cfg(root)
+            config["nat_gateways"][0]["id"] = "nat-changed"
+            save_cfg(root, config)
+            result, out = run(root, "resume", owner="operator-a")
+            assert result.returncode != 0
+            assert "config" in out["error"].lower() or "digest" in out["error"].lower()
+        finally:
+            td.cleanup()

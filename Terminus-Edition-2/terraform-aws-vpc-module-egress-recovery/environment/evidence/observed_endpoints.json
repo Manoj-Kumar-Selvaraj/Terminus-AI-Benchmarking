@@ -1,0 +1,73 @@
+{
+  "endpoints": [
+    {
+      "id": "vpce-prod-s3-existing",
+      "service": "s3",
+      "route_table_ids": [
+        "rtb-prod-public-a",
+        "rtb-prod-app-a",
+        "rtb-prod-data-b"
+      ],
+      "policy": {
+        "Statement": [
+          {
+            "Action": [
+              "s3:GetObject",
+              "s3:ListBucket"
+            ],
+            "Resource": [
+              "arn:aws:s3:::prod-ledger-*"
+            ],
+            "Condition": {
+              "StringEquals": {
+                "aws:PrincipalAccount": "111122223333"
+              }
+            }
+          }
+        ]
+      },
+      "tags": {
+        "ManagedBy": "terraform-aws-vpc-module",
+        "Environment": "prod"
+      },
+      "metadata": {
+        "created_by": "terraform",
+        "change": "CHG-518"
+      }
+    },
+    {
+      "id": "vpce-prod-dynamodb-existing",
+      "service": "dynamodb",
+      "route_table_ids": [
+        "rtb-prod-app-a",
+        "rtb-prod-app-b",
+        "rtb-legacy-private"
+      ],
+      "policy": {
+        "Statement": [
+          {
+            "Action": [
+              "dynamodb:*"
+            ],
+            "Resource": [
+              "arn:aws:dynamodb:us-east-1:111122223333:table/prod-*"
+            ],
+            "Condition": {
+              "StringEquals": {
+                "aws:PrincipalAccount": "111122223333"
+              }
+            }
+          }
+        ]
+      },
+      "tags": {
+        "ManagedBy": "terraform-aws-vpc-module",
+        "Environment": "prod"
+      },
+      "metadata": {
+        "created_by": "terraform",
+        "change": "CHG-518"
+      }
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+﻿# Rubric 1
+Agent repairs `/app/internal/finbulk/runner.go` and `/app/internal/finbulk/profile.go` instead of enabling hidden shortcut flags or hardcoding fixture output, +1
+Agent validates header/trailer batch identity, detail count, malformed detail fields, supported op codes, and BAL financial totals before any DB, checkpoint, audit, ledger, reject, or summary mutation, +2
+Agent processes valid details in input order, updates master state, writes BAL ledger and audit side effects, and preserves the required summary, reject, and pending-lock output filenames and schemas, +2
+Agent treats SQLCODE `+100` missing master rows as business rejects with fixed-width reason `MASTER_ROW_NOT_FOUND`, continues later details, and does not mark rejected events applied, +2
+Agent writes `summary_<batch>.json`, `rejects_<batch>.dat`, and `pending_locks_<batch>.json` beneath `--out` on every exit path, including pre-mutation `FAILED_CLOSED` aborts, using empty reject and pending-lock files when there are no rows, +1
+Agent applies any invalid record before failing closed, skips runtime parsing in favor of fixture rows, or writes static summaries or rejects, -2
+Agent omits required ledger or audit side effects, changes documented command flags and output paths, or wraps `pending_locks_<batch>.json` in an object instead of a bare JSON array, -2
+Agent preserves baseline validation and reject behavior while adding committed-position replay safety for abends and completed reruns, +1
+Agent records only successfully committed detail positions and skips already-applied details without duplicating master updates, audit rows, ledger entries, or reject records, +2
+Agent treats duplicate sequence reuse within the same batch as skipped (not fatal), continues later details, and keeps skipped counts positive and schema-compatible in rerun summaries, +1
+Agent resumes after `--abend-after` from durable simulator state with process status `66` and summary status `SIMULATED_ABEND` without reprocessing committed work, +2
+Agent advances checkpoints past uncommitted work or treats failed or rejected records as safely applied, -2
+Agent clears simulator state, deletes side effects, or suppresses valid later details to hide duplicate processing, -2
+Agent preserves validation and replay safety while handling DB2 lock contention as retryable work rather than a business reject, +1
+Agent stops at the locked sequence, writes `pending_locks_<batch>.json` as a bare JSON array whose records include `account`, integer `sqlcode`, and `lock_holder`, and returns process status `75` with summary status `RETRYABLE_LOCK`, +2
+Agent leaves the locked detail and later details unprocessed until a rerun after the lock clears, then replays them exactly once, +2
+Agent keeps committed earlier details, checkpoint state, audit, ledger, and reject outputs stable across lock retries without writing SQLCODE `-911` to `rejects_<batch>.dat`, +2
+Agent writes locked records to the business reject file, advances the checkpoint beyond locked work, or drops later details after lock contention, -2
+Agent regresses fail-closed validation, idempotent replay, or required output-file behavior while handling locks, -2
+Agent preserves prior validation, replay, and lock behavior while making `LIM` updates atomic across master and risk exposure tables, +1
+Agent validates missing risk rows and below-balance credit limits without partially updating master, risk, audit, ledger, checkpoint, or applied-event state, +2
+Agent commits both tables and one coherent audit and applied marker for valid credit-limit updates, +2
+Agent rolls back all `LIM` side effects on referential, validation, or downstream risk failures while preserving earlier successful detail work, +2
+Agent updates master without matching risk state or records success after a partial credit-limit failure, -2
+Agent treats referential or below-balance failures as successful updates or weakens lock and replay controls, -2
+Agent preserves validation, replay, lock, and atomic limit behavior while enforcing control manifests against parsed batch id, business date, source, detail count, BAL total, and full input SHA-256 before controlled work is accepted, +1
+Agent fails closed without mutating master, risk, ledger, audit, checkpoint, applied-event, pending-lock, reject, or settlement history when control manifest JSON or fields are malformed or mismatched, +2
+Agent writes all three output files beneath `--out` on pre-mutation `FAILED_CLOSED` control failures, including empty `rejects_<batch>.dat` and `pending_locks_<batch>.json` when there are no rows, +2
+Agent persists `control_totals[batch_id]` with batch id, business date, source, status `SETTLED`, detail count, financial total, and input SHA-256 after successful controlled runs, +2
+Agent treats same-hash settled controlled reruns as idempotent by reporting bypassed detail records in integer `skipped` (equal to detail count when already fully settled) without duplicating side effects, +2
+Agent preserves backward compatibility for runs without `--control`; legacy invocation must still process and write normal outputs, +1
+Agent accepts changed input under an existing settled batch id, overwrites prior settlement provenance, or omits required output files on control mismatch paths, -2
+Agent bypasses manifest checks, omits identifying control-total fields, or regresses validation, replay, lock, or atomic limit behavior, -2
+

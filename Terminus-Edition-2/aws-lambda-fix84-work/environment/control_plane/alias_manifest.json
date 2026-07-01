@@ -1,0 +1,7 @@
+{
+  "payments-ledger-ingestor": {
+    "active_alias": "live",
+    "qualified_target": "payments-ledger-ingestor:live",
+    "generation": 42
+  }
+}

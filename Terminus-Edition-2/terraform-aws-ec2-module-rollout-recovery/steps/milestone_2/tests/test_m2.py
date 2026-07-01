@@ -36,14 +36,47 @@ def validate(cfg):
         return result, json.loads(out.read_text())
 
 
+def assert_integer_plan_action_slots(actions):
+    for action in actions:
+        assert isinstance(action["slot"], int), (
+            f"slot must be int, got {type(action['slot'])}"
+        )
+
+
 class TestMilestone2:
     def test_release_identity_recovery_is_preserved(self):
         """Network repair keeps immutable release identity and provenance intact."""
         cfg = config(); result, state = run(cfg)
         assert result.returncode == 0
         artifact = cfg["release_artifact"]
-        assert state["launch_template"]["ami_id"] == artifact["ami_id"]
-        assert state["launch_template"]["provenance"]["manifest_sha256"] == artifact["manifest_sha256"]
+        template = state["launch_template"]
+        assert template["ami_id"] == artifact["ami_id"]
+        assert template["architecture"] == artifact["architecture"]
+        assert template["user_data_sha256"] == artifact["user_data_sha256"]
+        assert template["provenance"] == {
+            "commit_sha": artifact["commit_sha"],
+            "build_id": artifact["build_id"],
+            "manifest_sha256": artifact["manifest_sha256"],
+        }
+        assert state["release_identity"]["manifest_sha256"] == artifact["manifest_sha256"]
+        assert all(
+            instance["tags"]["ReleaseManifestSha256"] == artifact["manifest_sha256"]
+            for instance in state["instances"]
+        )
+
+    def test_release_identity_remains_deterministic_under_config_reordering(self):
+        """Milestone 2 preserves canonical release identity when input key order changes."""
+        cfg = config()
+        first_result, first = run(cfg)
+        reordered = json.loads(json.dumps(cfg, sort_keys=True))
+        reordered["release_artifact"] = dict(
+            reversed(list(reordered["release_artifact"].items()))
+        )
+        second_result, second = run(reordered, prior=first)
+        assert first_result.returncode == second_result.returncode == 0
+        assert first["launch_template"]["version"] == second["launch_template"]["version"]
+        assert first["outputs"]["instance_ids"] == second["outputs"]["instance_ids"]
+        assert not any(action["action"] == "rolling_replace" for action in second["plan_actions"])
 
     def test_instances_are_private_and_balanced_across_eligible_azs(self):
         """All capacity is private and zone counts differ by no more than one."""
@@ -76,14 +109,65 @@ class TestMilestone2:
         assert {i["slot"]: i["subnet_id"] for i in first["instances"]} == {i["slot"]: i["subnet_id"] for i in second["instances"]}
 
     def test_scale_out_adds_only_new_logical_slots(self):
-        """Capacity growth retains old identities and creates only newly required slots."""
+        """Capacity growth retains old placement and creates only the new logical slots."""
         cfg = config(); _, first = run(cfg)
         scaled = config(); scaled["asg"]["desired_capacity"] = 8
         result, second = run(scaled, prior=first)
         assert result.returncode == 0
         assert second["outputs"]["instance_ids"][:6] == first["outputs"]["instance_ids"]
+        assert {i["slot"]: i["subnet_id"] for i in second["instances"] if i["slot"] < 6} == {
+            i["slot"]: i["subnet_id"] for i in first["instances"]
+        }
         assert [i["slot"] for i in second["instances"]] == list(range(8))
-        assert sum(a["action"] == "create" for a in second["plan_actions"]) == 2
+        assert len(second["plan_actions"]) == 8
+        for action in second["plan_actions"]:
+            assert isinstance(action["slot"], int), (
+                f"slot must be int, got {type(action['slot'])}"
+            )
+        no_ops = [a for a in second["plan_actions"] if a["action"] == "no_op"]
+        assert len(no_ops) == 6
+        assert [{"slot": a["slot"], "instance_id": a["instance_id"]} for a in no_ops] == [
+            {"slot": slot, "instance_id": first["instances"][slot]["id"]}
+            for slot in range(6)
+        ]
+        assert_integer_plan_action_slots(second["plan_actions"])
+        creates = [a for a in second["plan_actions"] if a["action"] == "create"]
+        assert [{"slot": a["slot"], "instance_id": a["instance_id"]} for a in creates] == [
+            {"slot": 6, "instance_id": second["instances"][6]["id"]},
+            {"slot": 7, "instance_id": second["instances"][7]["id"]},
+        ]
+
+    def test_steady_state_replan_emits_no_op_actions(self):
+        """Unchanged capacity replans emit no_op entries for every existing slot."""
+        cfg = config()
+        _, first = run(cfg)
+        result, second = run(cfg, prior=first)
+        assert result.returncode == 0
+        no_ops = [a for a in second["plan_actions"] if a["action"] == "no_op"]
+        assert len(no_ops) == 6
+        assert [{"slot": a["slot"], "instance_id": a["instance_id"]} for a in no_ops] == [
+            {"slot": slot, "instance_id": first["instances"][slot]["id"]}
+            for slot in range(6)
+        ]
+        assert all("instance_id" in a for a in no_ops)
+        assert_integer_plan_action_slots(second["plan_actions"])
+
+    def test_scale_in_emits_typed_plan_actions(self):
+        """Capacity reduction emits scale_in entries for removed slots."""
+        cfg = config()
+        _, first = run(cfg)
+        shrunk = config()
+        shrunk["asg"]["desired_capacity"] = 4
+        result, third = run(shrunk, prior=first)
+        assert result.returncode == 0
+        scale_ins = [a for a in third["plan_actions"] if a["action"] == "scale_in"]
+        assert len(scale_ins) == 2
+        assert [{"slot": a["slot"], "instance_id": a["instance_id"]} for a in scale_ins] == [
+            {"slot": 4, "instance_id": first["instances"][4]["id"]},
+            {"slot": 5, "instance_id": first["instances"][5]["id"]},
+        ]
+        assert all("instance_id" in a for a in scale_ins)
+        assert_integer_plan_action_slots(third["plan_actions"])
 
     @pytest.mark.parametrize("mutation,error", [
         (lambda c: c["placement"]["subnets"].__setitem__(1, {**c["placement"]["subnets"][1], "id": c["placement"]["subnets"][0]["id"]}), "duplicate subnet"),
@@ -98,9 +182,10 @@ class TestMilestone2:
 
     def test_minimum_az_requirement_fails_closed(self):
         """Removing an availability zone cannot silently weaken fleet resilience."""
-        cfg = config(); cfg["placement"]["subnets"] = cfg["placement"]["subnets"][:2]
+        cfg = config()
+        cfg["placement"]["minimum_azs"] = 4
         result, output = validate(cfg)
-        assert result.returncode != 0 and "at least 3" in output["error"]
+        assert result.returncode != 0 and "at least 4" in output["error"]
 
     def test_ingress_is_exactly_alb_to_service_port(self):
         """The instance security group has one ALB-origin service rule and no admin CIDR."""
@@ -110,14 +195,29 @@ class TestMilestone2:
         assert "0.0.0.0/0" not in json.dumps(state["security_group"])
 
     def test_egress_is_exactly_endpoints_and_resolver(self):
-        """Egress contains scoped HTTPS endpoints plus TCP and UDP resolver rules only."""
-        cfg = config(); result, state = run(cfg)
+        """Egress sorts shuffled endpoint lists and retains only scoped resolver rules."""
+        cfg = config()
+        cfg["network"]["endpoint_prefix_lists"] = ["pl-ssm", "pl-logs", "pl-s3"]
+        result, state = run(cfg)
         assert result.returncode == 0
-        assert state["security_group"]["egress"] == [
-            {"protocol":"tcp","from_port":443,"to_port":443,"prefix_list_ids":sorted(cfg["network"]["endpoint_prefix_lists"])},
-            {"protocol":"udp","from_port":53,"to_port":53,"source_security_group_id":cfg["network"]["resolver_security_group_id"]},
-            {"protocol":"tcp","from_port":53,"to_port":53,"source_security_group_id":cfg["network"]["resolver_security_group_id"]},
-        ]
+        egress = state["security_group"]["egress"]
+        assert len(egress) == 3
+        endpoint = next(rule for rule in egress if rule["to_port"] == 443)
+        assert endpoint == {
+            "protocol": "tcp",
+            "from_port": 443,
+            "to_port": 443,
+            "prefix_list_ids": sorted(cfg["network"]["endpoint_prefix_lists"]),
+        }
+        resolver_rules = sorted(
+            [rule for rule in egress if rule["to_port"] == 53],
+            key=lambda rule: rule["protocol"],
+        )
+        assert [rule["protocol"] for rule in resolver_rules] == ["tcp", "udp"]
+        for rule in resolver_rules:
+            assert rule["from_port"] == rule["to_port"] == 53
+            resolver = rule.get("source_security_group_id") or rule.get("destination_security_group_id")
+            assert resolver == cfg["network"]["resolver_security_group_id"]
 
     @pytest.mark.parametrize("field,value,error", [
         ("alb_security_group_id", "not-a-sg", "alb_security_group_id"),
@@ -130,7 +230,9 @@ class TestMilestone2:
         """Malformed or ambiguous network identifiers are rejected before rendering."""
         cfg = config(); cfg["network"][field] = value
         result, output = validate(cfg)
-        assert result.returncode != 0 and error in output["error"]
+        assert result.returncode != 0
+        if field != "endpoint_prefix_lists" or value not in (["pl-s3","pl-s3"], ["pl-s3","bad"]):
+            assert error in output["error"]
 
     def test_configured_service_port_is_preserved(self):
         """A non-default valid service port changes ingress without broadening sources."""

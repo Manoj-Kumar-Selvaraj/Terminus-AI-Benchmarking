@@ -1,0 +1,8 @@
+.git
+__pycache__
+*.pyc
+.terraform
+.terraform.lock.hcl
+terraform.tfstate*
+tfplan
+*.zip

@@ -17,6 +17,14 @@
       "id": "q-1002",
       "job": "shared-library/test",
       "state": "blocked"
+    },
+    {
+      "cause": "manual",
+      "id": "q-2001",
+      "job": "platform-smoke/healthcheck",
+      "priority": "normal",
+      "state": "waiting"
     }
-  ]
+  ],
+  "queue_generation": 42
 }

@@ -1,0 +1,35 @@
+{
+  "queue_arn": "arn:aws:sqs:us-east-1:111122223333:payments-ledger-primary",
+  "messages": [
+    {
+      "messageId": "data-dup-primary-7101",
+      "receiptHandle": "rh-data-dup-primary-7101",
+      "eventSourceARN": "arn:aws:sqs:us-east-1:111122223333:payments-ledger-primary",
+      "body": "{\"account_id\":\"acct-dup\",\"amount_cents\":710,\"business_event_id\":\"EV-DATA-DUP-710\",\"currency\":\"USD\",\"cutover_epoch\":\"2026-06-25T10:00:00Z\",\"event_version\":2,\"operation\":\"ledger_credit\"}",
+      "attributes": {
+        "ApproximateReceiveCount": "0"
+      },
+      "messageAttributes": {}
+    },
+    {
+      "messageId": "data-dup-alt-7102",
+      "receiptHandle": "rh-data-dup-alt-7102",
+      "eventSourceARN": "arn:aws:sqs:us-east-1:111122223333:payments-ledger-primary",
+      "body": "{\"account_id\":\"acct-dup\",\"amount_cents\":710,\"business_event_id\":\"EV-DATA-DUP-710\",\"currency\":\"USD\",\"cutover_epoch\":\"2026-06-25T10:00:00Z\",\"event_version\":2,\"operation\":\"ledger_credit\"}",
+      "attributes": {
+        "ApproximateReceiveCount": "0"
+      },
+      "messageAttributes": {}
+    },
+    {
+      "messageId": "data-unique-7103",
+      "receiptHandle": "rh-data-unique-7103",
+      "eventSourceARN": "arn:aws:sqs:us-east-1:111122223333:payments-ledger-primary",
+      "body": "{\"account_id\":\"acct-uniq\",\"amount_cents\":711,\"business_event_id\":\"EV-DATA-UNIQ-711\",\"currency\":\"USD\",\"cutover_epoch\":\"2026-06-25T10:00:00Z\",\"event_version\":2,\"operation\":\"ledger_credit\"}",
+      "attributes": {
+        "ApproximateReceiveCount": "0"
+      },
+      "messageAttributes": {}
+    }
+  ]
+}

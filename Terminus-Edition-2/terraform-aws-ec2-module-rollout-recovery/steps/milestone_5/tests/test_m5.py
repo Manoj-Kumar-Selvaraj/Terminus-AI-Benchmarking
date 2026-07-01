@@ -66,6 +66,15 @@ def legacy_state(state):
     return old
 
 
+def policy_statements(state):
+    policy = state["iam_role"]["policy"]
+    if isinstance(policy, dict):
+        assert policy.get("Version") in {None, "2012-10-17"}
+        policy = policy.get("Statement", [])
+    assert isinstance(policy, list)
+    return policy
+
+
 class TestMilestone5:
     def test_prior_rollout_storage_and_network_recovery_is_preserved(self):
         """Final hardening retains prior release, private placement, refresh, and volume behavior."""
@@ -83,7 +92,7 @@ class TestMilestone5:
 
     def test_iam_policy_contains_exact_scoped_capabilities(self):
         """IAM actions, resources, and conditions match the documented control-plane needs."""
-        cfg,state=baseline(); policy={stmt["Sid"]:stmt for stmt in state["iam_role"]["policy"]}
+        cfg,state=baseline(); policy={stmt["Sid"]:stmt for stmt in policy_statements(state)}
         assert set(policy)=={"SsmControlPlane","ReadReleaseArtifact","DecryptDataVolume","PublishPaymentsMetrics"}
         assert all(stmt.get("Effect","Allow")=="Allow" for stmt in policy.values())
         assert set(policy["SsmControlPlane"]["Action"])=={"ec2messages:GetMessages","ssm:UpdateInstanceInformation","ssmmessages:CreateControlChannel","ssmmessages:OpenControlChannel"}
@@ -97,7 +106,7 @@ class TestMilestone5:
     def test_iam_has_no_wildcard_actions_and_only_conditioned_wildcard_resources(self):
         """Wildcard actions are forbidden and wildcard resources require documented conditions."""
         _,state=baseline()
-        for statement in state["iam_role"]["policy"]:
+        for statement in policy_statements(state):
             actions=statement["Action"] if isinstance(statement["Action"],list) else [statement["Action"]]
             assert all("*" not in action for action in actions)
             assert statement.get("Effect","Allow")=="Allow"
@@ -108,8 +117,16 @@ class TestMilestone5:
     def test_state_migrations_declare_every_legacy_address(self):
         """Terraform moved blocks cover all legacy singleton and collection resources."""
         text=MIGRATIONS_TF.read_text()
-        moves=set(re.findall(r"from\s*=\s*([^\s]+).*?to\s*=\s*([^\s]+)",text,re.S))
-        assert moves==EXPECTED_MOVES
+        blocks=re.findall(r"moved\s*\{([^{}]*)\}",text,re.S)
+        assert len(blocks)==len(EXPECTED_MOVES)
+        parsed=[]
+        for block in blocks:
+            assignments=re.findall(r"^\s*(from|to)\s*=\s*([^\s#]+)\s*$",block,re.M)
+            assert [name for name,_ in assignments]==["from","to"]
+            assert len(assignments)==2
+            parsed.append((assignments[0][1],assignments[1][1]))
+        assert set(parsed)==EXPECTED_MOVES
+        assert len(parsed)==len(set(parsed))
 
     def test_legacy_import_recovers_slots_and_preserves_instance_ids(self):
         """Legacy Slot tags reconstruct stable keys without replacing imported instances."""
